@@ -8,24 +8,24 @@
 #include <memory>
 
 // SAFE
-#include "SAFE/TextBox.h"
 #include "SAFE/TextureManager.h"
 #include "SAFE/TextureWrapper.h"
-#include "Tile.h"
+#include "SAFE/Tile.h"
 #include "SAFE/Input.h"
 
 // SAFE ECS
 #include "SAFE/CMotion.h"
 #include "SAFE/CPlayerControls.h"
 #include "SAFE/CSprite.h"
+#include "SAFE/CSheetAnimation.h"
 #include "SAFE/CTransform.h"
 #include "SAFE/EntityEngine.h"
 #include "SAFE/Entity.h"
 #include "SAFE/SRender.h"
 #include "SAFE/SPlayerMovement.h"
+#include "SAFE/SSpriteSheetAnimator.h"
 
 // GAME
-#include "TextureObject.h"
 #include "SAFE/SPlayerMovement.h"
 
 
@@ -37,67 +37,9 @@ Game::Game(int screenWidth, int screenHeight, SDL_Window* pWindow, SDL_Renderer*
     TextureWrapper::SetDefaultRenderer(mpRenderer);
 }
 
-void Game::Start(){
-    SDL_Event event;
-
-    // Delta time calculation variables
-    Uint32 old_time, current_time;
-    old_time = SDL_GetTicks();
-
-    TextureManager textureManager;
-
-    /*TextureObject* pBackground = new TextureObject(textureManager.LoadFromFile("assets/x.bmp"));
-    pBackground->mTransform.mPosition = Vector3(0);
-    mWorld.Add(std::unique_ptr<GameObject>(pBackground));*/
-
-
-    TTF_Font* font = TTF_OpenFont("assets/fonts/Roboto_Condensed/Regular.ttf", 20);
-    if(font == nullptr){
-        printf( "Unable to load TTF font! SDL Error: %s\n", TTF_GetError() );
-    }
-
-
-    TextBox* pTextBox = new TextBox(font, textureManager.CreateEmpty(200,20,"textbox"), 1);
-    pTextBox->mTransform.mPosition.x += pTextBox->mTexture.GetWidth()/2.0;
-    pTextBox->mTransform.mPosition.y += pTextBox->mTexture.GetHeight()/2.0;
-    pTextBox->mTransform.mPosition.z += 20;
-
-    pTextBox->mTransform.mPosition.x += 400;
-    mWorld.Add(std::unique_ptr<GameObject>(pTextBox));
-
-    TextBox* pTextBox2 = new TextBox(font, textureManager.CreateEmpty(200,20,"textbox"), 1);
-    pTextBox2->mTransform.mPosition.x += pTextBox->mTexture.GetWidth()/2.0;
-    pTextBox2->mTransform.mPosition.y += pTextBox->mTexture.GetHeight()/2.0;
-    pTextBox2->mTransform.mPosition.z += 0;
-
-    pTextBox2->mTransform.mPosition.x += 400;
-    mWorld.Add(std::unique_ptr<GameObject>(pTextBox2));
-/*
-    for(int i=0; i<10; i++){
-        for(int j=0; j<10; j++){
-            std::string path = "assets/floor_tile.png";
-            if(i==0 || i == 9 || j == 0 || j == 9){
-                path = "assets/wall_tile.png";
-            }
-
-            Tile* pTile = new Tile(textureManager.LoadFromFile(path), Vector3(i*24, j*24,0), i, j, 24,24);
-            mWorld.Add(std::unique_ptr<GameObject>(pTile));
-        }
-    }
-*/
-    Camera camera = Camera(mpRenderer);
-
-    /*
-     * Entity-Component-System Configuration
-     */
-    EntityEngine engine;
-    engine.AddSystem(std::unique_ptr<System>(new SPlayerMovement()));
-    engine.AddSystem(std::unique_ptr<System>(new SRender(&textureManager, &camera)));
-
-    Entity* entity = engine.CreateEntity();
-
+void FillPlayer(Entity* entity, std::string spriteFilename){
     auto pSprite = new CSprite();
-    pSprite->mFilename = "assets/EnemySheet.png";
+    pSprite->mFilename = spriteFilename;
     pSprite->mClip = Rect(0,0,0.25,0.25);
     entity->Add<CSprite>(std::unique_ptr<Component>(pSprite));
 
@@ -111,7 +53,84 @@ void Game::Start(){
     pControls->mKeyMoveRight = SDL_SCANCODE_RIGHT;
     pControls->mKeyMoveLeft = SDL_SCANCODE_LEFT;
     entity->Add<CPlayerControls>(std::unique_ptr<Component>(pControls));
+}
 
+void FillSpriteSheet(Entity* entity, float time, int frames){
+    auto pSheet = new CSheetAnimation ();
+    
+    for(int i=0; i<4; i++){
+        std::vector< std::pair<Rect, float> > vec;
+        for(int j=0; j<frames; j++){
+            std::pair<Rect, float> frame = std::pair<Rect, float> (Rect(i*0.25, j*0.25, 0.25, 0.25), time);
+            vec.push_back(frame);            
+        }
+        pSheet->mAnimations[i] = vec;
+    }
+    pSheet->mCurrentAnimation = 0;
+    
+    entity->Add<CSheetAnimation>(std::unique_ptr<Component>(pSheet));
+}
+
+void Game::Start(){
+    SDL_Event event;
+
+    // Delta time calculation variables
+    Uint32 old_time, current_time;
+    old_time = SDL_GetTicks();
+
+    TextureManager textureManager;
+
+    TTF_Font* font = TTF_OpenFont("assets/fonts/Roboto_Condensed/Regular.ttf", 20);
+    if(font == nullptr){
+        printf( "Unable to load TTF font! SDL Error: %s\n", TTF_GetError() );
+    }
+
+    Camera camera = Camera(mpRenderer);
+
+    /*
+     * Entity-Component-System Configuration
+     */
+    EntityEngine engine;
+    engine.AddSystem(std::unique_ptr<System>( new SPlayerMovement() ));
+    engine.AddSystem(std::unique_ptr<System>( new SSpriteSheetAnimator() ));
+    engine.AddSystem(std::unique_ptr<System>( new SRender(&textureManager, &camera) ));
+
+    /*
+     * Entities and Components
+     */
+    
+    // Tiles Entities
+    
+    for(int i=0; i<10; i++){
+        for(int j=0; j<10; j++){
+            std::string path = "assets/floor_tile.png";
+            if(i==0 || i == 9 || j == 0 || j == 9){
+                path = "assets/wall_tile.png";
+            }
+            
+            Entity* tile = engine.CreateEntity();
+
+            auto pSprite = new CSprite ();
+            pSprite->mFilename = path;
+            tile->Add<CSprite>(std::unique_ptr<Component>(pSprite));
+
+            auto pTransform = new CTransform ();
+            pTransform->mPosition = Vector3(i*24, j*24,0);
+            tile->Add<CTransform>(std::unique_ptr<Component>(pTransform));
+        }
+    }
+    
+    // Character Entities
+    Entity* entity = engine.CreateEntity();
+    FillPlayer(entity, "assets/EnemySheet.png");
+    FillSpriteSheet (entity, 0.5, 2);
+    
+    entity = engine.CreateEntity();
+    FillPlayer(entity, "assets/PlayerSheet.png");
+    FillSpriteSheet (entity, 0.3, 3);
+    
+    entity->Get<CTransform>()->mPosition = Vector3(20, 20, 0);
+    
 
     // Keyboard state
     Input::StartInput();
@@ -138,7 +157,7 @@ void Game::Start(){
         }
 
         /*
-         * Step 2: Logic Update
+         * Step 2: Setup Update
          */
         // Calculate delta time
         current_time = SDL_GetTicks();
@@ -146,30 +165,28 @@ void Game::Start(){
         old_time = current_time;
 
 
-        // Update all gameobjects
-        mWorld.Update(delta);
-
-        pTextBox->mText = std::to_string((int)(delta*1000)) + "ms";
-        pTextBox2->mText = std::to_string((int)(delta*1000)) + "ms";
-
         /*
-         * Step 3: Graphics render
+         * Step 3: Clear Graphics
          */
         SDL_SetRenderDrawColor( mpRenderer, 130, 130, 255, 0);
         SDL_RenderClear( mpRenderer );
 
+        /*
         std::priority_queue<GameObject*, std::vector<GameObject*>, GameObjectComparator> zOrder;
         for (auto&& pGO : mWorld.mGameObjects){
             zOrder.push(pGO.get());
         }
-        
-        engine.Update(delta);
-
         // Draw all objects
         while(!zOrder.empty()){
             zOrder.top()->Draw(camera);
             zOrder.pop();
         }
+        */
+        
+        /*
+         * Step 4: Update systems
+         */
+        engine.Update(delta);
 
         SDL_RenderPresent(mpRenderer);
     }
@@ -177,7 +194,6 @@ void Game::Start(){
 
     TTF_CloseFont(font);
 
-    mWorld.mGameObjects.clear();
     textureManager.ReleaseAll();
 }
 

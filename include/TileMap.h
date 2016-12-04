@@ -4,7 +4,11 @@
 #include <vector>
 #include <memory>
 
-#include "Tile.h"
+#include "SAFE/Vector2.h"
+#include "SAFE/Vector3.h"
+#include "SAFE/EntityEngine.h"
+#include "SAFE/Entity.h"
+#include "SAFE/Tile.h"
 
 namespace safe {
 
@@ -12,8 +16,11 @@ class TileMap
 {
 
     public:
-        TileMap(Vector3 origin, int width, int height, int tileWidth, int tileHeight)
-                : mOrigin(origin), mWidth(width), mHeight(height) {}
+        TileMap(EntityEngine* engine, Vector3 origin, int width, int height, int tileWidth, int tileHeight)
+                : mpEngine(engine), mOrigin(origin), 
+                mWidth(width), mHeight(height),
+                mTileWidth(tileWidth), mTileHeight(tileHeight)
+                {}
 
 
         Tile* GetTile(Vector2 pos){
@@ -40,12 +47,13 @@ class TileMap
         }
 
     private:
+        EntityEngine* mpEngine;
         Vector3 mOrigin;
         std::vector< std::unique_ptr< Tile > > mTiles;
-        int mTileWidth;
-        int mTileHeight;
         int mWidth;
         int mHeight;
+        int mTileWidth;
+        int mTileHeight;
 
         Vector2 World2Map(Vector2 pos){
             float rx = pos.x - mOrigin.x;

@@ -15,7 +15,7 @@ class Camera
 {
     public:
         Camera(SDL_Renderer* renderer)
-            : mRenderer(renderer) {}
+            : mpRenderer(renderer) {}
 
         Vector3 World2Camera(const Vector3& position) const{
             float x = position.x - mTransform.mPosition.x;
@@ -35,11 +35,11 @@ class Camera
             return Camera2Screen(World2Camera(position));
         }
 
-        SDL_Renderer* getSDLRenderer() const { return mRenderer; } // TODO: not really constness, use it carefully
+        SDL_Renderer* getSDLRenderer() const { return mpRenderer; } // TODO: not really constness, use it carefully
 
         Transform mTransform;
     private:
-        SDL_Renderer* mRenderer;
+        SDL_Renderer* mpRenderer;
 };
 
 } // namespace safe

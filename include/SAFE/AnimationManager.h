@@ -54,7 +54,6 @@ class AnimationManager
                 }
             }
         }
-    protected:
     private:
         std::vector<std::pair<T,float>> mFrames;
         float mTimeRemaining;

@@ -9,16 +9,6 @@ int Input::sNumKeys;
 const Uint8* Input::spKeyboard;
 Uint8* Input::spPrevKeyboard;
 
-Input::Input()
-{
-    //ctor
-}
-
-Input::~Input()
-{
-    //dtor
-}
-
 bool Input::IsDown(Uint8 key)
 {
     return spKeyboard[key];

@@ -8,9 +8,6 @@ namespace safe {
 class Input
 {
     public:
-        Input();
-        virtual ~Input();
-
         static bool IsDown(Uint8 key);
         static bool WasDown(Uint8 key);
         static bool IsReleased(Uint8 key);
@@ -19,7 +16,6 @@ class Input
         static void StartInput();
         static void UpdateInput();
 
-    protected:
     private:
         static int sNumKeys;
         static const Uint8* spKeyboard;

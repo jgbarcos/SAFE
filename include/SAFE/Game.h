@@ -1,8 +1,10 @@
 #ifndef SGAME_H
 #define SGAME_H
 
+#include <SDL.h>
+
+#include "SAFE/Vector2.h"
 #include "SAFE/Vector3.h"
-#include "SAFE/World.h"
 
 namespace safe {
 
@@ -17,8 +19,6 @@ class Game
         Vector2 mScreenSize;
         SDL_Window* mpWindow = nullptr;
         SDL_Renderer* mpRenderer = nullptr;
-
-        World mWorld;
 };
 
 } // namespace safe

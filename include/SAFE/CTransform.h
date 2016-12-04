@@ -1,6 +1,7 @@
 #ifndef TRANSFORM_COMPONENT_H
 #define TRANSFORM_COMPONENT_H
 
+#include "SAFE/Vector3.h"
 #include "SAFE/Component.h"
 
 namespace safe {

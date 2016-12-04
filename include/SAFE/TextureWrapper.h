@@ -133,14 +133,14 @@ class TextureWrapper // TODO: Create XTextureWrapper.cpp when stablished
 
         void PlotText(TTF_Font* font, const std::string& text, const Vector2& origin = Vector2(0), Color color = Color(0,0,0,255)){
             if(IsLoaded() && text.size() > 0){
-                SDL_Color sdlColor =  {color.r, color.g, color.b};
+                SDL_Color sdlColor =  {color.r, color.g, color.b, color.a};
                 SDL_Surface* genSurface = TTF_RenderText_Blended(font, text.c_str(), sdlColor);
                 if(genSurface == nullptr){
                     printf( "Unable to render text into surface! SDL Error: %s\n", SDL_GetError() );
                     return;
                 }
 
-                SDL_Surface* textSurface = SDL_ConvertSurfaceFormat( genSurface, SDL_PIXELFORMAT_RGBA8888, NULL );
+                SDL_Surface* textSurface = SDL_ConvertSurfaceFormat( genSurface, SDL_PIXELFORMAT_RGBA8888, 0 );
                 if(textSurface == nullptr){
                     printf( "Unable to convert generated surface to display format! SDL Error: %s\n", SDL_GetError() );
                     return;
@@ -167,10 +167,10 @@ class TextureWrapper // TODO: Create XTextureWrapper.cpp when stablished
         void* mSDLPixels;
         int mSDLPitch;
 
+        std::string mID;
         int mWidth;
         int mHeight;
 
-        std::string mID;
         bool mModified = true;
 
         void RenderSDL( SDL_Renderer* renderer, int xpos, int ypos, float xscale, float yscale,
@@ -202,7 +202,7 @@ class TextureWrapper // TODO: Create XTextureWrapper.cpp when stablished
                 return false;
             }
 
-            mpSurface = SDL_ConvertSurfaceFormat(loadedSurface, SDL_PIXELFORMAT_RGBA8888, NULL);
+            mpSurface = SDL_ConvertSurfaceFormat(loadedSurface, SDL_PIXELFORMAT_RGBA8888, 0);
             SDL_FreeSurface(loadedSurface);
             if( mpSurface == NULL )
             {
@@ -248,7 +248,7 @@ class TextureWrapper // TODO: Create XTextureWrapper.cpp when stablished
             SDL_Surface* createdSurface = SDL_CreateRGBSurface(0, width, height, 32,
                                            rmask, gmask, bmask, amask);
 
-            mpSurface = SDL_ConvertSurfaceFormat(createdSurface, SDL_PIXELFORMAT_RGBA8888, NULL);
+            mpSurface = SDL_ConvertSurfaceFormat(createdSurface, SDL_PIXELFORMAT_RGBA8888, 0);
             SDL_FreeSurface(createdSurface);
 
             if (mpSurface == nullptr) {
