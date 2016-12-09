@@ -37,10 +37,14 @@ endif()
 find_package(SDL2 REQUIRED)
 find_package(SDL2_image REQUIRED)
 find_package(SDL2_ttf REQUIRED)
+find_package(Box2D REQUIRED)
 
 include_directories(${SDL2_INCLUDE_DIR}
                     ${SDL2_IMAGE_INCLUDE_DIR}
-                    ${SDL2_TTF_INCLUDE_DIR})
+                    ${SDL2_TTF_INCLUDE_DIR}
+                    ${BOX2D_INCLUDE_DIR}
+                    )
+                
 
 # Project cmake configuration
 file(GLOB PROJECT_SRC
@@ -57,7 +61,8 @@ include_directories(include)
 add_executable(${PROJECT_NAME} ${PROJECT_SRC} ${PROJECT_HEADERS})
 target_link_libraries(${PROJECT_NAME} ${SDL2_LIBRARY}
                              ${SDL2_IMAGE_LIBRARIES}
-                             ${SDL2_TTF_LIBRARIES})
+                             ${SDL2_TTF_LIBRARIES}
+                             ${BOX2D_LIBRARY})
 
 message ( "Flags: " ${CMAKE_CXX_FLAGS} )
                              

@@ -12,6 +12,13 @@ class Input
         static bool WasDown(Uint8 key);
         static bool IsReleased(Uint8 key);
         static bool IsPressed(Uint8 key);
+        
+        static int GetMouseX();
+        static int GetMouseY();
+        static bool IsMouseDown(int button);
+        static bool WasMouseDown(int button);
+        static bool IsMouseReleased(int button);
+        static bool IsMousePressed(int button);
 
         static void StartInput();
         static void UpdateInput();
@@ -20,6 +27,12 @@ class Input
         static int sNumKeys;
         static const Uint8* spKeyboard;
         static Uint8* spPrevKeyboard;
+        
+        static Uint32 sMouseState;
+        static Uint32 sPrevMouseState;
+        
+        static int sMouseX;
+        static int sMouseY;
 };
 
 } // namespace safe

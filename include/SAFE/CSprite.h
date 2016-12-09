@@ -24,6 +24,8 @@ class CSprite : public Component
         // Optional
         Vector2 mCenter;
         Rect mClip;
+        bool mIsVertical = true; // true: plane(x,z) like a wall or character
+                                  // false: plane(x,y) like a floor tile
 
         // Generated
         bool mIsLoaded = false;

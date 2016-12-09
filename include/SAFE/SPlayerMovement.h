@@ -3,11 +3,13 @@
 
 #include "SAFE/CTransform.h"
 #include "SAFE/CPlayerControls.h"
+#include "Vector2.h"
+#include "Input.h"
 
 namespace safe {
 
 class SPlayerMovement : public System {
-public:
+public:    
     void Update(float delta, std::vector<std::unique_ptr<Entity>>&entities) override {
         for (auto&& e : entities) {
             // Preconditions
@@ -17,22 +19,46 @@ public:
             auto pTransform = e->Get<CTransform>();
             if(!pTransform) continue;
             
-            float vel = 50;
-            
-            // Logic
-            if(Input::IsDown(pControls->mKeyMoveDown)){
-                pTransform->mPosition.y += delta * vel;
+            // Debug for character collisions (assumes camera at (0,0) )
+            if(pControls->dFollowMouse && Input::IsMouseDown(SDL_BUTTON_LEFT)){
+                Vector2 pos;
+                pos.x = pTransform->mPosition.x;
+                pos.y = pTransform->mPosition.y;
+                
+                Vector2 mouse;
+                mouse.x = Input::GetMouseX();
+                mouse.y = Input::GetMouseY();
+                
+                pControls->mDirection = mouse - pos;
             }
-            else if(Input::IsDown(pControls->mKeyMoveUp)){
-                pTransform->mPosition.y -= delta * vel;
+            else{
+                // Logic
+                pControls->mDirection = Vector2(0.0);
+
+                if(Input::IsDown(pControls->mKeyMoveUp)){
+                    pControls->mDirection.y = -1;
+                }
+                else if(Input::IsDown(pControls->mKeyMoveDown)){
+                    pControls->mDirection.y = 1;
+                }
+
+                if(Input::IsDown(pControls->mKeyMoveLeft)){
+                    pControls->mDirection.x = -1;
+                }
+                else if(Input::IsDown(pControls->mKeyMoveRight)){
+                    pControls->mDirection.x = 1;
+                }  
             }
 
-            if(Input::IsDown(pControls->mKeyMoveLeft)){
-                pTransform->mPosition.x -= delta * vel;
-            }
-            else if(Input::IsDown(pControls->mKeyMoveRight)){
-                pTransform->mPosition.x += delta * vel;
-            }          
+            // Simulating joystick behavior with keys, normalize if required
+            float length = pControls->mDirection.length();
+            if(length > 1) pControls->mDirection.normalize(length);
+
+            // TODO: move this to a character data component/system
+            float vel = 50;
+            if(pControls->dFollowMouse) vel = 25;
+            pTransform->mVelocity.x = pControls->mDirection.x * vel;
+            pTransform->mVelocity.y = pControls->mDirection.y * vel;  
         }
     }
     

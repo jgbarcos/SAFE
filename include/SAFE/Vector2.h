@@ -3,6 +3,7 @@
 
 #include <ostream>
 #include <stdexcept>
+#include <math.h>
 
 namespace safe {
 
@@ -20,6 +21,28 @@ class Vector2
 
         Vector2 operator + (const Vector2& t) const {
             return Vector2(x+t.x, y+t.y);
+        }
+        Vector2 operator - (const Vector2& t) const {
+            return Vector2(x-t.x, y-t.y);
+        }
+        
+        Vector2 operator * (const float v) const {
+            return Vector2(x*v, y*v);
+        }
+        
+        void normalize(){
+            float l = length();
+            x = x/l;
+            y = y/l;
+        }
+        // Use it if length was previously calculated
+        void normalize(float length){
+            x = x/length;
+            y = y/length;
+        }
+        
+        float length(){
+            return sqrt(x*x+y*y);
         }
 
         double x;

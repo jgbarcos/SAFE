@@ -25,9 +25,7 @@ class Camera
             return Vector3(x,y,z);
         }
 
-        // 3/4 like projection
         Vector2 Camera2Screen(const Vector3& position) const {
-            // return SVector2(position.x, position.y + 0.75 * position.z);
             return Vector2(position.x, position.y);
         }
 

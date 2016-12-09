@@ -14,6 +14,7 @@
 #include "SAFE/Input.h"
 
 // SAFE ECS
+#include "SAFE/CCollider.h"
 #include "SAFE/CMotion.h"
 #include "SAFE/CPlayerControls.h"
 #include "SAFE/CSprite.h"
@@ -22,6 +23,7 @@
 #include "SAFE/EntityEngine.h"
 #include "SAFE/Entity.h"
 #include "SAFE/SRender.h"
+#include "SAFE/SPhysics.h"
 #include "SAFE/SPlayerMovement.h"
 #include "SAFE/SSpriteSheetAnimator.h"
 
@@ -53,6 +55,10 @@ void FillPlayer(Entity* entity, std::string spriteFilename){
     pControls->mKeyMoveRight = SDL_SCANCODE_RIGHT;
     pControls->mKeyMoveLeft = SDL_SCANCODE_LEFT;
     entity->Add<CPlayerControls>(std::unique_ptr<Component>(pControls));
+    
+    auto pCollider = new CCollider();
+    entity->Add<CCollider>(std::unique_ptr<Component>(pCollider));
+    
 }
 
 void FillSpriteSheet(Entity* entity, float time, int frames){
@@ -93,6 +99,7 @@ void Game::Start(){
     EntityEngine engine;
     engine.AddSystem(std::unique_ptr<System>( new SPlayerMovement() ));
     engine.AddSystem(std::unique_ptr<System>( new SSpriteSheetAnimator() ));
+    engine.AddSystem(std::unique_ptr<System>( new SPhysics(10.0) ));
     engine.AddSystem(std::unique_ptr<System>( new SRender(&textureManager, &camera) ));
 
     /*
@@ -100,7 +107,6 @@ void Game::Start(){
      */
     
     // Tiles Entities
-    
     for(int i=0; i<10; i++){
         for(int j=0; j<10; j++){
             std::string path = "assets/floor_tile.png";
@@ -112,6 +118,7 @@ void Game::Start(){
 
             auto pSprite = new CSprite ();
             pSprite->mFilename = path;
+            pSprite->mIsVertical = false;
             tile->Add<CSprite>(std::unique_ptr<Component>(pSprite));
 
             auto pTransform = new CTransform ();
@@ -121,13 +128,24 @@ void Game::Start(){
     }
     
     // Character Entities
-    Entity* entity = engine.CreateEntity();
-    FillPlayer(entity, "assets/EnemySheet.png");
-    FillSpriteSheet (entity, 0.5, 2);
+    for(int i=0; i<10; i++){
+        Entity* entity = engine.CreateEntity();
+        FillPlayer(entity, "assets/EnemySheet.png");
+        FillSpriteSheet (entity, 0.5, 2);
+        entity->Get<CPlayerControls>()->dFollowMouse = true;
+        entity->Get<CTransform>()->mPosition.x += 5 * i;
+    }
     
-    entity = engine.CreateEntity();
+    Entity* entity = engine.CreateEntity();
     FillPlayer(entity, "assets/PlayerSheet.png");
     FillSpriteSheet (entity, 0.3, 3);
+    
+    CPlayerControls* ct = entity->Get<CPlayerControls>();
+    ct->mKeyMoveUp = SDL_SCANCODE_W;
+    ct->mKeyMoveDown = SDL_SCANCODE_S;
+    ct->mKeyMoveLeft = SDL_SCANCODE_A;
+    ct->mKeyMoveRight = SDL_SCANCODE_D;
+    
     
     entity->Get<CTransform>()->mPosition = Vector3(20, 20, 0);
     
@@ -194,6 +212,7 @@ void Game::Start(){
 
     TTF_CloseFont(font);
 
+    engine.mEntities.clear ();
     textureManager.ReleaseAll();
 }
 

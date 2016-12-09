@@ -22,8 +22,18 @@ class Vector3
             z = other.z;
         };
 
-        Vector3 operator + (const Vector3& t) const {
-            return Vector3(x+t.x, y+t.y, z+t.z);
+        Vector3 operator + (const Vector3& rh) const {
+            return Vector3(x+rh.x, y+rh.y, z+rh.z);
+        }
+        Vector3& operator += (const Vector3 rh){
+            x += rh.x;
+            y += rh.y;
+            z += rh.z;
+            return *this;
+        }
+        
+        Vector3 operator * (const float v) const {
+            return Vector3(x*v, y*v, z*v);
         }
 
         double get(int index) const {
