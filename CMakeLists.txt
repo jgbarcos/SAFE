@@ -25,6 +25,7 @@ if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU" OR ${CMAKE_CXX_COMPILER_ID} STREQUAL
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-unused-parameter -pedantic")
 	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_DEBUG} -g")
 	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_RELEASE} -O2")
+                             
 elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL "MSVC")
 	if (CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
 		string(REGEX REPLACE "/W[0-4]" "/W4" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
@@ -37,11 +38,13 @@ endif()
 find_package(SDL2 REQUIRED)
 find_package(SDL2_image REQUIRED)
 find_package(SDL2_ttf REQUIRED)
+find_package(SDL2_gfx REQUIRED)
 find_package(Box2D REQUIRED)
 
 include_directories(${SDL2_INCLUDE_DIR}
                     ${SDL2_IMAGE_INCLUDE_DIR}
                     ${SDL2_TTF_INCLUDE_DIR}
+                    ${SDL2GFX_INCLUDE_DIR}
                     ${BOX2D_INCLUDE_DIR}
                     )
                 
@@ -62,8 +65,9 @@ add_executable(${PROJECT_NAME} ${PROJECT_SRC} ${PROJECT_HEADERS})
 target_link_libraries(${PROJECT_NAME} ${SDL2_LIBRARY}
                              ${SDL2_IMAGE_LIBRARIES}
                              ${SDL2_TTF_LIBRARIES}
+                             ${SDL2GFX_LIBRARY}
                              ${BOX2D_LIBRARY})
 
-message ( "Flags: " ${CMAKE_CXX_FLAGS} )
+message ( "Used Flags: " ${CMAKE_CXX_FLAGS} )
                              
 #install(TARGETS lab0 RUNTIME DESTINATION ${BIN_DIR})

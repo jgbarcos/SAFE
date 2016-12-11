@@ -29,6 +29,9 @@ class Vector2
         Vector2 operator * (const float v) const {
             return Vector2(x*v, y*v);
         }
+        Vector2 operator / (const float v) const {
+            return Vector2(x/v, y/v);
+        }
         
         void normalize(){
             float l = length();

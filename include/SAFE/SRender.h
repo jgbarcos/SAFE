@@ -3,10 +3,13 @@
 
 #include <memory>
 
+#include <SDL2_gfxPrimitives.h>
+
 #include "SAFE/CSprite.h"
 #include "SAFE/System.h"
 #include "SAFE/TextureManager.h"
 #include "CTransform.h"
+#include "CCollider.h"
 
 namespace safe {
     
@@ -73,6 +76,37 @@ class SRender : public System
                     Vector2 screenPos = mpCamera->World2Screen(pTransform->mPosition);
                     
                     pTex->Render(*mpCamera, screenPos, scale, angle, pSprite->mCenter, pixelclip);
+                }
+                
+                
+                // Render Debugging images
+                for(auto&& e : entities){
+                    // Preconditions
+                    auto pCollider = e->Get<CCollider>();
+                    if(!pCollider) continue;
+                    
+                    auto pTransform = e->Get<CTransform>();
+                    if(!pTransform) continue;
+                    
+                    Vector2 size = pCollider->mSize;
+                    Vector3 pos = pTransform->mPosition;
+                    pos.x += pCollider->mCenter.x;
+                    pos.y += pCollider->mCenter.y;
+                    
+                    Vector2 screenPos = mpCamera->World2Screen(pos);
+                    
+                    Color green(0,255,0,255);
+                    
+                    auto renderer = mpCamera->getSDLRenderer();
+                    if( pCollider->mShape == CCollider::Shape::CIRCLE ){
+                        circleColor(renderer, screenPos.x, screenPos.y, size.x, green.toRGBA());
+                    }
+                    else if( pCollider->mShape == CCollider::Shape::RECTANGLE  )
+                    {
+                        Vector2 init = screenPos + size;
+                        Vector2 end = screenPos - size;
+                        rectangleColor(renderer, init.x, init.y, end.x, end.y, green.toRGBA());
+                    }                   
                 }
             }
         }

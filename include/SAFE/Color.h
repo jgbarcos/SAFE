@@ -24,6 +24,10 @@ class Color
         uint32_t to32BE() const {
             return ((int)r << 24) | ((int)g << 16) | ((int)b << 8) | ((int)a);
         }
+        
+        uint32_t toRGBA() const {
+            return ((int)a << 24) | ((int)b << 16) | ((int)g << 8) | ((int)r);
+        }
 
 
     protected:

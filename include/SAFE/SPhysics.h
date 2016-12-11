@@ -14,28 +14,33 @@ class SPhysics : public System
 {
     public:
         SPhysics(float scale) :
-            mScale(scale),
+            mPixelsPerMeter(scale),
             mWorld(b2Vec2(0.0f,0.0f))
         {}
         
         void Update(float delta, std::vector<std::unique_ptr<Entity>>& entities) override {
+            // Pre-Physics
             for(auto&& e : entities){
+                // Preconditions
                 auto pCollider = e->Get<CCollider>();
                 if(!pCollider) continue;
                 
                 auto pTransform = e->Get<CTransform>();
                 if(!pTransform) continue;
                 
+                // Update Logic                
                 if(!pCollider->mpBody) AddCollider(pCollider, pTransform);
                 
                 b2Vec2 vel;
-                vel.x = pTransform->mVelocity.x / mScale;
-                vel.y = pTransform->mVelocity.y / mScale;
+                vel.x = pTransform->mVelocity.x / mPixelsPerMeter;
+                vel.y = pTransform->mVelocity.y / mPixelsPerMeter;
                 pCollider->mpBody->SetLinearVelocity(vel);
             }
             
+            // Update Physics System
             UpdateBox2D(delta);
             
+            // Post-Physics
             for(auto&& e : entities){
                 // Preconditions
                 auto pTransform = e->Get<CTransform>();
@@ -46,33 +51,55 @@ class SPhysics : public System
                 if(!pCollider)
                     pTransform->mPosition += pTransform->mVelocity * delta;
                 else{
-                    pTransform->mPosition.x = pCollider->mpBody->GetPosition().x * mScale;
-                    pTransform->mPosition.y = pCollider->mpBody->GetPosition().y * mScale;
+                    pTransform->mPosition.x = pCollider->mpBody->GetPosition().x * mPixelsPerMeter;
+                    pTransform->mPosition.y = pCollider->mpBody->GetPosition().y * mPixelsPerMeter;
                 }
             }
         }
         
         void AddCollider(CCollider* pCollider, CTransform* pTransform){
+            // Configure body
             b2BodyDef bodyDef;
-            bodyDef.type = b2_dynamicBody;
-            bodyDef.position.Set(pTransform->mPosition.x / mScale, pTransform->mPosition.y / mScale);
+            if(pCollider->mType == CCollider::Type::DYNAMIC) bodyDef.type = b2_dynamicBody;
+            else if(pCollider->mType == CCollider::Type::STATIC) bodyDef.type = b2_staticBody;
+            bodyDef.position.Set(pTransform->mPosition.x / mPixelsPerMeter, pTransform->mPosition.y / mPixelsPerMeter);
             pCollider->mpBody = mWorld.CreateBody(&bodyDef);
-
-            b2CircleShape pShape;
-            pShape.m_p.Set(pCollider->mCenter.x/mScale, -pCollider->mCenter.y/mScale);
-            pShape.m_radius = pCollider->mSize/mScale;
             
+            // Configure shape
+            Vector2 pos = pCollider->mCenter / mPixelsPerMeter;
+            Vector2 size = pCollider->mSize / mPixelsPerMeter;
+            float angle = pCollider->mAngle;
+            
+            std::unique_ptr<b2Shape> pShape;
+            
+            switch( pCollider->mShape ){
+            case( CCollider::Shape::CIRCLE ):
+                b2CircleShape* pCircle;
+                pCircle = new b2CircleShape;
+                pCircle->m_p.Set(pos.x, pos.y);
+                pCircle->m_radius = size.x;
+                pShape.reset(pCircle);
+                break;
+                
+            case( CCollider::Shape::RECTANGLE ):
+                b2PolygonShape* pRect;
+                pRect = new b2PolygonShape;
+                pRect->SetAsBox(size.x, size.y, b2Vec2(pos.x, pos.y),angle);
+                pShape.reset(pRect);
+                break;
+            }
+            
+            // Configure fixture
             b2FixtureDef pFixture;
-            pFixture.shape = &pShape; //this is a pointer to the shape above
-            pCollider->mpBody->CreateFixture(&pFixture); //add a fixture to the body
-
+            pFixture.shape = pShape.get();
+            pCollider->mpBody->CreateFixture(&pFixture);
         }
         
         void UpdateBox2D(float delta){
             mWorld.Step(delta, 6, 2);
         }
         
-        float mScale; // Pixels per 1 meter
+        float mPixelsPerMeter; // Pixels per 1 meter
         b2World mWorld;
 
 };

@@ -42,6 +42,7 @@ Game::Game(int screenWidth, int screenHeight, SDL_Window* pWindow, SDL_Renderer*
 void FillPlayer(Entity* entity, std::string spriteFilename){
     auto pSprite = new CSprite();
     pSprite->mFilename = spriteFilename;
+    pSprite->mCenter = Vector2(0.5,1);
     pSprite->mClip = Rect(0,0,0.25,0.25);
     entity->Add<CSprite>(std::unique_ptr<Component>(pSprite));
 
@@ -57,8 +58,10 @@ void FillPlayer(Entity* entity, std::string spriteFilename){
     entity->Add<CPlayerControls>(std::unique_ptr<Component>(pControls));
     
     auto pCollider = new CCollider();
+    pCollider->mCenter = Vector2(0,-10);
+    pCollider->mSize = 5;
     entity->Add<CCollider>(std::unique_ptr<Component>(pCollider));
-    
+
 }
 
 void FillSpriteSheet(Entity* entity, float time, int frames){
@@ -109,12 +112,19 @@ void Game::Start(){
     // Tiles Entities
     for(int i=0; i<10; i++){
         for(int j=0; j<10; j++){
+            Entity* tile = engine.CreateEntity();
+            
             std::string path = "assets/floor_tile.png";
-            if(i==0 || i == 9 || j == 0 || j == 9){
+            if(i==0 || j == 0 || j == 9){
                 path = "assets/wall_tile.png";
+                
+                auto pCollider = new CCollider();
+                pCollider->mShape = CCollider::Shape::RECTANGLE;
+                pCollider->mType = CCollider::Type::STATIC;
+                pCollider->mSize = Vector2(12,12);
+                tile->Add<CCollider>(std::unique_ptr<Component>(pCollider));
             }
             
-            Entity* tile = engine.CreateEntity();
 
             auto pSprite = new CSprite ();
             pSprite->mFilename = path;
@@ -146,8 +156,8 @@ void Game::Start(){
     ct->mKeyMoveLeft = SDL_SCANCODE_A;
     ct->mKeyMoveRight = SDL_SCANCODE_D;
     
-    
     entity->Get<CTransform>()->mPosition = Vector3(20, 20, 0);
+    entity->Get<CCollider>()->mShape = CCollider::Shape::RECTANGLE;
     
 
     // Keyboard state
@@ -182,24 +192,11 @@ void Game::Start(){
         float delta = (current_time - old_time) / 1000.0f;
         old_time = current_time;
 
-
         /*
          * Step 3: Clear Graphics
          */
         SDL_SetRenderDrawColor( mpRenderer, 130, 130, 255, 0);
         SDL_RenderClear( mpRenderer );
-
-        /*
-        std::priority_queue<GameObject*, std::vector<GameObject*>, GameObjectComparator> zOrder;
-        for (auto&& pGO : mWorld.mGameObjects){
-            zOrder.push(pGO.get());
-        }
-        // Draw all objects
-        while(!zOrder.empty()){
-            zOrder.top()->Draw(camera);
-            zOrder.pop();
-        }
-        */
         
         /*
          * Step 4: Update systems
@@ -212,7 +209,7 @@ void Game::Start(){
 
     TTF_CloseFont(font);
 
-    engine.mEntities.clear ();
+    engine.mEntities.clear();
     textureManager.ReleaseAll();
 }
 
