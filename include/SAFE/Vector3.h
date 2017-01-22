@@ -1,9 +1,10 @@
 #ifndef SVECTOR3_H
 #define SVECTOR3_H
 
-
 #include <ostream>
 #include <stdexcept>
+
+#include <sol.hpp>
 
 #include "SAFE/Vector3.h"
 
@@ -21,6 +22,12 @@ class Vector3
             y = other.y;
             z = other.z;
         };
+        
+        Vector3(sol::table luaT){
+            x = luaT.get_or("x", 0);
+            y = luaT.get_or("y", 0);
+            z = luaT.get_or("z", 0);
+        }
 
         Vector3 operator + (const Vector3& rh) const {
             return Vector3(x+rh.x, y+rh.y, z+rh.z);

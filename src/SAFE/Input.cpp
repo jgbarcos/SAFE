@@ -37,6 +37,10 @@ bool Input::IsPressed(Uint8 key)
     return !WasDown(key) && IsDown(key);
 }
 
+Uint8 Input::KeyFromName(const std::string& name){
+    return SDL_GetScancodeFromName( name.c_str() );
+}
+
 int Input::GetMouseX(){
     return sMouseX;
 }

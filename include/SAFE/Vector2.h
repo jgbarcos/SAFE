@@ -5,6 +5,8 @@
 #include <stdexcept>
 #include <math.h>
 
+#include <sol.hpp>
+
 namespace safe {
 
 class Vector2
@@ -18,6 +20,11 @@ class Vector2
             x = other.x;
             y = other.y;
         };
+        
+        Vector2(sol::table luaT){
+            x = luaT.get_or("x", 0.0);
+            y = luaT.get_or("y", 0.0);
+        }
 
         Vector2 operator + (const Vector2& t) const {
             return Vector2(x+t.x, y+t.y);

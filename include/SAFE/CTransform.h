@@ -8,17 +8,28 @@ namespace safe {
 
 class CTransform : public Component
 {
-    public:
-        CTransform() :
-            mPosition(Vector3(0,0,0)),
-            mVelocity(Vector3(0,0,0)),
-            mScale(Vector3(1,1,1))
-        {}
+public:
+    CTransform() :
+        mPosition(Vector3(0,0,0)),
+        mVelocity(Vector3(0,0,0)),
+        mScale(Vector3(1,1,1))
+    {}
 
-        // Optional
-        Vector3 mPosition;
-        Vector3 mVelocity;
-        Vector3 mScale;
+    CTransform(sol::table luaT) : CTransform() {
+        sol::table t = luaT.get<sol::table>("position");
+        if (t.valid()) mPosition = Vector3(t);
+        
+        t = luaT.get<sol::table>("velocity");
+        if (t.valid()) mVelocity = Vector3(t);
+        
+        t = luaT.get<sol::table>("scale");
+        if (t.valid()) mScale = Vector3(t);
+    }
+
+    // Optional
+    Vector3 mPosition;
+    Vector3 mVelocity;
+    Vector3 mScale;
 };
 
 } // namespace safe

@@ -17,6 +17,15 @@ class CSprite : public Component
             mCenter(Vector2(0.5,0.5)),  // Middle point
             mClip(Rect(0,0,1,1))        // Whole texture
         {}
+            
+        CSprite(sol::table luaT) : CSprite(){
+            mFilename = luaT.get<std::string>("filename");
+            
+            sol::table t =  luaT.get<sol::table>("center") ;
+            if (t.valid()) mCenter = Vector2(t);
+            
+            mIsVertical = luaT.get_or<bool>("is_vertical", mIsVertical);
+        }
 
         // Required
         std::string mFilename;
@@ -30,7 +39,6 @@ class CSprite : public Component
         // Generated
         bool mIsLoaded = false;
         std::shared_ptr<TextureWrapper> mpTexture;
-
 };
 
 } // namespace safe

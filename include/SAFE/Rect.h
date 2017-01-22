@@ -1,6 +1,8 @@
 #ifndef SRECT_H
 #define SRECT_H
 
+#include <sol.hpp>
+
 #include "SAFE/Vector2.h"
 
 namespace safe {
@@ -17,6 +19,13 @@ class Rect
             mY = std::min(a.get(1), b.get(1));
             mWidth = std::max(a.get(0), b.get(0)) - mX;
             mHeight = std::max(a.get(1), b.get(1)) - mY;
+        }
+        
+        Rect(sol::table luaT){
+            mX = luaT.get_or("x", 0.0);
+            mY = luaT.get_or("y", 0.0);
+            mWidth = luaT.get_or("w", 0.0);
+            mHeight = luaT.get_or("h", 0.0);
         }
 
         double getX() const { return mX; }

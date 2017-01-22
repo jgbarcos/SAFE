@@ -6,7 +6,7 @@ namespace safe {
 class Component
 {
     public:
-        virtual ~Component() {};
+        virtual ~Component() {};      
 };
 
 } // namespace safe

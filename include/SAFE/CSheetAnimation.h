@@ -18,16 +18,43 @@ class CSheetAnimation : public Component
         typedef int AnimIndex;
         
         CSheetAnimation() :
+            mCurrentAnimation(0),
             mCurrentFrame(0),
             mIsPlaying(true),
             mIsReset(true)
         {}
+        
+        CSheetAnimation(sol::table luaT) : CSheetAnimation() {
+            sol::table t = luaT.get<sol::table>("animations");
+            if(t.valid()){
+                auto fx = [&](sol::object key, sol::object value){
+                    createAnimation( key.as<AnimIndex>(), value.as<sol::table>() );
+                };
+                t.for_each(fx);
+            }
+            mCurrentAnimation = luaT.get_or("start_anim", mAnimations.begin()->first);
+        }
+        
+        
+        void createAnimation(AnimIndex key, sol::table luaT){
+            mAnimations[key] = std::vector<Frame>();
+
+            for(size_t i=0; i<luaT.size(); i++){
+                sol::table t = luaT.get<sol::table>(i+1);
+                if(t.valid()) {
+                    std::pair<Rect, float> frame = std::pair<Rect, float> (Rect( t.get<sol::table>("rect") ), t["time"]); 
+                    mAnimations[key].push_back(frame);
+                }
+            }
+        }
+
 
         // Required
         std::map< AnimIndex, Animation > mAnimations;
         AnimIndex mCurrentAnimation;
         
         // Generated
+        bool mIsInit = false;
         int mCurrentFrame;
         float mTimeRemaining;
         bool mIsPlaying;
@@ -40,7 +67,7 @@ class CSheetAnimation : public Component
         }
         
         const Frame GetCurrentFrame() const {
-            return GetCurrentAnimation()[mCurrentFrame];
+            return GetCurrentAnimation().at(mCurrentFrame);
         }
         
         void ChangeAnimation(AnimIndex index) {

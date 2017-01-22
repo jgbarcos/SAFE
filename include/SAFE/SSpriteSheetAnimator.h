@@ -22,25 +22,37 @@ public:
             auto pTransform = e->Get<CTransform>();
             if (!pTransform) continue; 
 
-            // Update Logic 
-            int anim = pSheet->mCurrentAnimation;
+            // Initializations
+            if( !pSheet->mIsInit ){
+                pSheet->mIsInit = true;
+                
+                pSprite->mClip = pSheet->GetCurrentFrame().first;
+                
+                std::cout << "clip:" << pSprite->mClip << std::endl;
+            }
+            
+            // Update Logic             
+            int anim = -1;
             if( pTransform->mVelocity.y < 0) anim = 0;
             else if(pTransform->mVelocity.y > 0) anim = 1;
             else if(pTransform->mVelocity.x < 0) anim = 2;
             else if(pTransform->mVelocity.x > 0) anim = 3;
-            else anim = -1;
-            if( anim != -1 && pSheet->mCurrentAnimation != anim){
+            
+            bool should_play = anim >= 0;
+            bool should_change = should_play && anim != pSheet->mCurrentAnimation;
+            
+            if(should_change){
                 pSheet->ChangeAnimation(anim);
             }
             
-            if( anim != -1 && pSheet->GetCurrentAnimation().size() > 0){
+            if(should_play){
                 // Update Sheet
                 if( pSheet->mIsReset) pSheet->ResetFrame();
                 if( pSheet->mIsPlaying) pSheet->AdvanceTime(delta);
 
                 // Update Sprite
                 pSprite->mClip = pSheet->GetCurrentFrame().first;
-            }
+            }            
         }
     }
     

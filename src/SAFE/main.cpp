@@ -81,7 +81,6 @@ void close()
 int main()
 {
     //Start up SDL and create window
-
     bool success = init();
 
     if(success)

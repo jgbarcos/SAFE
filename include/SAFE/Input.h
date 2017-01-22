@@ -3,6 +3,8 @@
 
 #include <SDL.h>
 
+#include <string>
+
 namespace safe {
 
 class Input
@@ -12,6 +14,8 @@ class Input
         static bool WasDown(Uint8 key);
         static bool IsReleased(Uint8 key);
         static bool IsPressed(Uint8 key);
+        
+        static Uint8 KeyFromName(const std::string& name);
         
         static int GetMouseX();
         static int GetMouseY();
