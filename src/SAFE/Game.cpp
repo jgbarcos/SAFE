@@ -9,7 +9,7 @@
 
 // SAFE
 #include "SAFE/TextureManager.h"
-#include "SAFE/TextureWrapper.h"
+#include "SAFE/Texture.h"
 #include "SAFE/Tile.h"
 #include "SAFE/Input.h"
 
@@ -35,7 +35,7 @@ namespace safe {
 Game::Game(int screenWidth, int screenHeight, SDL_Window* pWindow, SDL_Renderer* pRenderer)
 : mScreenSize(screenWidth, screenHeight), mpWindow(pWindow), mpRenderer(pRenderer)
 {
-    TextureWrapper::SetDefaultRenderer(mpRenderer);
+    Texture::SetDefaultRenderer(mpRenderer);
     
     mLua.open_libraries(sol::lib::base, sol::lib::package);
 }

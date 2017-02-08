@@ -4,7 +4,7 @@
 #include <memory>
 
 #include "SAFE/Component.h"
-#include "SAFE/TextureWrapper.h"
+#include "SAFE/Texture.h"
 #include "SAFE/Vector2.h"
 
 namespace safe {
@@ -38,7 +38,7 @@ class CSprite : public Component
 
         // Generated
         bool mIsLoaded = false;
-        std::shared_ptr<TextureWrapper> mpTexture;
+        std::shared_ptr<Texture> mpTexture;
 };
 
 } // namespace safe
