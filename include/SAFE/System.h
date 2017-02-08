@@ -1,6 +1,11 @@
 #ifndef SYSTEM_H
 #define SYSTEM_H
 
+#include <vector>
+#include <memory>
+
+#include "SAFE/Entity.h"
+
 namespace safe {
 
 class System
