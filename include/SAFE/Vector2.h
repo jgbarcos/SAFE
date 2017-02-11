@@ -7,6 +7,8 @@
 
 #include <sol.hpp>
 
+#include "SAFE/Vector3.h"
+
 namespace safe {
 
 class Vector2
@@ -64,6 +66,17 @@ class Vector2
             if(i == 0) return x;
             else if (i == 1) return y;
             else throw std::out_of_range ("SVector2 only accepts indices: 0 (x) and 1 (y)");
+        }
+        
+        static Vector2 Reduce(const Vector3& v, int dim = 2 ){
+            Vector2 out;
+            int i = 0;
+            while(i==dim) i+=1;
+            out.x = v.get(i);
+            i+=1;
+            while(i==dim) i+=1;
+            out.y = v.get(i);            
+            return out;
         }
 };
 

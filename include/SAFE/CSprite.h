@@ -11,34 +11,53 @@ namespace safe {
 
 class CSprite : public Component
 {
-    public:
-        CSprite() :
-            mFilename(""),
-            mCenter(Vector2(0.5,0.5)),  // Middle point
-            mClip(Rect(0,0,1,1))        // Whole texture
-        {}
-            
-        CSprite(sol::table luaT) : CSprite(){
-            mFilename = luaT.get<std::string>("filename");
-            
-            sol::table t =  luaT.get<sol::table>("center") ;
-            if (t.valid()) mCenter = Vector2(t);
-            
-            mIsVertical = luaT.get_or<bool>("is_vertical", mIsVertical);
-        }
+public:
+    CSprite() :
+        mFilename(""),
+        mCenter(Vector2(0.5,0.5)),  // Middle point
+        mClip(Rect(0,0,1,1))       // Whole texture
+    {   mComponentName = "SpriteComponent"; }
+        
+    void FromLua(sol::table luaT) override {
+        mFilename = luaT.get<std::string>("filename");
 
-        // Required
-        std::string mFilename;
+        sol::table t =  luaT.get<sol::table>("center") ;
+        if (t.valid()) mCenter = Vector2(t);
 
-        // Optional
-        Vector2 mCenter;
-        Rect mClip;
-        bool mIsVertical = true; // true: plane(x,z) like a wall or character
-                                  // false: plane(x,y) like a floor tile
+        mIsVertical = luaT.get_or<bool>("is_vertical", mIsVertical);
+    }
 
-        // Generated
-        bool mIsLoaded = false;
-        std::shared_ptr<Texture> mpTexture;
+
+
+
+
+    // Returns the clip over the texture measured in pixels
+    Rect GetPixelClip(){
+        int width = mpTexture->GetWidth();
+        int height = mpTexture->GetHeight();
+        return Rect(mClip.x*width, mClip.y*height, mClip.width*width, mClip.height*height);
+    }
+
+    // Returns the Size of the sprite with clipping applied in local coordinates (no zoom involved)
+    Rect GetLocalRect(){
+        Rect pclip = GetPixelClip();
+        return Rect(-pclip.width*mCenter.x, -pclip.height*mCenter.y, pclip.width, pclip.height);
+    }
+
+
+
+    // Required
+    std::string mFilename;
+
+    // Optional
+    Vector2 mCenter;
+    Rect mClip;
+    bool mIsVertical = true; // true: plane(x,z) like a wall or character
+                             // false: plane(x,y) like a floor tile
+
+    // Generated
+    bool mIsLoaded = false;
+    std::shared_ptr<Texture> mpTexture;
 };
 
 } // namespace safe

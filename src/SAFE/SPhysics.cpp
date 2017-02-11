@@ -19,6 +19,11 @@ void SPhysics::Update(float delta, std::vector<std::unique_ptr<Entity>>& entitie
         vel.x = pTransform->mVelocity.x / mPixelsPerMeter;
         vel.y = pTransform->mVelocity.y / mPixelsPerMeter;
         pCollider->mpBody->SetLinearVelocity(vel);
+        
+        b2Vec2 pos;
+        pos.x = pTransform->mPosition.x / mPixelsPerMeter;
+        pos.y = pTransform->mPosition.y / mPixelsPerMeter;
+        pCollider->mpBody->SetTransform(pos, pCollider->mAngle);
     }
 
     // Update Physics System

@@ -13,9 +13,9 @@ public:
         mPosition(Vector3(0,0,0)),
         mVelocity(Vector3(0,0,0)),
         mScale(Vector3(1,1,1))
-    {}
+    {   mComponentName = "TransformComponent"; }
 
-    CTransform(sol::table luaT) : CTransform() {
+    void FromLua(sol::table luaT) override {
         sol::table t = luaT.get<sol::table>("position");
         if (t.valid()) mPosition = Vector3(t);
         

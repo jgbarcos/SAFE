@@ -12,6 +12,10 @@
 
 namespace safe {
 
+/**
+ * Updates Box2D Engine and propagates its changes through CTransform components.
+ * @param scale Box2D to pixel size ratio.
+ */
 class SPhysics : public System
 {
     public:

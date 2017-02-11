@@ -3,6 +3,7 @@
 
 #include "SAFE/Input.h"
 #include "SAFE/Vector2.h"
+#include "Component.h"
 
 #include <iostream>
 
@@ -11,9 +12,9 @@ namespace safe {
 class CPlayerControls : public Component {
 public:
     CPlayerControls()
-    {}
+    {   mComponentName = "PlayerControlsComponent"; }
     
-    CPlayerControls(sol::table luaT) : CPlayerControls() {
+    void FromLua(sol::table luaT) override {
         mKeyMoveUp = Input::KeyFromName( luaT.get<std::string>("up") );
         mKeyMoveDown = Input::KeyFromName( luaT.get<std::string>("down") );
         mKeyMoveLeft = Input::KeyFromName( luaT.get<std::string>("left") );

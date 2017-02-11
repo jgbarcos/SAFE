@@ -7,6 +7,9 @@
 
 namespace safe {
 
+/**
+ * Updates and gives access to the input current state. Updated at Game loop.
+ */
 class Input
 {
     public:

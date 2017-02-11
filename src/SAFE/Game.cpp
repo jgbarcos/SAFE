@@ -16,19 +16,21 @@
 // SAFE ECS
 #include "SAFE/CCollider.h"
 #include "SAFE/CPlayerControls.h"
-#include "SAFE/CSprite.h"
 #include "SAFE/CSheetAnimation.h"
+#include "SAFE/CSprite.h"
 #include "SAFE/CTransform.h"
-#include "SAFE/EntityEngine.h"
 #include "SAFE/Entity.h"
-#include "SAFE/SRender.h"
+#include "SAFE/EntityEngine.h"
 #include "SAFE/SPhysics.h"
 #include "SAFE/SPlayerMovement.h"
+#include "SAFE/SPlayerMovement.h"
+#include "SAFE/SRender.h"
 #include "SAFE/SSpriteSheetAnimator.h"
 
 // GAME
-#include "SAFE/SPlayerMovement.h"
-
+#include "CCharacterData.h"
+#include "CDraggable.h"
+#include "SUnitMover.h"
 
 namespace safe {
 
@@ -42,10 +44,16 @@ Game::Game(int screenWidth, int screenHeight, SDL_Window* pWindow, SDL_Renderer*
 
 void Game::Start(){
     SDL_Event event;
-
+    
     // Delta time calculation variables
     Uint32 old_time, current_time;
     old_time = SDL_GetTicks();
+    
+    /*
+     * Lua configuration file
+     */
+    sol::table luaConf = mLua.script_file("./lua/configuration.lua");
+
 
     TextureManager textureManager;
 
@@ -61,24 +69,33 @@ void Game::Start(){
      */
     EntityEngine engine;
     
+    
+    // Define Systems
     auto pRender = new SRender(&textureManager, &camera);
-    pRender->dRenderPhysics = true;
+    pRender->dRenderPhysics = luaConf.get_or("render_physics", false);
+    pRender->dRenderSpriteRect = luaConf.get_or("render_sprite_rect", false);
     
     engine.AddSystem(std::unique_ptr<System>( new SPlayerMovement() ));
     engine.AddSystem(std::unique_ptr<System>( new SSpriteSheetAnimator() ));
+    engine.AddSystem(std::unique_ptr<System>( new SUnitMover() ));
     engine.AddSystem(std::unique_ptr<System>( new SPhysics(10.0) ));
     engine.AddSystem(std::unique_ptr<System>( pRender ));
     
+    // Define Components
+    engine.AddComponentCreator<CCollider>();
+    engine.AddComponentCreator<CPlayerControls>();
+    engine.AddComponentCreator<CSheetAnimation>();
+    engine.AddComponentCreator<CSprite>();
+    engine.AddComponentCreator<CTransform>();
+    engine.AddComponentCreator<CCharacterData>();
+    engine.AddComponentCreator<CDraggable>();
     
     /*
-     * Entities and Components
+     * Lua entity scripts
      */    
     mLua.script_file("./lua/entities.lua");
     
-    engine.LoadEntity( mLua.get<sol::table>("player") );
-    engine.LoadEntity( mLua.get<sol::table>("enemy") );
-    
-    auto table = mLua.get<sol::table>("map_tiles");
+    auto table = mLua.get<sol::table>("entities");
     if( table.valid() ){
         for(size_t i=0; i<table.size(); i++){
             engine.LoadEntity(  table.get<sol::table>(i+1) );

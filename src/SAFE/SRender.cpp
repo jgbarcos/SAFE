@@ -46,21 +46,38 @@ void SRender::Update(float delta, std::vector<std::unique_ptr<Entity>>& entities
             auto pSprite = e->Get<CSprite>();
             auto pTransform = e->Get<CTransform>();
 
-            auto pTex = pSprite->mpTexture.get();
-            int width = pTex->GetWidth();
-            int height = pTex->GetHeight();
-
             Vector2 scale (pTransform->mScale.x, pTransform->mScale.y);
             float angle = 0;
 
-            // Clip texture
-            Rect clip = pSprite->mClip;
-            Rect pixelclip (clip.mX*width, clip.mY*height, clip.mWidth*width, clip.mHeight*height);
-
-
             Vector2 screenPos = mpCamera->World2Screen(pTransform->mPosition);
 
-            pTex->Render(*mpCamera, screenPos, scale, angle, pSprite->mCenter, pixelclip);
+            pSprite->mpTexture->Render(*mpCamera, screenPos, scale, angle, pSprite->mCenter, pSprite->GetPixelClip());
+        }
+        
+        // Render sprite borders
+        if(dRenderSpriteRect){
+            for(auto&& e:entities){
+                auto pSprite = e->Get<CSprite>();
+                if(!pSprite) continue;
+
+                auto pTransform = e->Get<CTransform>();
+                if(!pTransform) continue;
+
+                Vector3 pos = pTransform->mPosition;
+
+                auto renderer = mpCamera->getSDLRenderer();
+                Vector2 screenPos = mpCamera->World2Screen(pos);
+
+                Rect rect = pSprite->GetLocalRect() + screenPos;
+
+                Color red(155,0,0,255);
+                rectangleColor(renderer, rect.x, rect.y, rect.getU(), rect.getV(), red.toRGBA());
+                
+                Color bright_red(255,0,0,255);
+                pixelColor(renderer, screenPos.x, screenPos.y, bright_red.toRGBA ());
+                
+
+            }
         }
 
 
@@ -99,14 +116,12 @@ void SRender::Update(float delta, std::vector<std::unique_ptr<Entity>>& entities
 }
         
     float SRender::GetDepth(CTransform* pTransform, CSprite* pSprite){
+        Rect clip = pSprite->GetLocalRect() + Vector2::Reduce(pTransform->mPosition);
+        
         float vert = 0.0; // 0.0 is pick the top y
         if(pSprite->mIsVertical) vert = 1.0; // 1.0 pick the bottom y
-        float y = pTransform->mPosition.y;
-        float center = pSprite->mCenter.y;
 
-        float top = y - center * pSprite->mClip.mHeight * pTransform->mScale.y;
-        float height = pSprite->mpTexture->GetHeight() * pSprite->mClip.mHeight * pTransform->mScale.y;
-        return top + height * vert;    
+        return clip.y + clip.height * vert; 
     }
 
   

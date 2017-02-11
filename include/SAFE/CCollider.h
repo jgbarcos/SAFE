@@ -20,9 +20,9 @@ public:
         mAngle(0.0),
         mShape(Shape::CIRCLE),
         mType(Type::DYNAMIC)
-    {}
+    {   mComponentName = "ColliderComponent"; } 
     
-    CCollider(sol::table luaT) : CCollider() {
+    void FromLua(sol::table luaT) override {
         sol::table t = luaT.get<sol::table>("center");
         if (t.valid()) mCenter = Vector2(t);
         

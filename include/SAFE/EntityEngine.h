@@ -4,100 +4,66 @@
 #include <memory>
 #include <vector>
 #include <map>
-#include <iostream>
 
 #include <sol.hpp>
-#include "SAFE/Component.h"
 #include "SAFE/Entity.h"
+#include "SAFE/Component.h"
 #include "SAFE/System.h"
-
-#include "SAFE/CCollider.h"
-#include "SAFE/CPlayerControls.h"
-#include "SAFE/CSheetAnimation.h"
-#include "SAFE/CSprite.h"
-#include "SAFE/CTransform.h"
 
 namespace safe {
 
+/**
+ * Engine of the ECS, updates systems and manages entities and components.
+ */
 class EntityEngine
 {
-    public:        
-        void AddSystem(std::unique_ptr<System> system)
-        {
-            mSystems.push_back(std::move(system));
-        }
+private:
+    typedef std::pair< Component*, std::type_index> ReqData;
+    
+public:        
 
+    /**
+     * Updates all the systems. Update order is based on added order.
+     * @param delta
+     */
+    void Update (float delta);
+    
+    /**
+     * Adds a new System.
+     * @param system (ownership)
+     */
+    void AddSystem(std::unique_ptr<System> system);
 
-        Entity* CreateEntity(){
-            mEntities.push_back(std::unique_ptr<Entity>(new Entity));
-            return mEntities.back().get();
-        }
-        
-        Entity* LoadEntity(sol::table luaT){
-            /* This helps with debugging
-            sol::state_view view(luaT.lua_state());
-            view["sprite"] = luaT.get<sol::object>("SpriteComponent");
-            view["collider"] = luaT.get<sol::object>("ColliderComponent");
-            
-            view.script(R"(
-                function pp(o)
-                    print( '{' )
-                    if type(o) == 'table' then
-                        for k, v in pairs( o ) do
-                            print(k, v)
-                        end
-                    end
-                    print( '}' )
-                end
+    /**
+     * Creates a empty Entity to be filled with Components.
+     */
+    Entity* CreateEntity();
+    
+    /**
+     * Creates a new Entity from the content of a Lua table.
+     * 
+     * A component creator is required for each component. 
+     * @param luaT lua table with the entity components
+     * @return 
+     */
+    Entity* LoadEntity(sol::table luaT);
 
-                pprint = pp
-            )");
-            */
-            
-            mEntities.push_back(std::unique_ptr<Entity>(new Entity));
-            Entity* pEntity = mEntities.back().get();
-            
-            sol::table res = luaT.get<sol::table>("SpriteComponent");
-            if(res.valid()){
-                auto pComp = new CSprite(res);
-                pEntity->Add<CSprite>(std::unique_ptr<Component>(pComp));
-            }
-            
-            res = luaT.get<sol::table>("TransformComponent");
-            if(res.valid()){
-                auto pComp = new CTransform(res);
-                pEntity->Add<CTransform>(std::unique_ptr<Component>(pComp));
-            }
-            
-            res = luaT.get<sol::table>("SheetAnimationComponent");
-            if(res.valid()){
-                auto pComp = new CSheetAnimation(res);
-                pEntity->Add<CSheetAnimation>(std::unique_ptr<Component>(pComp));
-            }
-            
-            res = luaT.get<sol::table>("PlayerControlsComponent");
-            if(res.valid()){
-                auto pComp = new CPlayerControls(res);
-                pEntity->Add<CPlayerControls>(std::unique_ptr<CPlayerControls>(pComp));
-            }
-            
-            res = luaT.get<sol::table>("ColliderComponent");
-            if(res.valid()){
-                auto pComp = new CCollider(res);
-                pEntity->Add<CCollider>(std::unique_ptr<CCollider>(pComp));
-            }
-            
-            return pEntity;
-        }
+    /**
+     * Adds a component creator function. It allows the creation of a component
+     * from a string name.
+     * @tparam T Derived class of Component
+     */
+    template<typename T>
+    void AddComponentCreator(){
+        std::function<ReqData()> f = [&](){
+            return ReqData(new T(), std::type_index(typeid(T)));
+        };
+        mCompCreator[T().mComponentName] = f;
+    }
 
-        void Update (float delta){
-            for(auto&& e : mSystems){
-                e->Update(delta, mEntities);
-            }
-        }
-
-        std::vector<std::unique_ptr<Entity>> mEntities;
-        std::vector<std::unique_ptr<System>> mSystems;
+    std::vector<std::unique_ptr<Entity>> mEntities;
+    std::vector<std::unique_ptr<System>> mSystems;
+    std::unordered_map<std::string, std::function<ReqData()> > mCompCreator;
 
 };
 

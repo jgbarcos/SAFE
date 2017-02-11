@@ -28,6 +28,7 @@ class SRender : public System
         float GetDepth(CTransform* pTransform, CSprite* pSprite);
         
         bool dRenderPhysics = false;
+        bool dRenderSpriteRect = false;
 
     private:
         TextureManager* mpTextureManager;
