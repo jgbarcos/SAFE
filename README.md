@@ -18,6 +18,7 @@ It requires the following libraries to be installed:
  - SDL2_gfx
  - Box2D
  - Lua5.2 (it would probably also work with Lua5.1)
+ - [Sol2](https://github.com/ThePhD/sol2) (already provided with a single header file at /include/sol.hpp)
  
 Download [this folder](https://www.dropbox.com/sh/7dvd05e6xlt1t14/AABFb1CHoQ_S2wz9L4k3wsyMa?dl=0) into the project folder. It contains some graphic assets.
 
@@ -36,4 +37,9 @@ Generate documentation files with Doxygen:
 ```
 doxygen Doxyfile
 ```
+
+### Acknowledgments
+ 
+- [Lazy Foo's SDL tutorials](http://lazyfoo.net/SDL_tutorials/)
+- [Elias Daler's insights on ECS and Lua scripting within C++](https://eliasdaler.github.io/)
  
