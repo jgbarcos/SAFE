@@ -68,15 +68,16 @@ void SRender::Update(float delta, std::vector<std::unique_ptr<Entity>>& entities
                 auto renderer = mpCamera->getSDLRenderer();
                 Vector2 screenPos = mpCamera->World2Screen(pos);
 
-                Rect rect = pSprite->GetLocalRect() + screenPos;
+                Rect rect = pSprite->GetLocalRect(Vector2::Reduce(pTransform->mScale));
+                
+                Vector2 init = mpCamera->World2Screen(pos + Vector3(rect.x, rect.y, 0));
+                Vector2 end = mpCamera->World2Screen(pos + Vector3( rect.getU(), rect.getV(), 0 ));
 
                 Color red(155,0,0,255);
-                rectangleColor(renderer, rect.x, rect.y, rect.getU(), rect.getV(), red.toRGBA());
+                rectangleColor(renderer, init.x, init.y, end.x, end.y, red.toRGBA());
                 
                 Color bright_red(255,0,0,255);
                 pixelColor(renderer, screenPos.x, screenPos.y, bright_red.toRGBA ());
-                
-
             }
         }
 

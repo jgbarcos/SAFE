@@ -1,15 +1,14 @@
 #ifndef SVECTOR3_H
 #define SVECTOR3_H
+#include "SAFE/Vector3.h"
 
 #include <ostream>
 #include <stdexcept>
 
 #include <sol.hpp>
 
-#include "SAFE/Vector3.h"
-
 namespace safe {
-
+    
 class Vector3
 {
     public:
@@ -24,14 +23,32 @@ class Vector3
         };
         
         Vector3(sol::table luaT){
-            x = luaT.get_or("x", 0);
-            y = luaT.get_or("y", 0);
-            z = luaT.get_or("z", 0);
+            x = luaT.get_or("x", 0.0);
+            y = luaT.get_or("y", 0.0);
+            z = luaT.get_or("z", 0.0);
         }
 
         Vector3 operator + (const Vector3& rh) const {
             return Vector3(x+rh.x, y+rh.y, z+rh.z);
         }
+        Vector3 operator - (const Vector3& rh) const {
+            return Vector3(x-rh.x, y-rh.y, z-rh.z);
+        }
+        
+        Vector3 operator * (const Vector3& rh) const {
+            return Vector3(x*rh.x, y*rh.y, z*rh.z);
+        }
+        Vector3 operator / (const Vector3& rh) const {
+            return Vector3(x/rh.x, y/rh.y, z/rh.z);
+        }
+        
+        Vector3 operator * (const float v) const {
+            return Vector3(x*v, y*v, z*v);
+        }
+        Vector3 operator / (const float v) const {
+            return Vector3(x/v, y/v, z/v);
+        }
+        
         Vector3& operator += (const Vector3 rh){
             x += rh.x;
             y += rh.y;
@@ -39,23 +56,27 @@ class Vector3
             return *this;
         }
         
-        Vector3 operator * (const float v) const {
-            return Vector3(x*v, y*v, z*v);
+        Vector3 normalize() const{
+            return Vector3(x,y,z)/length();
         }
-
-        double get(int index) const {
-            if(index == 0) return x;
-            else if(index == 1) return y;
-            else if(index == 2) return z;
-            else throw std::out_of_range ("SVector3 only accepts indices: 0 (x), 1 (y) and 2 (z)");
+        
+        double length() const {
+            return sqrt(x*x+y*y+z*z);
         }
-        double getX() const { return x; }
-        double getY() const { return y; }
-        double getZ() const { return z; }
 
         double x;
         double y;
         double z;
+        
+        double getX() const { return x; }
+        double getY() const { return y; }
+        double getZ() const { return z; }
+        double get(int index) const {
+            if(index == 0) return x;
+            else if(index == 1) return y;
+            else if(index == 2) return z;
+            else throw std::out_of_range ("Vector3 only accepts indices: 0 (x), 1 (y) and 2 (z)");
+        }
 };
 
 } // namespace safe

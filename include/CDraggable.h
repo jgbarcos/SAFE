@@ -9,7 +9,9 @@ class CDraggable : public Component
 {
 public:
     CDraggable() :
-        mIsDraggable(true)
+        mIsDraggable(true),
+        mBeingDragged(false),
+        mPreviouslyDragged(false)
     {   mComponentName = "DraggableComponent"; }    
     
     void FromLua(sol::table luaT) override {
@@ -18,6 +20,10 @@ public:
     
     // Optional
     bool mIsDraggable;
+    
+    // Generated
+    bool mBeingDragged;
+    bool mPreviouslyDragged;
     
     
 };

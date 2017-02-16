@@ -17,10 +17,10 @@ class Rect
         Rect(double x, double y, double w, double h)
             : x(x), y(y), width(w), height(h) {}
         Rect(const Vector2& a, const Vector2& b){
-            x = std::min(a.get(0), b.get(0));
-            y = std::min(a.get(1), b.get(1));
-            width = std::max(a.get(0), b.get(0)) - x;
-            height = std::max(a.get(1), b.get(1)) - y;
+            x = a.x;
+            y = a.y;
+            width = b.x - a.x;
+            height = b.y - a.y;
         }
         
         Rect(sol::table luaT){
@@ -36,9 +36,12 @@ class Rect
         Rect operator - (const Vector2& t) const {
             return Rect(x-t.x, y-t.y, width, height);
         }
-        bool IsInside(Vector2& v){
-            return v.x > x && v.x < getU()
-                    && v.y > y && v.y < getV();
+        bool Contains(Vector2 vector){
+            double u = getU();
+            double v = getV();
+            
+            return ( (x < vector.x && vector.x < u) || (u < vector.x && vector.x < x) )
+                && ( (y < vector.y && vector.y < v) || (v < vector.y && vector.y < y) );           
         }
 
         double getX() const { return x; }
@@ -47,6 +50,8 @@ class Rect
         double getV() const { return y + height; }
         double getWidth() const { return width; }
         double getHeight() const { return height; }
+        Vector2 getInit() const { return Vector2(x,y); }
+        Vector2 getEnd() const { return Vector2(getU(), getV()); }
 
         double x; // min x
         double y; // min y

@@ -10,7 +10,6 @@
 // SAFE
 #include "SAFE/TextureManager.h"
 #include "SAFE/Texture.h"
-#include "SAFE/Tile.h"
 #include "SAFE/Input.h"
 
 // SAFE ECS
@@ -21,6 +20,7 @@
 #include "SAFE/CTransform.h"
 #include "SAFE/Entity.h"
 #include "SAFE/EntityEngine.h"
+#include "SAFE/SCameraMovement.h"
 #include "SAFE/SPhysics.h"
 #include "SAFE/SPlayerMovement.h"
 #include "SAFE/SPlayerMovement.h"
@@ -30,7 +30,11 @@
 // GAME
 #include "CCharacterData.h"
 #include "CDraggable.h"
-#include "SUnitMover.h"
+#include "SDragMovement.h"
+
+#include "CGridTile.h"
+#include "SGridMovement.h"
+#include "TileMap.h"
 
 namespace safe {
 
@@ -61,8 +65,13 @@ void Game::Start(){
     if(font == nullptr){
         printf( "Unable to load TTF font! SDL Error: %s\n", TTF_GetError() );
     }
-
-    Camera camera = Camera(mpRenderer);
+    
+    int w = 0;
+    int h = 0;
+    SDL_GetWindowSize(mpWindow,&w, &h);
+    Camera camera = Camera(mpRenderer, w, h);
+    
+    TileMap tileMap = TileMap(camera.Screen2World(Vector2(30,30)), 11, 6, 50, 50);
 
     /*
      * Entity-Component-System Configuration
@@ -76,10 +85,14 @@ void Game::Start(){
     pRender->dRenderSpriteRect = luaConf.get_or("render_sprite_rect", false);
     
     engine.AddSystem(std::unique_ptr<System>( new SPlayerMovement() ));
-    engine.AddSystem(std::unique_ptr<System>( new SSpriteSheetAnimator() ));
-    engine.AddSystem(std::unique_ptr<System>( new SUnitMover() ));
+    engine.AddSystem(std::unique_ptr<System>( new SDragMovement(&camera) ));
+    engine.AddSystem(std::unique_ptr<System>( new SGridMovement(&tileMap) ));  
+   
     engine.AddSystem(std::unique_ptr<System>( new SPhysics(10.0) ));
+    
+    engine.AddSystem(std::unique_ptr<System>( new SSpriteSheetAnimator() ));
     engine.AddSystem(std::unique_ptr<System>( pRender ));
+    engine.AddSystem(std::unique_ptr<System>( new SCameraMovement(&camera) ));  
     
     // Define Components
     engine.AddComponentCreator<CCollider>();
@@ -87,8 +100,11 @@ void Game::Start(){
     engine.AddComponentCreator<CSheetAnimation>();
     engine.AddComponentCreator<CSprite>();
     engine.AddComponentCreator<CTransform>();
+    
     engine.AddComponentCreator<CCharacterData>();
     engine.AddComponentCreator<CDraggable>();
+    engine.AddComponentCreator<CGridTile>();
+    engine.AddComponentCreator<CGridUnit>();
     
     /*
      * Lua entity scripts
@@ -117,7 +133,7 @@ void Game::Start(){
     	 */
         Input::UpdateInput();
 
-        while(SDL_PollEvent(&event) != 0)
+        while(SDL_PollEvent(&event))
         {
             // On window close or esc key, quit application
             if(event.type == SDL_QUIT
@@ -125,6 +141,8 @@ void Game::Start(){
             {
                 quit = true;
             }
+            
+            Input::ProcessEvent(&event);
         }
 
         /*

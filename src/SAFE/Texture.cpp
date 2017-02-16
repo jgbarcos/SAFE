@@ -5,7 +5,11 @@ namespace safe {
 SDL_Renderer* Texture::spDefaultRenderer = nullptr;
 
 void Texture::Render(const Camera& camera, const Vector2& screenPos, const Vector2& scale, float angle, const Vector2& center, const Rect& clip){
-
+  
+    Vector2 global_scale = scale;
+    global_scale.x = global_scale.x * camera.mTransform.mScale.x;
+    global_scale.y = global_scale.y * camera.mTransform.mScale.y;
+    
     SDL_Rect sdl_clip;
     sdl_clip.x = clip.getX();
     sdl_clip.y = clip.getY();
@@ -20,14 +24,14 @@ void Texture::Render(const Camera& camera, const Vector2& screenPos, const Vecto
     }
 
     SDL_Point sdl_center;
-    sdl_center.x = center.x * sdl_clip.w * scale.x;
-    sdl_center.y = center.y * sdl_clip.h * scale.y;
+    sdl_center.x = center.x * sdl_clip.w * global_scale.x;
+    sdl_center.y = center.y * sdl_clip.h * global_scale.y;
 
     int x = screenPos.getX() - sdl_center.x;
     int y = screenPos.getY() - sdl_center.y;
 
     RenderSDL(camera.getSDLRenderer(),
-        x, y, scale.getX(), scale.getY(), angle,
+        x, y, global_scale.x, global_scale.y, angle,
         &sdl_clip, &sdl_center, SDL_FLIP_NONE);
 }
     

@@ -2,72 +2,60 @@
 #define TILEMAP_H
 
 #include <vector>
-#include <memory>
+#include <cmath>
 
 #include "SAFE/Vector2.h"
 #include "SAFE/Vector3.h"
-#include "SAFE/EntityEngine.h"
-#include "SAFE/Entity.h"
-#include "SAFE/Tile.h"
 
 namespace safe {
 
 class TileMap
 {
 
-    public:
-        TileMap(EntityEngine* engine, Vector3 origin, int width, int height, int tileWidth, int tileHeight)
-                : mpEngine(engine), mOrigin(origin), 
-                mWidth(width), mHeight(height),
-                mTileWidth(tileWidth), mTileHeight(tileHeight)
-                {}
+public:
+    TileMap(Vector3 origin, int cols, int rows, int tileWidth, int tileHeight)
+            : mOrigin(origin), 
+            mCols(cols), mRows(rows),
+            mTileWidth(tileWidth), mTileHeight(tileHeight)
+            {}
 
+    bool CheckBounds(Vector3 pos){
+        Vector2 i = World2Map(pos);
+        return CheckBounds(i.x, i.y);
+    }
 
-        Tile* GetTile(Vector2 pos){
-            Vector2 i = World2Map(pos);
-            return GetTile(i.x, i.y);
-        }
+    bool CheckBounds(int x, int y){
+        return  x >= 0 && x < mCols && y >= 0 && y < mRows;
+    }
+    
+    Vector3 SnapToMap(Vector3 pos){
+        return Map2World(World2Map(pos));
+    }
 
-        Tile* GetTile(int x, int y){
-            if ( CheckBounds(x,y) ){
-                return nullptr;
-            }
-            else{
-                return mTiles[IndexOf(x,y)].get();
-            }
-        }
+    Vector2 World2Map(Vector3 pos){
+        Vector3 local = pos - mOrigin;
+        
+        local.x = round(local.x / (float)mTileWidth);
+        local.y = round(local.y / (float)mTileHeight);
 
-        bool CheckBounds(Vector2 pos){
-            Vector2 i = World2Map(pos);
-            return CheckBounds(i.x, i.y);
-        }
+        return Vector2::Reduce(local);
+    }
+    
+    Vector3 Map2World(Vector2 pos){        
+        return Map2World(pos.x, pos.y);
+    }
+    
+    Vector3 Map2World(int x, int y){
+        return mOrigin + Vector3(x*mTileWidth, y*mTileHeight,0);
+    }
+    
 
-        bool CheckBounds(int x, int y){
-            return  x >= 0 && x < mWidth && y >= 0 && y < mHeight;
-        }
-
-    private:
-        EntityEngine* mpEngine;
-        Vector3 mOrigin;
-        std::vector< std::unique_ptr< Tile > > mTiles;
-        int mWidth;
-        int mHeight;
-        int mTileWidth;
-        int mTileHeight;
-
-        Vector2 World2Map(Vector2 pos){
-            float rx = pos.x - mOrigin.x;
-            float ry = pos.y - mOrigin.y;
-
-            rx /= mTileWidth;
-            ry /= mTileHeight;
-
-            return Vector2(rx, ry);
-        }
-
-        int IndexOf (int x, int y){
-            return y*mWidth + x;
-        }
+private:
+    Vector3 mOrigin;
+    int mCols;
+    int mRows;
+    int mTileWidth;
+    int mTileHeight;
 
 
 };

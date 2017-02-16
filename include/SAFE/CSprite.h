@@ -39,8 +39,10 @@ public:
     }
 
     // Returns the Size of the sprite with clipping applied in local coordinates (no zoom involved)
-    Rect GetLocalRect(){
+    Rect GetLocalRect(Vector2 scale = Vector2(1,1)){
         Rect pclip = GetPixelClip();
+        pclip.width *= scale.x;
+        pclip.height *= scale.y;
         return Rect(-pclip.width*mCenter.x, -pclip.height*mCenter.y, pclip.width, pclip.height);
     }
 

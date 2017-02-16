@@ -28,11 +28,18 @@ class Vector2
             y = luaT.get_or("y", 0.0);
         }
 
-        Vector2 operator + (const Vector2& t) const {
-            return Vector2(x+t.x, y+t.y);
+        Vector2 operator + (const Vector2& rh) const {
+            return Vector2(x+rh.x, y+rh.y);
         }
-        Vector2 operator - (const Vector2& t) const {
-            return Vector2(x-t.x, y-t.y);
+        Vector2 operator - (const Vector2& rh) const {
+            return Vector2(x-rh.x, y-rh.y);
+        }
+        
+        Vector2 operator * (const Vector2& rh) const {
+            return Vector2(x*rh.x, y*rh.y);
+        }
+        Vector2 operator / (const Vector2& rh) const {
+            return Vector2(x/rh.x, y/rh.y);
         }
         
         Vector2 operator * (const float v) const {
@@ -41,6 +48,8 @@ class Vector2
         Vector2 operator / (const float v) const {
             return Vector2(x/v, y/v);
         }
+        
+        
         
         void normalize(){
             float l = length();
@@ -68,15 +77,18 @@ class Vector2
             else throw std::out_of_range ("SVector2 only accepts indices: 0 (x) and 1 (y)");
         }
         
+        // TODO: consider moving these methods to a "utils" class
         static Vector2 Reduce(const Vector3& v, int dim = 2 ){
-            Vector2 out;
-            int i = 0;
-            while(i==dim) i+=1;
-            out.x = v.get(i);
-            i+=1;
-            while(i==dim) i+=1;
-            out.y = v.get(i);            
-            return out;
+            if(dim==0)      return Vector2(v.get(1), v.get(2));
+            else if(dim==1) return Vector2(v.get(0), v.get(2));
+            else if(dim==2) return Vector2(v.get(0), v.get(1));
+            else throw std::out_of_range ("Vector2 can only be reduced from Vector3 with dims 0, 1 or 2");
+        }      
+        static Vector3 Extend(const Vector2& v, double dimval=0.0, int dim = 2 ){
+            if(dim == 0)      return Vector3(dimval,   v.get(0), v.get(1));
+            else if(dim == 1) return Vector3(v.get(0), dimval,   v.get(1));
+            else if(dim == 2) return Vector3(v.get(0), v.get(1), dimval);
+            else throw std::out_of_range ("Vector2 can only be extended to Vector3 with dims 0, 1 or 2");
         }
 };
 

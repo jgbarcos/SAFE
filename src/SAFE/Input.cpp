@@ -17,6 +17,8 @@ Uint32 Input::sPrevMouseState;
 int Input::sMouseX;
 int Input::sMouseY;
 
+int Input::sMouseWheelY;
+
 bool Input::IsDown(Uint8 key)
 {
     return spKeyboard[key];
@@ -47,6 +49,13 @@ int Input::GetMouseX(){
 int Input::GetMouseY() {
     return sMouseY;
 }
+Vector2 Input::GetMousePos(){
+    return Vector2(sMouseX, sMouseY);
+}
+int Input::GetMouseWheel() {
+    return sMouseWheelY;
+}
+
 bool Input::IsMouseDown(int button){
     return sMouseState & SDL_BUTTON(button);
 }
@@ -76,6 +85,15 @@ void Input::UpdateInput()
     
     sPrevMouseState = sMouseState;
     sMouseState = SDL_GetMouseState (&sMouseX, &sMouseY);
+    
+    sMouseWheelY = 0;
+}
+
+
+void Input::ProcessEvent(SDL_Event* event){
+    if( event->type == SDL_MOUSEWHEEL){
+        sMouseWheelY = event->wheel.y;
+    }
 }
 
 } // namespace safe
