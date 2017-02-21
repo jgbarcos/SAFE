@@ -3,8 +3,6 @@
 
 #include <memory>
 
-#include <SDL2_gfxPrimitives.h>
-
 #include "SAFE/CSprite.h"
 #include "SAFE/CTransform.h"
 #include "SAFE/Camera.h"
@@ -17,22 +15,22 @@ namespace safe {
 
 class SRender : public System
 {
-    public:
-        SRender(TextureManager* textureMgr, Camera* camera) :
-            mpTextureManager(textureMgr),
-            mpCamera(camera)
-        {}
+public:
+    SRender(TextureManager* textureMgr, Camera* camera) :
+        mpTextureManager(textureMgr),
+        mpCamera(camera)
+    {}
 
-        void Update(float delta, std::vector<std::unique_ptr<Entity>>& entities) override;
-        
-        float GetDepth(CTransform* pTransform, CSprite* pSprite);
-        
-        bool dRenderPhysics = false;
-        bool dRenderSpriteRect = false;
+    void Update(float delta, std::vector<Entity*>& entities) override;
 
-    private:
-        TextureManager* mpTextureManager;
-        Camera* mpCamera;
+    float GetDepth(CTransform* pTransform, CSprite* pSprite);
+
+    bool dRenderPhysics = false;
+    bool dRenderSpriteRect = false;
+
+private:
+    TextureManager* mpTextureManager;
+    Camera* mpCamera;
 };
 
 } // namespace safe

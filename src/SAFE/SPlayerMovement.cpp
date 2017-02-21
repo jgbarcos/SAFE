@@ -7,7 +7,7 @@
 
 namespace safe{
 
-void SPlayerMovement::Update(float delta, std::vector<std::unique_ptr<Entity>>&entities) {
+void SPlayerMovement::Update(float delta, std::vector<Entity*>& entities) {
     for (auto&& e : entities) {
         // Preconditions
         auto pControls = e->Get<CPlayerControls>();

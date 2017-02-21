@@ -18,7 +18,7 @@ class SDragMovement : public System {
 public:    
     SDragMovement(Camera* camera) : mpCamera(camera) {}
     
-    void Update(float delta, std::vector<std::unique_ptr<Entity>>& entities) override{
+    void Update(float delta, std::vector<Entity*>& entities) override {
         for (auto&& e : entities){
             auto pDraggable = e->Get<CDraggable>();
             if(pDraggable){
@@ -28,10 +28,10 @@ public:
         
         // Release mouse, release entity
         if(Input::IsMouseReleased(1)){
-            if(mEntityDragged){
-                mEntityDragged->Get<CDraggable>()->mBeingDragged = false;
+            if(mpEntityDragged){
+                mpEntityDragged->Get<CDraggable>()->mBeingDragged = false;
             }
-            mEntityDragged = nullptr;
+            mpEntityDragged = nullptr;
         }
         
         // Pressing mouse, try to pick entity
@@ -56,7 +56,7 @@ public:
                 Vector3 mouse = mpCamera->Screen2World(Input::GetMousePos());
                 
                 if(pDraggable->mIsDraggable && area.Contains( Vector2::Reduce(mouse) )){
-                    mEntityDragged = e.get();
+                    mpEntityDragged = e;
                     mMouseDisplacement = mouse-pos;
                 }
             }
@@ -64,21 +64,21 @@ public:
         }
                 
         // Entity being dragged with mouse
-        if(mEntityDragged != nullptr){
-            auto pTransform = mEntityDragged->Get<CTransform>();
+        if(mpEntityDragged != nullptr){
+            auto pTransform = mpEntityDragged->Get<CTransform>();
             
             double z = pTransform->mPosition.z; // conserve z
             pTransform->mPosition = mpCamera->Screen2World(Input::GetMousePos())-mMouseDisplacement;
             pTransform->mPosition.z = z;
             
-            auto pDraggable = mEntityDragged->Get<CDraggable>();
+            auto pDraggable = mpEntityDragged->Get<CDraggable>();
             pDraggable->mBeingDragged = true;
         }        
     }    
     
 private:
     Camera* mpCamera = nullptr;
-    Entity* mEntityDragged = nullptr;
+    Entity* mpEntityDragged = nullptr;
     Vector3 mMouseDisplacement;
     int mDragSize = 5;
 };

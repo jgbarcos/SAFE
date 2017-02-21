@@ -2,6 +2,8 @@
 
 #include <queue>
 
+#include <SDL2/SDL2_gfxPrimitives.h>
+
 #include "SAFE/CCollider.h"
 
 namespace safe{
@@ -15,7 +17,7 @@ struct DepthOrder
     }
 };
 
-void SRender::Update(float delta, std::vector<std::unique_ptr<Entity>>& entities) {
+void SRender::Update(float delta, std::vector<Entity*>& entities) {
     if(mpTextureManager && mpCamera){
         std::priority_queue<Depth, std::vector<Depth>, DepthOrder > renderOrder;
 
@@ -35,7 +37,9 @@ void SRender::Update(float delta, std::vector<std::unique_ptr<Entity>>& entities
             }
 
             // Sort by depth
-            renderOrder.push(Depth(GetDepth(pTransform, pSprite), e.get()));
+            if(pSprite->mRender){
+                renderOrder.push(Depth(GetDepth(pTransform, pSprite), e));
+            }
         }
 
         // Render accordingly to depth
@@ -122,7 +126,7 @@ void SRender::Update(float delta, std::vector<std::unique_ptr<Entity>>& entities
         float vert = 0.0; // 0.0 is pick the top y
         if(pSprite->mIsVertical) vert = 1.0; // 1.0 pick the bottom y
 
-        return clip.y + clip.height * vert; 
+        return clip.y + clip.height * pTransform->mScale.y * vert; 
     }
 
   

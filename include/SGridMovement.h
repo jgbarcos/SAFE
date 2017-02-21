@@ -14,7 +14,15 @@ class SGridMovement : public System
 public:
     SGridMovement(TileMap* t):mpTileMap(t){}
     
-    void Update(float delta, std::vector<std::unique_ptr<Entity> >& entities) override{
+    void Init(std::vector<Entity*>& entities) override {
+        // Get cursor 
+        auto e =  mpEntityEngine->GetEntity("Cursor");
+        if(e != nullptr && e->Get<CTransform>()){
+            mpCursor = e;
+
+        }
+        
+        // Set tiles
         for(auto&& e : entities){
             auto pTile = e->Get<CGridTile>();
             if(!pTile) continue;
@@ -25,6 +33,12 @@ public:
                 e->Add<CTransform>(std::unique_ptr<Component>(pTransform) );
             }
             pTransform->mPosition = mpTileMap->Map2World(pTile->mX, pTile->mY);
+        }
+    }
+    
+    void Update(float delta, std::vector<Entity*>& entities) override {  
+        if(mpCursor != nullptr){
+            mpCursor->Get<CSprite>()->mRender = false;
         }
         
         for(auto&& e : entities){
@@ -63,12 +77,18 @@ public:
                 }
             
             }
-           
+            
+            if(mpCursor != nullptr && pDraggable && pDraggable->mBeingDragged){
+                mpCursor->Get<CTransform>()->mPosition = mpTileMap->SnapToMap(pTransform->mPosition);
+                mpCursor->Get<CSprite>()->mRender = true;
+            }
         }
     }
     
 private:
     TileMap* mpTileMap;
+    
+    Entity* mpCursor = nullptr;
     
 };
 

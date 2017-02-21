@@ -18,18 +18,18 @@ namespace safe {
  */
 class SPhysics : public System
 {
-    public:
-        SPhysics(float scale) :
-            mPixelsPerMeter(scale),
-            mWorld(b2Vec2(0.0f,0.0f))
-        {}
+public:
+    SPhysics(float scale) :
+        mPixelsPerMeter(scale),
+        mWorld(b2Vec2(0.0f,0.0f))
+    {}
         
-        void Update(float delta, std::vector<std::unique_ptr<Entity>>& entities) override;
-        
-        void AddCollider(CCollider* pCollider, CTransform* pTransform);
-        
-        float mPixelsPerMeter; // Pixels per 1 meter
-        b2World mWorld;
+    void Update(float delta, std::vector<Entity*>& entities) override;
+
+    void AddCollider(CCollider* pCollider, CTransform* pTransform);
+
+    float mPixelsPerMeter; // Pixels per 1 meter
+    b2World mWorld;
 
 };
 

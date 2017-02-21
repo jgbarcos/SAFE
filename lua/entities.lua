@@ -1,6 +1,6 @@
 require("lua.sprite_data")
 
-entities = {}
+local entities = {}
 
 -- Create tile entities for the TileMap
 for i=0,10 do
@@ -17,6 +17,16 @@ for i=0,10 do
     end
 end 
 
+entities[#entities+1] = {
+    EntityName = "Cursor",
+    SpriteComponent = { 
+        filename = "assets/Cursor.png", 
+        center = {x=0.5, y=0.5},
+    },
+    TransformComponent = {
+        scale = { x=2, y=2, z=1 }
+    }
+}
 
 -- Create Entities as Game units
 local sprites = {"assets/Jackal.png", "assets/Jackal2.png","assets/Vector.png", 
@@ -58,6 +68,12 @@ for i, sprite in ipairs(sprites) do
             base_movement = 2
         }
     }
+end
+
+
+for i, e in ipairs(entities) do
+    safe.create_entity(e)
+
 end
     
 
@@ -124,6 +140,7 @@ local player = {
 
 entities[#entities+1] = player
 entities[#entities+1] = enemy
+
 --]]--
 
 --[[

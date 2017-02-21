@@ -58,7 +58,7 @@ void Game::Start(){
      */
     sol::table luaConf = mLua.script_file("./lua/configuration.lua");
 
-
+    
     TextureManager textureManager;
 
     TTF_Font* font = TTF_OpenFont("assets/fonts/Roboto_Condensed/Regular.ttf", 20);
@@ -78,21 +78,23 @@ void Game::Start(){
      */
     EntityEngine engine;
     
-    
+    sol::table luaSafe = mLua.create_named_table("safe"); // set safe lua "namespace"
+    luaSafe.set_function("create_entity", &EntityEngine::LoadEntity, &engine);
+
     // Define Systems
     auto pRender = new SRender(&textureManager, &camera);
     pRender->dRenderPhysics = luaConf.get_or("render_physics", false);
     pRender->dRenderSpriteRect = luaConf.get_or("render_sprite_rect", false);
     
-    engine.AddSystem(std::unique_ptr<System>( new SPlayerMovement() ));
-    engine.AddSystem(std::unique_ptr<System>( new SDragMovement(&camera) ));
-    engine.AddSystem(std::unique_ptr<System>( new SGridMovement(&tileMap) ));  
+    engine.RegisterSystem(std::unique_ptr<System>( new SPlayerMovement() ));
+    engine.RegisterSystem(std::unique_ptr<System>( new SDragMovement(&camera) ));
+    engine.RegisterSystem(std::unique_ptr<System>( new SGridMovement(&tileMap) ));  
    
-    engine.AddSystem(std::unique_ptr<System>( new SPhysics(10.0) ));
+    engine.RegisterSystem(std::unique_ptr<System>( new SPhysics(10.0) ));
     
-    engine.AddSystem(std::unique_ptr<System>( new SSpriteSheetAnimator() ));
-    engine.AddSystem(std::unique_ptr<System>( pRender ));
-    engine.AddSystem(std::unique_ptr<System>( new SCameraMovement(&camera) ));  
+    engine.RegisterSystem(std::unique_ptr<System>( new SSpriteSheetAnimator() ));
+    engine.RegisterSystem(std::unique_ptr<System>( pRender ));
+    engine.RegisterSystem(std::unique_ptr<System>( new SCameraMovement(&camera) ));  
     
     // Define Components
     engine.AddComponentCreator<CCollider>();
@@ -104,27 +106,25 @@ void Game::Start(){
     engine.AddComponentCreator<CCharacterData>();
     engine.AddComponentCreator<CDraggable>();
     engine.AddComponentCreator<CGridTile>();
-    engine.AddComponentCreator<CGridUnit>();
-    
+    engine.AddComponentCreator<CGridUnit>();    
+        
     /*
      * Lua entity scripts
-     */    
-    mLua.script_file("./lua/entities.lua");
-    
-    auto table = mLua.get<sol::table>("entities");
-    if( table.valid() ){
-        for(size_t i=0; i<table.size(); i++){
-            engine.LoadEntity(  table.get<sol::table>(i+1) );
-        }
+     */     
+    try{
+        mLua.script_file("./lua/entities.lua");
+    } catch (sol::error& e){
+        std::cout << e.what() << std::endl;
     }
-
-
+    
     // Keyboard state
     Input::StartInput();
 
     std::cout << "[GAME] starting..." << std::endl;
 
     // Main loop
+    engine.Init();
+    
     bool quit = false;
     while (!quit)
     {
@@ -140,6 +140,11 @@ void Game::Start(){
                 || (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE))
             {
                 quit = true;
+            }
+            else if(event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_F1){
+                for(auto&& i : engine.mEntities){
+                    std::cout << i.second->GetName() << std::endl; 
+                }
             }
             
             Input::ProcessEvent(&event);

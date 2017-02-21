@@ -2,7 +2,7 @@
 
 namespace safe{
 
-void SPhysics::Update(float delta, std::vector<std::unique_ptr<Entity>>& entities) {
+void SPhysics::Update(float delta, std::vector<Entity*>& entities) {
     // Pre-Physics
     for(auto&& e : entities){
         // Preconditions

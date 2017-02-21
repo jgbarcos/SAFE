@@ -1,26 +1,47 @@
 #include "SAFE/EntityEngine.h"
+#include "SAFE/System.h"
+#include "CCharacterData.h"
 
 namespace safe {
 
+void EntityEngine::Init (){
+    GatherEntities();
+  
+    for(auto&& s : mSystems){
+        s->Init(mVecOfEntities);
+    }
+}
+  
 void EntityEngine::Update (float delta){
-    for(auto&& e : mSystems){
-        e->Update(delta, mEntities);
+    GatherEntities();
+  
+    for(auto&& s : mSystems){
+        s->Update(delta, mVecOfEntities);
     }
 }
 
-void EntityEngine::AddSystem(std::unique_ptr<System> system)
+void EntityEngine::RegisterSystem(std::unique_ptr<System> system)
 {
+    if(mIsInitialized){
+        system->Init(mVecOfEntities);
+    }
+    system->SetEngine(this);
     mSystems.push_back(std::move(system));
 }
 
 Entity* EntityEngine::CreateEntity(){
-    mEntities.push_back(std::unique_ptr<Entity>(new Entity));
-    return mEntities.back().get();
+    EntityID id = GetNextID ();
+    Entity* pEntity = new Entity(id);
+    mEntities[id] = std::unique_ptr<Entity>(pEntity);
+    return pEntity;
 }
 
 Entity* EntityEngine::LoadEntity(sol::table luaT){
-    mEntities.push_back(std::unique_ptr<Entity>(new Entity));
-    Entity* pEntity = mEntities.back().get();
+    EntityID id = GetNextID ();
+    id = luaT.get_or("EntityName", id);
+    
+    Entity* pEntity = new Entity(id);
+    mEntities[id] = std::unique_ptr<Entity>(pEntity);
 
     for(auto&& iter = mCompCreator.begin(); iter != mCompCreator.end(); ++iter)
     {
@@ -33,6 +54,19 @@ Entity* EntityEngine::LoadEntity(sol::table luaT){
     }
 
     return pEntity;
+}
+
+EntityEngine::EntityID EntityEngine::GetNextID (){
+    EntityID unique = std::to_string(mUniqueNumber);
+    mUniqueNumber += 1;
+    return unique;
+}
+
+void EntityEngine::GatherEntities(){
+    mVecOfEntities.clear();
+    for(auto && pair : mEntities){
+        mVecOfEntities.push_back(pair.second.get());
+    }
 }
   
 } // namespace safe

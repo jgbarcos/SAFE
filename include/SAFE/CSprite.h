@@ -27,10 +27,6 @@ public:
         mIsVertical = luaT.get_or<bool>("is_vertical", mIsVertical);
     }
 
-
-
-
-
     // Returns the clip over the texture measured in pixels
     Rect GetPixelClip(){
         int width = mpTexture->GetWidth();
@@ -56,6 +52,7 @@ public:
     Rect mClip;
     bool mIsVertical = true; // true: plane(x,z) like a wall or character
                              // false: plane(x,y) like a floor tile
+    bool mRender = true;
 
     // Generated
     bool mIsLoaded = false;

@@ -8,7 +8,7 @@ namespace safe {
 
 class SPlayerMovement : public System {
 public:    
-    void Update(float delta, std::vector<std::unique_ptr<Entity>>&entities) override;     
+    void Update(float delta, std::vector<Entity*>& entities) override;
 };
 
 } // namespace safe

@@ -15,7 +15,7 @@ class SCameraMovement : public System {
 public:    
     SCameraMovement(Camera* camera) : mpCamera(camera) {}
     
-    void Update(float delta, std::vector<std::unique_ptr<Entity>>&entities) override {
+    void Update(float delta, std::vector<Entity*>& entities) override {
         if(Input::IsMousePressed(SDL_BUTTON_MIDDLE)){
             origMouse = mpCamera->Screen2Camera( Input::GetMousePos() );
             origPos = mpCamera->mTransform.mPosition;
