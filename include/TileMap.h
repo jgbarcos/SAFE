@@ -49,6 +49,9 @@ public:
         return mOrigin + Vector3(x*mTileWidth, y*mTileHeight,0);
     }
     
+    int GetCols(){ return mCols; }
+    int GetRows(){ return mRows; }
+    
 
 private:
     Vector3 mOrigin;

@@ -78,8 +78,9 @@ void Game::Start(){
      */
     EntityEngine engine;
     
-    sol::table luaSafe = mLua.create_named_table("safe"); // set safe lua "namespace"
-    luaSafe.set_function("create_entity", &EntityEngine::LoadEntity, &engine);
+    sol::table luaSafe = mLua.create_named_table("safe"); // set safe namespace in lua
+    luaSafe.set_function("create_entity", &EntityEngine::CreateEntityFromLua, &engine);
+    luaSafe.set_function("create_template", &EntityEngine::RegisterTemplate, &engine);
 
     // Define Systems
     auto pRender = new SRender(&textureManager, &camera);

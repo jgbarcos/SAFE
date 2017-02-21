@@ -2,20 +2,18 @@ require("lua.sprite_data")
 
 local entities = {}
 
--- Create tile entities for the TileMap
-for i=0,10 do
-    for j=0,5 do
-        entities[#entities+1] = {
-            TransformComponent = { scale = {x=2,y=2} },
-            GridTileComponent = { x=i, y=j },
-            SpriteComponent = { 
-                filename = 'assets/floor_tile.png',
-                center = {x=0.5, y=0.5},
-                is_vertical = false
-            }
-        }
-    end
-end 
+
+-- Set tile prototype
+safe.create_template({
+    TemplateName = "Tile",
+    TransformComponent = { scale = {x=2, y=2, z=2} },
+    GridTileComponent = {},
+    SpriteComponent = { 
+        filename = 'assets/floor_tile.png',
+        center = {x=0.5, y=0.5},
+        is_vertical = false
+    }
+})
 
 entities[#entities+1] = {
     EntityName = "Cursor",

@@ -29,31 +29,40 @@ void EntityEngine::RegisterSystem(std::unique_ptr<System> system)
     mSystems.push_back(std::move(system));
 }
 
-Entity* EntityEngine::CreateEntity(){
-    EntityID id = GetNextID ();
-    Entity* pEntity = new Entity(id);
-    mEntities[id] = std::unique_ptr<Entity>(pEntity);
+Entity* EntityEngine::CreateEntity(EntityID id){
+    mEntities[id] = std::make_unique<Entity>(id);
+    return mEntities[id].get();
+}
+
+Entity* EntityEngine::CreateEntityFromLua(sol::table luaT){
+    // Check if field EntityName is provided in the lua table
+    sol::object res = luaT.get<sol::object>("EntityName");
+    EntityID id;
+    if(res.valid() && res.is<EntityID>()){
+        id = res.as<EntityID>();
+    }
+    else{
+        id = GetNextID();
+    }
+    
+    Entity* pEntity = CreateEntity(id);
+
+    FillWithComponents(pEntity, luaT);    
+
     return pEntity;
 }
 
-Entity* EntityEngine::LoadEntity(sol::table luaT){
-    EntityID id = GetNextID ();
-    id = luaT.get_or("EntityName", id);
-    
-    Entity* pEntity = new Entity(id);
-    mEntities[id] = std::unique_ptr<Entity>(pEntity);
-
+void EntityEngine::FillWithComponents(Entity* pEntity, sol::table luaT){
+    // Add components
     for(auto&& iter = mCompCreator.begin(); iter != mCompCreator.end(); ++iter)
     {
         sol::table res = luaT.get<sol::table>(iter->first);
         if(res.valid()){
-            ReqData pair = iter->second();
+            ReqData pair = iter->second(); // call the ComponentCreator function
             pEntity->AddComponent(pair.second, std::unique_ptr<Component>(pair.first) );
             pair.first->FromLua(res);
         }
     }
-
-    return pEntity;
 }
 
 EntityEngine::EntityID EntityEngine::GetNextID (){

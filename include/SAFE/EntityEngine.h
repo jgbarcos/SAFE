@@ -1,12 +1,14 @@
 #ifndef ENTITYENGINE_H
 #define ENTITYENGINE_H
 
-#include <string>
-#include <memory>
-#include <vector>
+#include <iostream>
 #include <map>
+#include <memory>
+#include <string>
+#include <vector>
 
 #include <sol.hpp>
+
 #include "SAFE/Entity.h"
 #include "SAFE/Component.h"
 
@@ -45,22 +47,25 @@ public:
 
     /**
      * Creates a empty Entity to be filled with Components.
+     * 
+     * @return pointer to the created entity or nullptr
      */
-    Entity* CreateEntity();
+    Entity* CreateEntity(EntityID id);
     
     /**
      * Creates a new Entity from the content of a Lua table.
      * 
      * A component creator is required for each component. 
      * @param luaT lua table with the entity components
-     * @return 
+     * @return pointer to the created entity or nullptr
      */
-    Entity* LoadEntity(sol::table luaT);
-    
+    Entity* CreateEntityFromLua(sol::table luaT);
+            
     /**
-     * Returns the entity of 
-     * @param id
-     * @return Entity pointer or nullptr if not found
+     * Get the an Entity by its id.
+     * 
+     * @param id identifier of the entity.
+     * @return Entity pointer or nullptr if not found.
      */
     Entity* GetEntity(EntityID id){
         auto it = mEntities.find(id);
@@ -69,6 +74,72 @@ public:
         }
         return nullptr;
     }
+      
+    
+    /**
+     * Checks if an entity exists.
+     * 
+     * @param id identifier of the entity.
+     * @return true if exists.
+     */
+    bool ExistsEntity(EntityID id){
+        return mEntities.find(id) != mEntities.end();
+    }
+    
+    
+    /**
+     * Registers a template of an entity. It eases the creation of a entity.
+     * @param t lua table with the entity components
+     */
+    void RegisterTemplate(sol::table t){
+        sol::object name = t.get<sol::object>("TemplateName");
+        if(name.valid()){
+            mEntityTemplates[name.as<EntityID>()] = t;
+        }
+        else{
+            std::cout 
+                << "[EntityEngine]" << "RegisterTemplate()"
+                << " FAILED (reason: not a valid TemplateName found)"
+            << std::endl;
+        }
+    }
+    
+    
+    /**
+     * Creates a new Entity from a registered template.
+     * 
+     * @param tmpID identifier of the registered template
+     * @param entID identifier of the new entity
+     * @return pointer to the created entity or nullptr
+     */  
+    Entity* CreateEntityFromTemplate(EntityID tmpID, EntityID entID){
+        if(ExistsTemplate(tmpID)){
+            sol::table t = mEntityTemplates[tmpID];
+            auto pEntity = CreateEntity(entID);
+            
+            FillWithComponents(pEntity, t);
+            return pEntity;
+        }
+        else{
+            std::cout 
+                << "[EntityEngine]" << "ApplyTemplate() with arg " << tmpID
+                << " FAILED (reason: template does not exists)"
+            << std::endl;
+            return nullptr;
+        }
+    }
+
+
+    /**
+     * Checks if a template is registered.
+     * 
+     * @param id identifier of the registered template.
+     * @return true if exists.
+     */
+    bool ExistsTemplate(EntityID id){
+        return mEntityTemplates.find(id) != mEntityTemplates.end();
+    }
+
 
     /**
      * Adds a component creator function. It allows the creation of a component
@@ -82,17 +153,23 @@ public:
         };
         mCompCreator[T().mComponentName] = f;
     }
-
-    std::vector<std::unique_ptr<System>> mSystems;
-    std::unordered_map<EntityID, std::unique_ptr<Entity> > mEntities;
-    std::unordered_map<std::string, std::function<ReqData()> > mCompCreator;
     
-private:
+    
     /**
      * Creates an unique ID for a new entity
      * @return Entity identifier
      */
     EntityID GetNextID();
+
+    std::vector<std::unique_ptr<System>> mSystems;
+    std::unordered_map<EntityID, std::unique_ptr<Entity> > mEntities;
+    std::unordered_map<EntityID, sol::table > mEntityTemplates;
+    std::unordered_map<std::string, std::function<ReqData()> > mCompCreator;
+    
+    
+    
+private:
+    void FillWithComponents(Entity* pEntity, sol::table luaT);
     
     /**
      * Gathers all the active entity pointers into mVecOfEntities

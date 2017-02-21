@@ -6,6 +6,7 @@
 #include "CDraggable.h"
 #include "CGridUnit.h"
 #include "SAFE/CTransform.h"
+#include "CGridTile.h"
 
 using namespace safe;
 
@@ -19,10 +20,35 @@ public:
         auto e =  mpEntityEngine->GetEntity("Cursor");
         if(e != nullptr && e->Get<CTransform>()){
             mpCursor = e;
-
         }
         
         // Set tiles
+        std::string name = "Tile";
+        if(mpEntityEngine->ExistsTemplate(name)){
+        
+            for(int i=0; i<mpTileMap->GetCols(); i++){
+                for(int j=0; j<mpTileMap->GetRows(); j++){
+                    auto e = mpEntityEngine->CreateEntityFromTemplate(name, mpEntityEngine->GetNextID());
+                    
+                    // Set transform
+                    auto pTransform = e->Get<CTransform>();
+                    if(!pTransform){ // Create transform if not provided
+                        pTransform = new CTransform();
+                        e->Add<CTransform>(std::unique_ptr<Component>(pTransform) );
+                    }
+                    pTransform->mPosition = mpTileMap->Map2World(i,j);
+                    
+                    // Set grid tile
+                    auto pTile = e->Get<CGridTile>();
+                    if(!pTile){
+                        pTile = new CGridTile();
+                        e->Add<CGridTile>(std::unique_ptr<CGridTile>(pTile));
+                    }
+                    pTile->mX = i;
+                    pTile->mY = j;
+                }
+            }
+        }
         for(auto&& e : entities){
             auto pTile = e->Get<CGridTile>();
             if(!pTile) continue;
