@@ -1,32 +1,54 @@
-require("lua.sprite_data")
+sp = require "lua.sprite_data"
 
+-- This way if the function name changes, only have to change it in one place
 local entities = {}
+local templates = {}
 
-
--- Set tile prototype
-safe.create_template({
+-- 
+-- Create Templates
+--
+templates[#templates+1] = {
     TemplateName = "Tile",
-    TransformComponent = { scale = {x=2, y=2, z=2} },
+    TransformComponent = { 
+        position = {x=0, y=0, z=-10},
+        scale = {x=2, y=2, z=2} 
+    },
     GridTileComponent = {},
     SpriteComponent = { 
         filename = 'assets/floor_tile.png',
         center = {x=0.5, y=0.5},
         is_vertical = false
     }
-})
+}
 
-entities[#entities+1] = {
-    EntityName = "Cursor",
+templates[#templates+1] = {
+    TemplateName = "Cursor",
     SpriteComponent = { 
         filename = "assets/Cursor.png", 
-        center = {x=0.5, y=0.5},
+        center = {x=0.5, y=0.5}
     },
-    TransformComponent = {
+    TransformComponent = { 
+        position = {x=0, y=0, z=-3},
         scale = { x=2, y=2, z=1 }
     }
 }
 
--- Create Entities as Game units
+templates[#templates+1] = {
+    TemplateName = "AreaTile",
+    SpriteComponent = { 
+        filename = "assets/Area.png", 
+        center = {x=0.5, y=0.5},
+        is_vertical = false
+    },
+    TransformComponent = { 
+        position = {x=0, y=0, z=-5},
+        scale = { x=2, y=2, z=1 }
+    }
+}
+
+--
+-- Create Entities
+--
 local sprites = {"assets/Jackal.png", "assets/Jackal2.png","assets/Vector.png", 
     "assets/Vector2.png", "assets/Bulwark.png"}
 
@@ -38,7 +60,7 @@ for i, sprite in ipairs(sprites) do
         },
         SpriteComponent = {
             filename = sprite,
-            center = { x=0.5, y=1 }
+            center = sp.get(sp.center, sprite)
         },
         DraggableComponent = {},
         GridUnitComponent = { x=2, y=i },
@@ -57,7 +79,7 @@ for i, sprite in ipairs(sprites) do
         },
         SpriteComponent = {
             filename = sprite,
-            center = { x=0.5, y=1 }
+            center = sp.get(sp.center, sprite)
         },
         DraggableComponent = {},
         GridUnitComponent = { x=8, y=i },
@@ -69,11 +91,7 @@ for i, sprite in ipairs(sprites) do
 end
 
 
-for i, e in ipairs(entities) do
-    safe.create_entity(e)
 
-end
-    
 
 --[[
 local enemy = {
@@ -189,3 +207,13 @@ for j, row in pairs(raw_map) do
     end
 end
 ]]--
+
+-- Create entities and templates
+
+for i, e in ipairs(entities) do
+    safe.create_entity(e)
+end
+for i, t in ipairs(templates) do
+    safe.create_template(t)
+end
+    

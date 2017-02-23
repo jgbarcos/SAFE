@@ -29,7 +29,9 @@ public:
     }
     
     Vector3 SnapToMap(Vector3 pos){
-        return Map2World(World2Map(pos));
+        Vector3 v = Map2World(World2Map(pos));
+        v.z = pos.z;
+        return v;
     }
 
     Vector2 World2Map(Vector3 pos){

@@ -112,7 +112,10 @@ public:
      * @param entID identifier of the new entity
      * @return pointer to the created entity or nullptr
      */  
-    Entity* CreateEntityFromTemplate(EntityID tmpID, EntityID entID){
+    Entity* CreateEntityFromTemplate(EntityID tmpID, EntityID entID = ""){
+        if(entID == ""){
+            entID = GetNextID();
+        }
         if(ExistsTemplate(tmpID)){
             sol::table t = mEntityTemplates[tmpID];
             auto pEntity = CreateEntity(entID);

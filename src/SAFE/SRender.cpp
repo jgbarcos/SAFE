@@ -5,6 +5,7 @@
 #include <SDL2/SDL2_gfxPrimitives.h>
 
 #include "SAFE/CCollider.h"
+#include "SAFE/Input.h"
 
 namespace safe{
 
@@ -120,14 +121,19 @@ void SRender::Update(float delta, std::vector<Entity*>& entities) {
     }
 }
         
-    float SRender::GetDepth(CTransform* pTransform, CSprite* pSprite){
-        Rect clip = pSprite->GetLocalRect() + Vector2::Reduce(pTransform->mPosition);
-        
-        float vert = 0.0; // 0.0 is pick the top y
-        if(pSprite->mIsVertical) vert = 1.0; // 1.0 pick the bottom y
+float SRender::GetDepth(CTransform* pTransform, CSprite* pSprite){
+    Rect clip = pSprite->GetLocalRect() + Vector2::Reduce(pTransform->mPosition);
 
-        return clip.y + clip.height * pTransform->mScale.y * vert; 
+    float vert = 0.0; // 0.0 is pick the top y
+    if(pSprite->mIsVertical) vert = 1.0; // 1.0 pick the bottom y
+    
+    if(Input::IsPressed(SDL_SCANCODE_F2)){
+        std::cout << pTransform->mPosition.z << "," << std::endl;
     }
+    
+
+    return pTransform->mPosition.z + 1000.0*(clip.y + clip.height * pTransform->mScale.y * vert); 
+}
 
   
 } // namespace safe

@@ -1,4 +1,6 @@
-animations_data = {
+local module = {}
+
+module.animations_data = {
     dir_4_frames_2 = {
         [0] = {
             { time=0.3, rect={x=0,y=0, w=0.25, h=0.25} },
@@ -45,6 +47,25 @@ animations_data = {
         }
     }
 }
+
+function module.get(table, key)
+    res = table[key]
+    if not res then 
+        res = table["DEFAULT"]
+    end
+    return res
+end
+
+module.center = {
+    ["DEFAULT"] = {x=0.5, y=1},
+    ["assets/Jackal.png"] = { x=0.25, y=1},
+    ["assets/Jackal2.png"] = { x=0.35, y=1},
+    ["assets/Vector.png"] = { x=0.1, y=1},
+    ["assets/Vector2.png"] = { x=0.25, y=1},
+    ["assets/Bulwark.png"] = { x=0.4, y=1}
+}
+
+return module
 
 --[[ --This helps with debugging
         sol::state_view view(luaT.lua_state());

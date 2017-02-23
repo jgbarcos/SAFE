@@ -71,7 +71,8 @@ void Game::Start(){
     SDL_GetWindowSize(mpWindow,&w, &h);
     Camera camera = Camera(mpRenderer, w, h);
     
-    TileMap tileMap = TileMap(camera.Screen2World(Vector2(30,30)), 11, 6, 50, 50);
+    
+    TileMap tileMap = TileMap(Vector3(-250,-200,-10), 11, 6, 50, 50);
 
     /*
      * Entity-Component-System Configuration

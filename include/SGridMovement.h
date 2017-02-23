@@ -7,6 +7,7 @@
 #include "CGridUnit.h"
 #include "SAFE/CTransform.h"
 #include "CGridTile.h"
+#include "CCharacterData.h"
 
 using namespace safe;
 
@@ -17,10 +18,7 @@ public:
     
     void Init(std::vector<Entity*>& entities) override {
         // Get cursor 
-        auto e =  mpEntityEngine->GetEntity("Cursor");
-        if(e != nullptr && e->Get<CTransform>()){
-            mpCursor = e;
-        }
+        mpCursor = mpEntityEngine->CreateEntityFromTemplate("Cursor");
         
         // Set tiles
         std::string name = "Tile";
@@ -28,7 +26,7 @@ public:
         
             for(int i=0; i<mpTileMap->GetCols(); i++){
                 for(int j=0; j<mpTileMap->GetRows(); j++){
-                    auto e = mpEntityEngine->CreateEntityFromTemplate(name, mpEntityEngine->GetNextID());
+                    auto e = mpEntityEngine->CreateEntityFromTemplate(name);
                     
                     // Set transform
                     auto pTransform = e->Get<CTransform>();
@@ -79,6 +77,7 @@ public:
             // Snap into grid if not dragged by player
             Vector3 pos = pTransform->mPosition;
             
+            // If dropped, move unit into closest valid position or return to original
             if(pDraggable && !pDraggable->mBeingDragged && pDraggable->mPreviouslyDragged){
                 if(mpTileMap->CheckBounds(pos)){
                     Vector2 tilePos = mpTileMap->World2Map(pos);
@@ -87,6 +86,7 @@ public:
                 }                
             }
             
+            // If not dragged, move unit into its position
             if(!pDraggable || !pDraggable->mBeingDragged){
                 
                 // Snap into tile position
@@ -101,9 +101,37 @@ public:
                 else{
                     pTransform->mPosition += dir.normalize() * speed * delta;
                 }
-            
             }
             
+            // If unit picked, show movement tiles
+            auto pCharData = e->Get<CCharacterData>();
+            if(pCharData && pDraggable && pDraggable->mBeingDragged && !pDraggable->mPreviouslyDragged){
+                // Fake dijkstra
+                int count = 0;
+                int movement = pCharData->mBaseMovement;
+                for(int i=-movement;i<=movement; i++){
+                    for(int j=-movement; j<=movement; j++){
+                        if( abs(i)+abs(j) <= movement && mpTileMap->CheckBounds(i+pUnit->mX, j+pUnit->mY)){
+                            
+                            auto pArea = RequestArea(count);
+                            count += 1;
+
+                            auto pTileTransform = pArea->Get<CTransform>();
+                            double z = pTileTransform->mPosition.z;
+                            pTileTransform->mPosition = mpTileMap->Map2World(i+pUnit->mX, j+pUnit->mY);
+                            pTileTransform->mPosition.z = z;
+                            
+                        }
+                    }
+                }
+            }
+            
+            // If unit dropped, hide movement tiles
+            if(pDraggable && !pDraggable->mBeingDragged && pDraggable->mPreviouslyDragged){
+                HideAllArea();
+            }
+            
+            // Display cursor under unit
             if(mpCursor != nullptr && pDraggable && pDraggable->mBeingDragged){
                 mpCursor->Get<CTransform>()->mPosition = mpTileMap->SnapToMap(pTransform->mPosition);
                 mpCursor->Get<CSprite>()->mRender = true;
@@ -111,10 +139,28 @@ public:
         }
     }
     
+    Entity* RequestArea(size_t i){
+        while(i >= mAreaTiles.size()){
+            mAreaTiles.push_back( mpEntityEngine->CreateEntityFromTemplate("AreaTile") );
+        }
+        
+        auto e = mAreaTiles.at(i);
+        e->Get<CSprite>()->mRender = true;
+        return e;
+    }
+    void HideAllArea(){
+        for(auto e : mAreaTiles){
+            auto pSprite = e->Get<CSprite>();
+            pSprite->mRender = false;
+        }
+    }
+    
 private:
     TileMap* mpTileMap;
     
     Entity* mpCursor = nullptr;
+    
+    std::vector<Entity*> mAreaTiles;
     
 };
 
