@@ -11,7 +11,7 @@ templates[#templates+1] = {
     TemplateName = "Tile",
     TransformComponent = { 
         position = {x=0, y=0, z=-10},
-        scale = {x=2, y=2, z=2} 
+        scale = {x=1, y=1, z=1} 
     },
     GridTileComponent = {},
     SpriteComponent = { 
@@ -29,7 +29,7 @@ templates[#templates+1] = {
     },
     TransformComponent = { 
         position = {x=0, y=0, z=-3},
-        scale = { x=2, y=2, z=1 }
+        scale = {x=1, y=1, z=1} 
     }
 }
 
@@ -42,21 +42,24 @@ templates[#templates+1] = {
     },
     TransformComponent = { 
         position = {x=0, y=0, z=-5},
-        scale = { x=2, y=2, z=1 }
+        scale = {x=1, y=1, z=1} 
     }
 }
 
 --
 -- Create Entities
 --
-local sprites = {"assets/Jackal.png", "assets/Jackal2.png","assets/Vector.png", 
-    "assets/Vector2.png", "assets/Bulwark.png"}
+local sprites = {"assets/Rebel_Rifle.png", "assets/Rebel_Spear.png",
+    "assets/Mercenary_Pistol.png", "assets/Mercenary_Sniper.png",
+    "assets/Armored_Heavy.png", "assets/Rebel_Flamefighter.png",
+    "assets/Soldier_Assault.png", "assets/Soldier_Shield.png"
+}
 
 for i, sprite in ipairs(sprites) do
     entities[#entities+1] = {
         TransformComponent = {
             position = { x=-100, y=-50 },
-            scale = { x=2, y=2, z=1 }
+        scale = {x=1, y=1, z=1} 
         },
         SpriteComponent = {
             filename = sprite,
@@ -75,7 +78,7 @@ for i, sprite in ipairs(sprites) do
     entities[#entities+1] = {
         TransformComponent = {
             position = { x=100, y=-50 },
-            scale = { x=-2, y=2, z=1 }
+        scale = {x=-1, y=1, z=1} 
         },
         SpriteComponent = {
             filename = sprite,

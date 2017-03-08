@@ -27,10 +27,10 @@ public:
         
         int wheel = Input::GetMouseWheel();
         if(wheel < 0){
-            mpCamera->mTransform.mScale = mpCamera->mTransform.mScale * (1.0/1.1);
+            mpCamera->mTransform.mScale = mpCamera->mTransform.mScale - 1.0;
         }
         else if(wheel > 0){
-            mpCamera->mTransform.mScale = mpCamera->mTransform.mScale * 1.1;
+            mpCamera->mTransform.mScale = mpCamera->mTransform.mScale + 1.0;
         }
     } 
     

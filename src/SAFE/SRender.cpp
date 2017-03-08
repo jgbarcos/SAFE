@@ -63,7 +63,7 @@ void SRender::Update(float delta, std::vector<Entity*>& entities) {
         if(dRenderSpriteRect){
             for(auto&& e:entities){
                 auto pSprite = e->Get<CSprite>();
-                if(!pSprite) continue;
+                if(!pSprite || !pSprite->mRender) continue;
 
                 auto pTransform = e->Get<CTransform>();
                 if(!pTransform) continue;

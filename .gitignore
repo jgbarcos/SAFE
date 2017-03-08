@@ -10,6 +10,8 @@ compile_commands.json
 
 # Project
 dev0
+test_all
 assets
 doc
+lib
 

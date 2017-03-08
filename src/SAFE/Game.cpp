@@ -7,10 +7,12 @@
 #include <queue>
 #include <memory>
 
+
 // SAFE
 #include "SAFE/TextureManager.h"
 #include "SAFE/Texture.h"
 #include "SAFE/Input.h"
+#include "SAFE/EventSystem.h"
 
 // SAFE ECS
 #include "SAFE/CCollider.h"
@@ -57,7 +59,6 @@ void Game::Start(){
      * Lua configuration file
      */
     sol::table luaConf = mLua.script_file("./lua/configuration.lua");
-
     
     TextureManager textureManager;
 
@@ -71,8 +72,15 @@ void Game::Start(){
     SDL_GetWindowSize(mpWindow,&w, &h);
     Camera camera = Camera(mpRenderer, w, h);
     
+    camera.mTransform.mScale = Vector3(luaConf.get<sol::table>("camera_zoom"));
+    camera.mTransform.mPosition = Vector3(luaConf.get<sol::table>("camera_pos"));
     
-    TileMap tileMap = TileMap(Vector3(-250,-200,-10), 11, 6, 50, 50);
+    int cols = 11;
+    int rows = 9;
+    int tile_size = 24;
+    int posx = -cols * tile_size/2;
+    int posy = -rows * tile_size/2;
+    TileMap tileMap = TileMap(Vector3(posx, posy,-10), cols, rows, tile_size, tile_size);
 
     /*
      * Entity-Component-System Configuration
@@ -163,7 +171,7 @@ void Game::Start(){
         /*
          * Step 3: Clear Graphics
          */
-        SDL_SetRenderDrawColor( mpRenderer, 130, 130, 255, 0);
+        SDL_SetRenderDrawColor( mpRenderer, 181, 165, 125, 0);
         SDL_RenderClear( mpRenderer );
         
         /*

@@ -85,7 +85,7 @@ IF(BUILD_DOCUMENTATION)
   INSTALL( DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html DESTINATION share/doc )
 ENDIF()               
 
-# Project cmake configuration
+# Project files configuration
 file(GLOB PROJECT_SRC
     "src/*.cpp"
     "src/SAFE/*.cpp"
@@ -96,6 +96,12 @@ file(GLOB PROJECT_HEADERS
     "include/SAFE/*.h"
 )
 
+file(GLOB PROJECT_TESTS
+    "test/*.cpp"
+    "test/*.h"
+)
+
+# Build Program
 include_directories(include)
 add_executable(${PROJECT_NAME} ${PROJECT_SRC} ${PROJECT_HEADERS})
 target_link_libraries(${PROJECT_NAME} ${SDL2_LIBRARY}
@@ -107,4 +113,51 @@ target_link_libraries(${PROJECT_NAME} ${SDL2_LIBRARY}
 
 message ( "Used Flags: " ${CMAKE_CXX_FLAGS} )
                              
-#install(TARGETS lab0 RUNTIME DESTINATION ${BIN_DIR})
+# Build Tests
+# Download and unpack googletest at configure time
+set(GTEST_FOLDER ${CMAKE_BINARY_DIR}/lib/gtest)
+
+configure_file(CMakeLists.txt.in
+               ${GTEST_FOLDER}/googletest-download/CMakeLists.txt)
+execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
+  WORKING_DIRECTORY ${GTEST_FOLDER}/googletest-download )
+execute_process(COMMAND ${CMAKE_COMMAND} --build .
+  WORKING_DIRECTORY ${GTEST_FOLDER}/googletest-download )
+ 
+# Prevent GoogleTest from overriding our compiler/linker options
+# when building with Visual Studio
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+ 
+# Add googletest directly to our build. This adds
+# the following targets: gtest, gtest_main, gmock
+# and gmock_main
+add_subdirectory(${GTEST_FOLDER}/googletest-src
+                 ${GTEST_FOLDER}/googletest-build)
+ 
+# The gtest/gmock targets carry header search path
+# dependencies automatically when using CMake 2.8.11 or
+# later. Otherwise we have to add them here ourselves.
+if (CMAKE_VERSION VERSION_LESS 2.8.11)
+  include_directories("${gtest_SOURCE_DIR}/include"
+                      "${gmock_SOURCE_DIR}/include")
+endif()
+ 
+# Now simply link your own targets against gtest, gmock,
+# etc. as appropriate
+
+# Remove main.cpp from src files
+set( PROJECT_SRC_NO_MAIN ${PROJECT_SRC} )
+list(FILTER PROJECT_SRC_NO_MAIN EXCLUDE REGEX "main")
+
+add_executable(test_all ${PROJECT_TESTS}
+                        ${PROJECT_HEADERS} 
+                        ${PROJECT_SRC_NO_MAIN})
+target_link_libraries(test_all gtest
+                        ${SDL2_LIBRARY}
+                        ${SDL2_IMAGE_LIBRARIES}
+                        ${SDL2_TTF_LIBRARIES}
+                        ${SDL2GFX_LIBRARY}
+                        ${BOX2D_LIBRARY}
+                        ${LUA_LIBRARIES})
+
+add_test(NAME test_all COMMAND test_all)

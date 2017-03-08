@@ -58,11 +58,14 @@ end
 
 module.center = {
     ["DEFAULT"] = {x=0.5, y=1},
-    ["assets/Jackal.png"] = { x=0.25, y=1},
-    ["assets/Jackal2.png"] = { x=0.35, y=1},
-    ["assets/Vector.png"] = { x=0.1, y=1},
-    ["assets/Vector2.png"] = { x=0.25, y=1},
-    ["assets/Bulwark.png"] = { x=0.4, y=1}
+    ["assets/Rebel_Rifle.png"] = { x=0.25, y=1},
+    ["assets/Rebel_Spear.png"] = { x=0.35, y=1},
+    ["assets/Mercenary_Sniper.png"] = { x=0.1, y=1},
+    ["assets/Mercenary_Pistol.png"] = { x=0.25, y=1},
+    ["assets/Armored_Heavy.png"] = { x=0.4, y=1},
+    ["assets/Rebel_Firefighter.png"] = { x=0.4, y=1},
+    ["assets/Soldier_Assault.png"] = { x=0.6, y=1},
+    ["assets/Soldier_Shield.png"] = { x=0.5, y=1}
 }
 
 return module

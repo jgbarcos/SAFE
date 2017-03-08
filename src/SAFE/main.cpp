@@ -7,8 +7,8 @@
 #include "SAFE/Game.h"
 
 //Screen dimensions
-const int SCREEN_WIDTH = 640;
-const int SCREEN_HEIGHT = 480;
+const int SCREEN_WIDTH = 1000;
+const int SCREEN_HEIGHT = 768;
 
 // The window target
 SDL_Window* gpWindow = NULL;
