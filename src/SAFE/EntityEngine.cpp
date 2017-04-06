@@ -13,6 +13,8 @@ void EntityEngine::Init (){
 }
   
 void EntityEngine::Update (float delta){
+    mEventDispatcher.PropagateEvents();
+    
     GatherEntities();
   
     for(auto&& s : mSystems){

@@ -21,7 +21,6 @@ public:
     // Required
     int mX; 
     int mY;
-    
 };
 
 

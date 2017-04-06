@@ -11,6 +11,7 @@
 
 #include "SAFE/Entity.h"
 #include "SAFE/Component.h"
+#include "SAFE/EventDispatcher.h"
 
 namespace safe {
     
@@ -169,7 +170,7 @@ public:
     std::unordered_map<EntityID, sol::table > mEntityTemplates;
     std::unordered_map<std::string, std::function<ReqData()> > mCompCreator;
     
-    
+    EventDispatcher mEventDispatcher;
     
 private:
     void FillWithComponents(Entity* pEntity, sol::table luaT);

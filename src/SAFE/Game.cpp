@@ -6,13 +6,14 @@
 // STD
 #include <queue>
 #include <memory>
+#include <time.h>
 
 
 // SAFE
 #include "SAFE/TextureManager.h"
 #include "SAFE/Texture.h"
 #include "SAFE/Input.h"
-#include "SAFE/EventSystem.h"
+#include "SAFE/EventDispatcher.h"
 
 // SAFE ECS
 #include "SAFE/CCollider.h"
@@ -36,6 +37,7 @@
 
 #include "CGridTile.h"
 #include "SGridMovement.h"
+#include "STileMapUpdate.h"
 #include "TileMap.h"
 
 namespace safe {
@@ -45,7 +47,7 @@ Game::Game(int screenWidth, int screenHeight, SDL_Window* pWindow, SDL_Renderer*
 {
     Texture::SetDefaultRenderer(mpRenderer);
     
-    mLua.open_libraries(sol::lib::base, sol::lib::package);
+    mLua.open_libraries(sol::lib::base, sol::lib::package, sol::lib::math);
 }
 
 void Game::Start(){
@@ -60,7 +62,18 @@ void Game::Start(){
      */
     sol::table luaConf = mLua.script_file("./lua/configuration.lua");
     
+    // Set random seed
+    int seed = luaConf.get_or("random_seed", -1);
+    if(seed == -1){
+        srand( time(NULL) );
+        seed = rand();
+    }        
+    mLua.set("random_seed", seed);
+    mLua.script("math.randomseed(random_seed)");
+    std::cout << "[GAME] random seed: " << seed << std::endl;
+    
     TextureManager textureManager;
+    textureManager.mDebugLog = luaConf.get_or("texture_manager_logs", false);
 
     TTF_Font* font = TTF_OpenFont("assets/fonts/Roboto_Condensed/Regular.ttf", 20);
     if(font == nullptr){
@@ -86,6 +99,7 @@ void Game::Start(){
      * Entity-Component-System Configuration
      */
     EntityEngine engine;
+    engine.mEventDispatcher.mDebugLog = luaConf.get_or("event_dispatcher_logs", false);
     
     sol::table luaSafe = mLua.create_named_table("safe"); // set safe namespace in lua
     luaSafe.set_function("create_entity", &EntityEngine::CreateEntityFromLua, &engine);
@@ -96,6 +110,7 @@ void Game::Start(){
     pRender->dRenderPhysics = luaConf.get_or("render_physics", false);
     pRender->dRenderSpriteRect = luaConf.get_or("render_sprite_rect", false);
     
+    engine.RegisterSystem(std::unique_ptr<System>( new STileMapUpdate(&tileMap) ));
     engine.RegisterSystem(std::unique_ptr<System>( new SPlayerMovement() ));
     engine.RegisterSystem(std::unique_ptr<System>( new SDragMovement(&camera) ));
     engine.RegisterSystem(std::unique_ptr<System>( new SGridMovement(&tileMap) ));  

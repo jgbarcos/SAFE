@@ -1,6 +1,5 @@
 sp = require "lua.sprite_data"
 
--- This way if the function name changes, only have to change it in one place
 local entities = {}
 local templates = {}
 
@@ -69,7 +68,7 @@ for i, sprite in ipairs(sprites) do
         GridUnitComponent = { x=2, y=i },
         CharacterDataComponent = {
             base_health = 10,
-            base_movement = 2
+            base_movement = math.random(2,4)
         }
     }
 end

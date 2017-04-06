@@ -2,12 +2,14 @@
 #define SDRAGMOVEMENT_H
 
 #include <iostream>
+#include <queue>
 
 #include "SAFE/CTransform.h"
 #include "SAFE/Entity.h"
 #include "SAFE/System.h"
 
 #include "CDraggable.h"
+#include "EDragUnit.h"
 #include "SAFE/Input.h"
 #include "SAFE/CSprite.h"
 #include "SAFE/CTransform.h"
@@ -18,18 +20,13 @@ class SDragMovement : public System {
 public:    
     SDragMovement(Camera* camera) : mpCamera(camera) {}
     
-    void Update(float delta, std::vector<Entity*>& entities) override {
-        for (auto&& e : entities){
-            auto pDraggable = e->Get<CDraggable>();
-            if(pDraggable){
-                pDraggable->mPreviouslyDragged = pDraggable->mBeingDragged;
-            }
-        }
-        
+    void Update(float delta, std::vector<Entity*>& entities) override {        
         // Release mouse, release entity
         if(Input::IsMouseReleased(1)){
             if(mpEntityDragged){
                 mpEntityDragged->Get<CDraggable>()->mBeingDragged = false;
+                
+                mpEntityEngine->mEventDispatcher.Send( EDragUnit(mpEntityDragged->GetName(), false, true));
             }
             mpEntityDragged = nullptr;
         }
@@ -58,9 +55,10 @@ public:
                 if(pDraggable->mIsDraggable && area.Contains( Vector2::Reduce(mouse) )){
                     mpEntityDragged = e;
                     mMouseDisplacement = mouse-pos;
+                    mpEntityEngine->mEventDispatcher.Send( EDragUnit(e->GetName(), true, false));
+                    break;
                 }
             }
-            
         }
                 
         // Entity being dragged with mouse

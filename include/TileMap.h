@@ -6,6 +6,7 @@
 
 #include "SAFE/Vector2.h"
 #include "SAFE/Vector3.h"
+#include "SAFE/EntityEngine.h"
 
 namespace safe {
 
@@ -17,7 +18,9 @@ public:
             : mOrigin(origin), 
             mCols(cols), mRows(rows),
             mTileWidth(tileWidth), mTileHeight(tileHeight)
-            {}
+    {
+        
+    }
 
     bool CheckBounds(Vector3 pos){
         Vector2 i = World2Map(pos);
@@ -54,6 +57,20 @@ public:
     int GetCols(){ return mCols; }
     int GetRows(){ return mRows; }
     
+    bool IsEmpty(int x, int y){
+        return mEntitiesPosition[x + y*mCols].empty();
+    }
+    
+    bool SetUnit(int x, int y, EntityEngine::EntityID id){
+        if(CheckBounds(x, y)){
+            mEntitiesPosition[x + y*mCols].push_back(id);
+            return true;
+        }
+        return false;
+    }
+    
+    std::unordered_map< int, std::vector<EntityEngine::EntityID> > mEntitiesPosition;
+    
 
 private:
     Vector3 mOrigin;
@@ -61,8 +78,7 @@ private:
     int mRows;
     int mTileWidth;
     int mTileHeight;
-
-
+    
 };
 
 } // namespace safe

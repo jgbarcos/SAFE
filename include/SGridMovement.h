@@ -9,6 +9,9 @@
 #include "CGridTile.h"
 #include "CCharacterData.h"
 
+#include "EDragUnit.h"
+#include "SAFE/Transform.h"
+
 using namespace safe;
 
 class SGridMovement : public System
@@ -46,6 +49,7 @@ public:
                     pTile->mY = j;
                 }
             }
+    
         }
         for(auto&& e : entities){
             auto pTile = e->Get<CGridTile>();
@@ -58,11 +62,69 @@ public:
             }
             pTransform->mPosition = mpTileMap->Map2World(pTile->mX, pTile->mY);
         }
+        
+        // Subscribe to drag events
+        auto onDragUnit = [&](const safe::Event& e) -> bool { 
+            if(e.type() == EDragUnit().type()){
+                const EDragUnit& event = static_cast<const EDragUnit&>( e );          
+                mReceivedEvents.push(event);
+            }
+            return true;
+        };
+        mpEntityEngine->mEventDispatcher.Subscribe(EDragUnit().type(), onDragUnit);
     }
     
     void Update(float delta, std::vector<Entity*>& entities) override {  
         if(mpCursor != nullptr){
             mpCursor->Get<CSprite>()->mRender = false;
+        }
+        
+        while(!mReceivedEvents.empty()){
+            EDragUnit event = mReceivedEvents.front();
+            mReceivedEvents.pop();
+            
+            auto pEntity = mpEntityEngine->GetEntity(event.mUnit);
+            
+            auto pUnit = pEntity->Get<CGridUnit>();
+            if(!pUnit) continue;
+            
+            auto pCharData = pEntity->Get<CCharacterData>();
+            if(!pCharData) continue;
+            
+            auto pTransform = pEntity->Get<CTransform>();
+            if(!pTransform) continue;
+            
+            
+            if(event.mIsPicked){
+                // Fake dijkstra
+                int count = 0;
+                int movement = pCharData->mBaseMovement;
+                for(int i=-movement;i<=movement; i++){
+                    for(int j=-movement; j<=movement; j++){
+                        int x = i + pUnit->mX;
+                        int y = j + pUnit->mY;
+                        if( abs(i)+abs(j) <= movement && mpTileMap->CheckBounds(x, y) && mpTileMap->IsEmpty(x,y)){
+                            
+                            auto pArea = RequestArea(count);
+                            count += 1;
+
+                            auto pTileTransform = pArea->Get<CTransform>();
+                            double z = pTileTransform->mPosition.z;
+                            pTileTransform->mPosition = mpTileMap->Map2World(x, y);
+                            pTileTransform->mPosition.z = z;
+                        }
+                    }
+                }
+            }
+            if(event.mIsDropped){
+                if(mpTileMap->CheckBounds(pTransform->mPosition)){
+                    Vector2 tilePos = mpTileMap->World2Map(mpCursor->Get<CTransform>()->mPosition);
+                    pUnit->mX = tilePos.x;
+                    pUnit->mY = tilePos.y;
+                }  
+                
+                HideAllArea();
+            }
         }
         
         for(auto&& e : entities){
@@ -76,15 +138,6 @@ public:
             
             // Snap into grid if not dragged by player
             Vector3 pos = pTransform->mPosition;
-            
-            // If dropped, move unit into closest valid position or return to original
-            if(pDraggable && !pDraggable->mBeingDragged && pDraggable->mPreviouslyDragged){
-                if(mpTileMap->CheckBounds(pos)){
-                    Vector2 tilePos = mpTileMap->World2Map(pos);
-                    pUnit->mX = tilePos.x;
-                    pUnit->mY = tilePos.y;
-                }                
-            }
             
             // If not dragged, move unit into its position
             if(!pDraggable || !pDraggable->mBeingDragged){
@@ -101,34 +154,6 @@ public:
                 else{
                     pTransform->mPosition += dir.normalize() * speed * delta;
                 }
-            }
-            
-            // If unit picked, show movement tiles
-            auto pCharData = e->Get<CCharacterData>();
-            if(pCharData && pDraggable && pDraggable->mBeingDragged && !pDraggable->mPreviouslyDragged){
-                // Fake dijkstra
-                int count = 0;
-                int movement = pCharData->mBaseMovement;
-                for(int i=-movement;i<=movement; i++){
-                    for(int j=-movement; j<=movement; j++){
-                        if( abs(i)+abs(j) <= movement && mpTileMap->CheckBounds(i+pUnit->mX, j+pUnit->mY)){
-                            
-                            auto pArea = RequestArea(count);
-                            count += 1;
-
-                            auto pTileTransform = pArea->Get<CTransform>();
-                            double z = pTileTransform->mPosition.z;
-                            pTileTransform->mPosition = mpTileMap->Map2World(i+pUnit->mX, j+pUnit->mY);
-                            pTileTransform->mPosition.z = z;
-                            
-                        }
-                    }
-                }
-            }
-            
-            // If unit dropped, hide movement tiles
-            if(pDraggable && !pDraggable->mBeingDragged && pDraggable->mPreviouslyDragged){
-                HideAllArea();
             }
             
             // Display cursor under unit
@@ -156,8 +181,9 @@ public:
     }
     
 private:
-    TileMap* mpTileMap;
+    std::queue<EDragUnit> mReceivedEvents;
     
+    TileMap* mpTileMap;
     Entity* mpCursor = nullptr;
     
     std::vector<Entity*> mAreaTiles;

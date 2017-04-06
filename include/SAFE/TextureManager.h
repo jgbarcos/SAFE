@@ -49,6 +49,9 @@ class TextureManager
          * @param onlyIfUnused if false, it forces the removal of the textures.
          */
         void ReleaseAll(bool onlyIfUnused = true);
+        
+        // Set whether to print or not debug data into the console
+        bool mDebugLog = false;
 
     private:
         std::map < std::string, std::shared_ptr< Texture > > mLoadedTextures;

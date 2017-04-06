@@ -1,32 +1,27 @@
-#ifndef EVENTSYSTEM_H
-#define EVENTSYSTEM_H
+#ifndef EVENTDISPATCHER_H
+#define EVENTDISPATCHER_H
 
 #include <functional>
+#include <memory>
+#include <set>
 #include <unordered_map>
 #include <vector>
-#include <set>
-#include <memory>
+
+#include "SAFE/Event.h"
 
 namespace safe {
 
-class Event
-{
-public:
-    typedef const char* Type;
-    
-    virtual ~Event(){}
-    
-    virtual Type type() const= 0;
-};
-
-class Dispatcher
+class EventDispatcher
 {
 public:
     typedef std::function< bool (const Event&) > Func;
     typedef int ObserverID;
     
     void PropagateEvents(){
-        
+        for( auto&& e : mEventList){
+            Send(*e);
+        }
+        mEventList.clear();
     }
     
     void Subscribe(ObserverID id, const Event::Type& descriptor, Func&& func){
@@ -63,12 +58,37 @@ public:
         }
     }
     
-    void Post( std::unique_ptr<Event> pEvent ){
+    /**
+     * Post an event that will be later propagated to subscribers.
+     * @param pEvent takes pointer ownership
+     */
+    void Post( std::unique_ptr<Event>& pEvent ){
+        if(mDebugLog){
+            std::cout << "[EventDispatcher]" << "(Event posted)" << pEvent->type() 
+                << ": " << pEvent->toString()
+            << std::endl;
+        }
+        
         mEventList.push_back(std::move(pEvent));
     }
+    void Post( Event* pEvent ){
+        auto p = std::unique_ptr<Event>(pEvent);
+        Post(p);
+    }
     
-    void Post( const Event& event ) 
-    {
+    /**
+     * Send an event now. The event will be received and treated 
+     * in this call by all the subscribes of the type of event.
+     * @param event
+     */
+    void Send( const Event& event ) 
+    {     
+        if(mDebugLog){
+            std::cout << "[EventDispatcher]" << "(Event send)" << event.type() 
+                << ": " << event.toString()
+            << std::endl;
+        }
+        
         std::vector< ObserverID > removeList;
         
         Event::Type const type = event.type();
@@ -82,9 +102,7 @@ public:
         for( auto&& obv : eventObservers ){
             bool valid = true;
             if(bool(obv.second)){
-                valid = obv.second( event );              
-                
-                
+                valid = obv.second( event );
             }
             
             if(!valid){
@@ -93,8 +111,6 @@ public:
         }
         
         Unsubscribe(removeList, type);
-        
-        
     }
     
     ObserverID GetNextID(){
@@ -106,9 +122,10 @@ public: // for testing
     std::unordered_map<Event::Type, std::vector< std::pair< ObserverID, Func > > > mEventsHandlers;
     std::unordered_map<int, std::set<Event::Type> > mObserverSubs;
     std::vector< std::unique_ptr<Event> > mEventList;
+    bool mDebugLog = false;
 };
 
 } // namespace safe
 
-#endif /* EVENTSYSTEM_H */
+#endif /* EVENTDISPATCHER_H */
 

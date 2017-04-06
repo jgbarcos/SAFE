@@ -1,6 +1,7 @@
 #include "gtest/gtest.h"
 
-#include "SAFE/EventSystem.h"
+#include "SAFE/Event.h"
+#include "SAFE/EventDispatcher.h"
 
 
 class DemoEvent : public safe::Event
@@ -39,7 +40,7 @@ public:
 /* A payload is delivered correctly using a bound class */
 TEST(EventSystem, PayloadBind) {
     ClassObserver receiver;
-    safe::Dispatcher dispatcher;
+    safe::EventDispatcher dispatcher;
 
     auto id = dispatcher.GetNextID();
     
@@ -47,7 +48,7 @@ TEST(EventSystem, PayloadBind) {
                           std::bind( &ClassObserver::handle, &receiver, std::placeholders::_1 ) );
 
     DemoEvent e("payload");
-    dispatcher.Post( e );
+    dispatcher.Send( e );
     
     EXPECT_EQ(receiver.mReceivedPayload, e.mPayload);
 }
@@ -56,7 +57,7 @@ TEST(EventSystem, PayloadBind) {
 TEST(EventSystem, PayloadLambda) {
     std::string receivedPayload = "";
     
-    safe::Dispatcher dispatcher;
+    safe::EventDispatcher dispatcher;
 
     auto id = dispatcher.GetNextID();
     
@@ -72,7 +73,7 @@ TEST(EventSystem, PayloadLambda) {
     dispatcher.Subscribe( id, DemoEvent().type(), f);
 
     DemoEvent e("payload");
-    dispatcher.Post( e );
+    dispatcher.Send( e );
     
     EXPECT_EQ(receivedPayload, e.mPayload);
 }
@@ -80,7 +81,7 @@ TEST(EventSystem, PayloadLambda) {
 /* Unsubscribing removes observer from listen an event */
 TEST(EventSystem, Unsubscribe){
     ClassObserver receiver;
-    safe::Dispatcher dispatcher;
+    safe::EventDispatcher dispatcher;
     
     auto id = dispatcher.GetNextID();
     
@@ -88,14 +89,14 @@ TEST(EventSystem, Unsubscribe){
                           std::bind( &ClassObserver::handle, &receiver, std::placeholders::_1 ) );
     
     DemoEvent e = DemoEvent("payload");
-    dispatcher.Post( e );
+    dispatcher.Send( e );
     
     EXPECT_EQ(receiver.mReceivedPayload, e.mPayload);
     
     dispatcher.Unsubscribe( id, DemoEvent().type() );
     
     DemoEvent e2("payload2");
-    dispatcher.Post( e2 );
+    dispatcher.Send( e2 );
     
     EXPECT_EQ(receiver.mReceivedPayload, e.mPayload);
 }
@@ -103,7 +104,7 @@ TEST(EventSystem, Unsubscribe){
 /* Dispatcher auto-removes dangling functions */
 TEST(EventSystem, DanglingFunction){
     auto pReceiver = std::make_shared<ClassObserver>();
-    safe::Dispatcher dispatcher;
+    safe::EventDispatcher dispatcher;
     
     auto secureWrapper = [&](const safe::Event& e) -> bool { 
         if (pReceiver) pReceiver->handle(e);
@@ -114,14 +115,14 @@ TEST(EventSystem, DanglingFunction){
     
     DemoEvent e;
     e.mPayload = "payload";
-    dispatcher.Post(e);
+    dispatcher.Send(e);
     
     EXPECT_EQ(pReceiver->mReceivedPayload, e.mPayload);
     
     pReceiver.reset();
     
     DemoEvent e2("payload2");
-    dispatcher.Post(e2);
+    dispatcher.Send(e2);
     
     EXPECT_EQ(dispatcher.mEventsHandlers[e2.type()].size(), (unsigned int)0);
     EXPECT_EQ(dispatcher.mObserverSubs[id].size(), (unsigned int)0);
