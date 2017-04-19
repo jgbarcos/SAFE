@@ -7,7 +7,7 @@
 
 #include "SAFE/Vector2.h"
 #include "SAFE/Vector3.h"
-#include "SAFE/Transform.h"
+#include "SAFE/CTransform.h"
 
 namespace safe {
 
@@ -45,7 +45,7 @@ public:
 
     SDL_Renderer* getSDLRenderer() const { return mpRenderer; } // TODO: not really constness, use it carefully
 
-    Transform mTransform;
+    CTransform mTransform;
     int mWidth;
     int mHeight;
 private:
