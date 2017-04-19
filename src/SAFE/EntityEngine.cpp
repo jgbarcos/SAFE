@@ -76,7 +76,9 @@ EntityEngine::EntityID EntityEngine::GetNextID (){
 void EntityEngine::GatherEntities(){
     mVecOfEntities.clear();
     for(auto && pair : mEntities){
-        mVecOfEntities.push_back(pair.second.get());
+        if(pair.second->mIsActive){
+            mVecOfEntities.push_back(pair.second.get());
+        }
     }
 }
   

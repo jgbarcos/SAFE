@@ -20,9 +20,12 @@
 #include "SAFE/CPlayerControls.h"
 #include "SAFE/CSheetAnimation.h"
 #include "SAFE/CSprite.h"
+#include "SAFE/CTextBox.h"
 #include "SAFE/CTransform.h"
+
 #include "SAFE/Entity.h"
 #include "SAFE/EntityEngine.h"
+
 #include "SAFE/SCameraMovement.h"
 #include "SAFE/SPhysics.h"
 #include "SAFE/SPlayerMovement.h"
@@ -33,11 +36,14 @@
 // GAME
 #include "CCharacterData.h"
 #include "CDraggable.h"
-#include "SDragMovement.h"
-
 #include "CGridTile.h"
+
+#include "SCharacterGUI.h"
+#include "SDragMovement.h"
 #include "SGridMovement.h"
 #include "STileMapUpdate.h"
+#include "STurnOrder.h"
+
 #include "TileMap.h"
 
 namespace safe {
@@ -74,10 +80,16 @@ void Game::Start(){
     
     TextureManager textureManager;
     textureManager.mDebugLog = luaConf.get_or("texture_manager_logs", false);
+    
+    std::string fontName = luaConf.get<std::string>("default_font");
+    int fontSize = luaConf.get<int>("default_font_size");
 
-    TTF_Font* font = TTF_OpenFont("assets/fonts/Roboto_Condensed/Regular.ttf", 20);
+    TTF_Font* font = TTF_OpenFont(fontName.c_str(), fontSize);
     if(font == nullptr){
         printf( "Unable to load TTF font! SDL Error: %s\n", TTF_GetError() );
+    }
+    else{
+        Texture::SetDefaultFont(font);
     }
     
     int w = 0;
@@ -111,21 +123,26 @@ void Game::Start(){
     pRender->dRenderSpriteRect = luaConf.get_or("render_sprite_rect", false);
     
     engine.RegisterSystem(std::unique_ptr<System>( new STileMapUpdate(&tileMap) ));
+    engine.RegisterSystem(std::unique_ptr<System>( new STurnOrder(&tileMap, &camera) ));
     engine.RegisterSystem(std::unique_ptr<System>( new SPlayerMovement() ));
     engine.RegisterSystem(std::unique_ptr<System>( new SDragMovement(&camera) ));
     engine.RegisterSystem(std::unique_ptr<System>( new SGridMovement(&tileMap) ));  
    
     engine.RegisterSystem(std::unique_ptr<System>( new SPhysics(10.0) ));
-    
     engine.RegisterSystem(std::unique_ptr<System>( new SSpriteSheetAnimator() ));
+    
     engine.RegisterSystem(std::unique_ptr<System>( pRender ));
+    engine.RegisterSystem(std::unique_ptr<System>( new SCharacterGUI(&tileMap, &camera) ));
+    
     engine.RegisterSystem(std::unique_ptr<System>( new SCameraMovement(&camera) ));  
+    
     
     // Define Components
     engine.AddComponentCreator<CCollider>();
     engine.AddComponentCreator<CPlayerControls>();
     engine.AddComponentCreator<CSheetAnimation>();
     engine.AddComponentCreator<CSprite>();
+    engine.AddComponentCreator<CTextBox>();
     engine.AddComponentCreator<CTransform>();
     
     engine.AddComponentCreator<CCharacterData>();

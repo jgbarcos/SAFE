@@ -1,4 +1,5 @@
 sp = require "lua.sprite_data"
+proc = require "lua.procedural"
 
 local entities = {}
 local templates = {}
@@ -21,6 +22,17 @@ templates[#templates+1] = {
 }
 
 templates[#templates+1] = {
+    TemplateName = "EndTurnButton",
+    TransformComponent = {
+        position = {x=0, y=0; z=10},
+    },
+    SpriteComponent = {
+        filename = 'assets/EndTurnButton.png',
+        center = {x=0.5, y=0.5},
+    }
+}
+
+templates[#templates+1] = {
     TemplateName = "Cursor",
     SpriteComponent = { 
         filename = "assets/Cursor.png", 
@@ -33,9 +45,9 @@ templates[#templates+1] = {
 }
 
 templates[#templates+1] = {
-    TemplateName = "AreaTile",
+    TemplateName = "MovementArea",
     SpriteComponent = { 
-        filename = "assets/Area.png", 
+        filename = "assets/BlueArea.png", 
         center = {x=0.5, y=0.5},
         is_vertical = false
     },
@@ -45,49 +57,89 @@ templates[#templates+1] = {
     }
 }
 
+templates[#templates+1] = {
+    TemplateName = "ReadyArea",
+    SpriteComponent = { 
+        filename = "assets/WhiteArea.png", 
+        center = {x=0.5, y=0.5},
+        is_vertical = false
+    },
+    TransformComponent = { 
+        position = {x=0, y=0, z=-5},
+        scale = {x=1, y=1, z=1} 
+    }
+}
+
+templates[#templates+1] = {
+    TemplateName = "AttackArea",
+    SpriteComponent = { 
+        filename = "assets/RedArea.png", 
+        center = {x=0.5, y=0.5},
+        is_vertical = false
+    },
+    TransformComponent = { 
+        position = {x=0, y=0, z=-5},
+        scale = {x=1, y=1, z=1} 
+    }
+}
+
+templates[#templates+1] = {
+    TemplateName = "CharDataDisplay",
+    TransformComponent = { },
+    TextBoxComponent = {
+        center = {x=0, y=1},
+    }
+}
+
 --
 -- Create Entities
 --
-local sprites = {"assets/Rebel_Rifle.png", "assets/Rebel_Spear.png",
-    "assets/Mercenary_Pistol.png", "assets/Mercenary_Sniper.png",
-    "assets/Armored_Heavy.png", "assets/Rebel_Flamefighter.png",
-    "assets/Soldier_Assault.png", "assets/Soldier_Shield.png"
+local pre = "assets/"
+local post = ".png"
+local names = {"Rebel_Rifle", "Rebel_Spear",
+    "Mercenary_Pistol", "Mercenary_Sniper",
+    "Armored_Heavy", "Rebel_Flamefighter",
+    "Soldier_Assault", "Soldier_Shield"
 }
 
-for i, sprite in ipairs(sprites) do
+for i, name in ipairs(names) do
     entities[#entities+1] = {
         TransformComponent = {
             position = { x=-100, y=-50 },
-        scale = {x=1, y=1, z=1} 
+            scale = {x=1, y=1, z=1} 
         },
         SpriteComponent = {
-            filename = sprite,
-            center = sp.get(sp.center, sprite)
+            filename = pre..name..post,
+            center = sp.get(sp.center, pre..name..post)
         },
         DraggableComponent = {},
         GridUnitComponent = { x=2, y=i },
         CharacterDataComponent = {
-            base_health = 10,
-            base_movement = math.random(2,4)
+            name = name,
+            base_health = math.random(4,12),
+            base_movement = math.random(2,4),
+            base_attack = math.random(2,6),
+            attack_area = proc:hor_line_length(0,0, math.random(1,5))
         }
     }
 end
 
-for i, sprite in ipairs(sprites) do
+for i, name in ipairs(names) do
     entities[#entities+1] = {
         TransformComponent = {
             position = { x=100, y=-50 },
-        scale = {x=-1, y=1, z=1} 
+            scale = {x=-1, y=1, z=1} 
         },
         SpriteComponent = {
-            filename = sprite,
-            center = sp.get(sp.center, sprite)
+            filename = pre..name..post,
+            center = sp.get(sp.center, pre..name..post)
         },
         DraggableComponent = {},
         GridUnitComponent = { x=8, y=i },
         CharacterDataComponent = {
-            base_health = 10,
-            base_movement = 2
+            name = name,
+            base_health = math.random(4,12),
+            base_movement = math.random(2,4)
         }
     }
 end

@@ -16,7 +16,7 @@ namespace safe {
 class Entity
 {
 public:
-    Entity(std::string name) : mEntityName(name) {}
+    Entity(std::string name) : mIsActive(true), mEntityName(name) {}
     
     /**
      * Gets a component by its class name.
@@ -69,6 +69,7 @@ public:
         return mEntityName;
     }
 
+    bool mIsActive;
 private:
     std::unordered_map<std::type_index, std::unique_ptr<Component> > mComponents;
 

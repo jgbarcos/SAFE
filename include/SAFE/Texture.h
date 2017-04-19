@@ -77,6 +77,14 @@ class Texture
         static void SetDefaultRenderer(SDL_Renderer* defaultRenderer){
             spDefaultRenderer = defaultRenderer;
         }
+        
+        /**
+         * Update the default font used by textures, used if none is provided.
+         * @param defaultFont
+         */
+        static void SetDefaultFont(TTF_Font* defaultFont){
+            spDefaultFont = defaultFont;
+        }
 
         /**
          * Submit the texture to the GPU.
@@ -157,8 +165,9 @@ class Texture
          * @param text string contents.
          * @param origin start point of the text.
          * @param color Color of the text.
+         * @param resizeIfRequired Resizes the texture size to fit the text
          */
-        void PlotText(TTF_Font* font, const std::string& text, const Vector2& origin = Vector2(0), Color color = Color(0,0,0,255));   
+        void PlotText(TTF_Font* font, const std::string& text, const Vector2& origin = Vector2(0), Color color = Color(0,0,0,255), bool resizeIfRequired=false);   
         
         /**
          * Fills a rectangle with a color into the texture.
@@ -203,6 +212,7 @@ class Texture
 
     private:
         static SDL_Renderer* spDefaultRenderer;
+        static TTF_Font* spDefaultFont;
 
         SDL_Texture* mpTexture = nullptr;
         SDL_Surface* mpSurface = nullptr;

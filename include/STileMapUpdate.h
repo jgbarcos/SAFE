@@ -24,7 +24,7 @@ public:
             if(!pUnit) continue;
             
             mpTileMap->SetUnit(pUnit->mX, pUnit->mY, e->GetName());
-        }
+        }        
     }    
     
 private:

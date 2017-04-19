@@ -3,6 +3,7 @@
 namespace safe {
   
 SDL_Renderer* Texture::spDefaultRenderer = nullptr;
+TTF_Font* Texture::spDefaultFont = nullptr;
 
 void Texture::Render(const Camera& camera, const Vector2& screenPos, const Vector2& scale, float angle, const Vector2& center, const Rect& clip){
   
@@ -55,29 +56,87 @@ void Texture::Free(){
         mHeight = 0;
     }
 }
-    
-void Texture::PlotText(TTF_Font* font, const std::string& text, const Vector2& origin, Color color){
-    if(IsLoaded() && text.size() > 0){
+
+std::vector<std::string> GetLines(const std::string& text){
+    std::vector<std::string> lines;
+    std::string currentString = "";
+    for(size_t i=0; i<text.size(); i++){
+        if(text.at(i) == '\n'){
+            lines.push_back(currentString);
+            currentString = "";
+        }
+        else{
+            currentString += text.at(i);
+        }
+    }
+    if(currentString.size() > 0){
+        lines.push_back(currentString);
+    }
+    return lines;
+}
+
+Vector2 TextSize(TTF_Font* font, const std::string& text){
+    std::vector<std::string> lines = GetLines(text);
+    int maxWidth = 0;
+    int sumHeight;
+    for(auto& l:lines){
+        int w,h;
+        TTF_SizeText(font, l.c_str(), &w, &h);
+        sumHeight += h;
+        if(w > maxWidth){
+            maxWidth = w;
+        }
+    }
+    return Vector2(maxWidth, sumHeight);
+}
+ 
+void Texture::PlotText(TTF_Font* font, const std::string& text, const Vector2& origin, Color color, bool resizeIfRequired){
+    if(font == nullptr){
+        font = spDefaultFont;
+    }
+    if(resizeIfRequired){
+        auto size = TextSize(font, text);
+        if(mWidth < size.x || mHeight < size.y){
+            CreateEmpty(size.x, size.y);
+        }
+    }
+    if(IsLoaded()){
         SDL_Color sdlColor =  {color.r, color.g, color.b, color.a};
-        SDL_Surface* genSurface = TTF_RenderText_Blended(font, text.c_str(), sdlColor);
-        if(genSurface == nullptr){
-            printf( "Unable to render text into surface! SDL Error: %s\n", SDL_GetError() );
-            return;
+        
+        int sumHeight = 0;
+        for(auto& l : GetLines(text)){
+        
+            SDL_Surface* genSurface = TTF_RenderText_Solid(font, l.c_str(), sdlColor);
+            if(genSurface == nullptr){
+                printf( "Unable to render text into surface! SDL Error: %s\n", SDL_GetError() );
+                return;
+            }
+
+            SDL_Surface* textSurface = SDL_ConvertSurfaceFormat( genSurface, SDL_PIXELFORMAT_RGBA8888, 0 );
+            if(textSurface == nullptr){
+                printf( "Unable to convert generated surface to display format! SDL Error: %s\n", SDL_GetError() );
+                return;
+            }
+
+            SDL_SetSurfaceBlendMode(textSurface, SDL_BLENDMODE_BLEND);
+            SDL_Rect target;
+            target.x = 0;
+            target.y = sumHeight;
+            target.w = mpSurface->w;
+            target.h = mpSurface->h;
+            SDL_BlitSurface(textSurface, NULL, mpSurface, &target);
+            
+            int w,h;
+            TTF_SizeText(font, l.c_str(), &w, &h);
+            sumHeight += h;
+
+            // Free everything used
+            SDL_FreeSurface(textSurface);
+            SDL_FreeSurface(genSurface);
+            
+            mModified = true;
         }
-
-        SDL_Surface* textSurface = SDL_ConvertSurfaceFormat( genSurface, SDL_PIXELFORMAT_RGBA8888, 0 );
-        if(textSurface == nullptr){
-            printf( "Unable to convert generated surface to display format! SDL Error: %s\n", SDL_GetError() );
-            return;
-        }
-
-        SDL_SetSurfaceBlendMode(textSurface, SDL_BLENDMODE_BLEND);
-        SDL_BlitSurface(textSurface, NULL, mpSurface, NULL);
-
-        // Free everything used
-        SDL_FreeSurface(textSurface);
-        SDL_FreeSurface(genSurface);
-
+        
     }
 }
     
@@ -162,6 +221,7 @@ bool Texture::LoadFromFile( const std::string& path )
 }
 
 bool Texture::CreateEmpty(int width, int height){
+    Free();
     Uint32 rmask, gmask, bmask, amask;
 
     /* SDL interprets each pixel as a 32-bit number, so our masks must depend

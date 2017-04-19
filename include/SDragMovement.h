@@ -26,7 +26,11 @@ public:
             if(mpEntityDragged){
                 mpEntityDragged->Get<CDraggable>()->mBeingDragged = false;
                 
-                mpEntityEngine->mEventDispatcher.Send( EDragUnit(mpEntityDragged->GetName(), false, true));
+                auto pTransform = mpEntityDragged->Get<CTransform>();
+                
+                auto event = EDragUnit(mpEntityDragged->GetName(), false, true);
+                event.mDroppedPosition = pTransform->mPosition + mMouseDisplacement;
+                mpEntityEngine->mEventDispatcher.Send( event );
             }
             mpEntityDragged = nullptr;
         }
@@ -41,14 +45,12 @@ public:
                 auto pTransform = e->Get<CTransform>();
                 if(!pTransform) continue;
                 
-                auto pSprite = e->Get<CSprite>();
-                
                 // Logic                    
                 Vector3 pos = pTransform->mPosition;
                 Rect area = Rect(pos.x-0.5*mDragSize, pos.y-0.5*mDragSize, mDragSize, mDragSize);
-                if(pSprite){ // Use sprite size rectangle
+                /*if(pSprite){ // Use sprite size rectangle
                     area = pSprite->GetLocalRect(Vector2::Reduce(pTransform->mScale)) + Vector2::Reduce(pos);
-                }
+                }*/
                 
                 Vector3 mouse = mpCamera->Screen2World(Input::GetMousePos());
                 
@@ -78,7 +80,7 @@ private:
     Camera* mpCamera = nullptr;
     Entity* mpEntityDragged = nullptr;
     Vector3 mMouseDisplacement;
-    int mDragSize = 5;
+    int mDragSize = 24;
 };
 
 

@@ -38,6 +38,10 @@ public:
     Vector3 Screen2World(const Vector2 position) const {
         return Camera2World(Screen2Camera(position));
     }
+    
+    Vector2 Percentage2Pixel(Vector2 p) const {
+        return Vector2(p.x*mWidth, p.y*mHeight);
+    }
 
     SDL_Renderer* getSDLRenderer() const { return mpRenderer; } // TODO: not really constness, use it carefully
 

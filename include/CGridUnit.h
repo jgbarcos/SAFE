@@ -10,7 +10,7 @@ class CGridUnit : public Component
 {
 public:
     CGridUnit() :
-        mX(-1), mY(-1)
+        mX(-1), mY(-1), mCanMove(true)
     {   mComponentName = "GridUnitComponent"; }    
     
     void FromLua(sol::table luaT) override {
@@ -21,6 +21,9 @@ public:
     // Required
     int mX; 
     int mY;
+    
+    // Generated
+    bool mCanMove;
 };
 
 

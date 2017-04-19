@@ -42,10 +42,10 @@ class Vector3
             return Vector3(x/rh.x, y/rh.y, z/rh.z);
         }
         
-        Vector3 operator * (const float v) const {
+        Vector3 operator * (const double v) const {
             return Vector3(x*v, y*v, z*v);
         }
-        Vector3 operator / (const float v) const {
+        Vector3 operator / (const double v) const {
             return Vector3(x/v, y/v, z/v);
         }
         

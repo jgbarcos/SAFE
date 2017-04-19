@@ -6,6 +6,7 @@
 
 #include "SAFE/CCollider.h"
 #include "SAFE/Input.h"
+#include "SAFE/CTextBox.h"
 
 namespace safe{
 
@@ -59,11 +60,39 @@ void SRender::Update(float delta, std::vector<Entity*>& entities) {
             pSprite->mpTexture->Render(*mpCamera, screenPos, scale, angle, pSprite->mCenter, pSprite->GetPixelClip());
         }
         
+        for(auto&& e : entities){
+            // Preconditions
+            auto pTextBox = e->Get<CTextBox>();
+            if(!pTextBox) continue;
+
+            auto pTransform = e->Get<CTransform>();
+            if(!pTransform) continue;
+
+            // Update Logic
+            if(!pTextBox->mIsLoaded){
+                auto size = pTextBox->mSize;
+                pTextBox->mpTexture = mpTextureManager->CreateEmpty(size.x, size.y, pTextBox->mComponentName+"_"+e->GetName());
+                pTextBox->mIsLoaded = true;
+            }
+
+            Vector2 scale (pTransform->mScale.x, pTransform->mScale.y);
+            float angle = 0;
+
+            Vector2 screenPos = mpCamera->World2Screen(pTransform->mPosition);
+            
+            if(pTextBox->mText != pTextBox->mLastText){
+                pTextBox->mpTexture->FillRect(Rect(0,0,pTextBox->mpTexture->GetWidth(), pTextBox->mpTexture->GetHeight()), Color(0,0,0,0));
+                pTextBox->mpTexture->PlotText(nullptr, pTextBox->mText, Vector2(0,0), pTextBox->mTextColor, pTextBox->mAutoResize);
+                pTextBox->mLastText = pTextBox->mText;
+            }
+            pTextBox->mpTexture->Render(*mpCamera, screenPos, scale, angle, pTextBox->mCenter, Rect());
+        }
+        
         // Render sprite borders
         if(dRenderSpriteRect){
             for(auto&& e:entities){
                 auto pSprite = e->Get<CSprite>();
-                if(!pSprite || !pSprite->mRender) continue;
+                auto pTextBox = e->Get<CTextBox>();
 
                 auto pTransform = e->Get<CTransform>();
                 if(!pTransform) continue;
@@ -73,16 +102,30 @@ void SRender::Update(float delta, std::vector<Entity*>& entities) {
                 auto renderer = mpCamera->getSDLRenderer();
                 Vector2 screenPos = mpCamera->World2Screen(pos);
 
-                Rect rect = pSprite->GetLocalRect(Vector2::Reduce(pTransform->mScale));
-                
-                Vector2 init = mpCamera->World2Screen(pos + Vector3(rect.x, rect.y, 0));
-                Vector2 end = mpCamera->World2Screen(pos + Vector3( rect.getU(), rect.getV(), 0 ));
+                if(pSprite){
+                    Rect rect = pSprite->GetLocalRect(Vector2::Reduce(pTransform->mScale));
+                    
+                    Vector2 init = mpCamera->World2Screen(pos + Vector3(rect.x, rect.y, 0));
+                    Vector2 end = mpCamera->World2Screen(pos + Vector3( rect.getU(), rect.getV(), 0 ));
 
-                Color red(155,0,0,255);
-                rectangleColor(renderer, init.x, init.y, end.x, end.y, red.toRGBA());
-                
-                Color bright_red(255,0,0,255);
-                pixelColor(renderer, screenPos.x, screenPos.y, bright_red.toRGBA ());
+                    Color red(155,0,0,255);
+                    rectangleColor(renderer, init.x, init.y, end.x, end.y, red.toRGBA());
+
+                    Color bright_red(255,0,0,255);
+                    pixelColor(renderer, screenPos.x, screenPos.y, bright_red.toRGBA ());
+                }
+                if(pTextBox){
+                    Rect rect = pTextBox->GetLocalRect(Vector2::Reduce(pTransform->mScale));
+                    
+                    Vector2 init = mpCamera->World2Screen(pos + Vector3(rect.x, rect.y, 0));
+                    Vector2 end = mpCamera->World2Screen(pos + Vector3( rect.getU(), rect.getV(), 0 ));
+
+                    Color red(155,0,0,255);
+                    rectangleColor(renderer, init.x, init.y, end.x, end.y, red.toRGBA());
+
+                    Color bright_red(255,0,0,255);
+                    pixelColor(renderer, screenPos.x, screenPos.y, bright_red.toRGBA ());
+                }
             }
         }
 

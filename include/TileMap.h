@@ -2,6 +2,7 @@
 #define TILEMAP_H
 
 #include <vector>
+#include <queue>
 #include <cmath>
 
 #include "SAFE/Vector2.h"
@@ -10,17 +11,31 @@
 
 namespace safe {
 
+class TileNode
+{
+public:
+    TileNode(int x, int y, int cost)
+        : mX(x), mY(y), mCost(cost) {}
+        
+    bool operator<(const TileNode& other) const {
+        return mCost < other.mCost;
+    }
+    
+    int mX;
+    int mY;
+    int mCost;
+};
+
 class TileMap
 {
 
 public:
+    
     TileMap(Vector3 origin, int cols, int rows, int tileWidth, int tileHeight)
             : mOrigin(origin), 
             mCols(cols), mRows(rows),
             mTileWidth(tileWidth), mTileHeight(tileHeight)
-    {
-        
-    }
+    {}
 
     bool CheckBounds(Vector3 pos){
         Vector2 i = World2Map(pos);
@@ -58,7 +73,12 @@ public:
     int GetRows(){ return mRows; }
     
     bool IsEmpty(int x, int y){
-        return mEntitiesPosition[x + y*mCols].empty();
+        if(mEntitiesPosition.count(x+y*mCols) > 0){
+            return mEntitiesPosition.at(x + y*mCols).empty();
+        }
+        else{
+            return true;
+        }
     }
     
     bool SetUnit(int x, int y, EntityEngine::EntityID id){
@@ -69,6 +89,67 @@ public:
         return false;
     }
     
+    std::vector<EntityEngine::EntityID> GetEntitiesAt(int x, int y){
+        if(CheckBounds(x,y) && mEntitiesPosition.count(x+y*mCols) > 0){
+            return mEntitiesPosition.at(x + y*mCols);
+        }
+        return std::vector<EntityEngine::EntityID>();
+    }
+    
+    void pushNeighbours(TileNode node, std::priority_queue<TileNode>& queue){
+        std::vector< TileNode > neighbours;
+        int x, y;
+        
+        x = node.mX+1;
+        y = node.mY;
+        if(CheckBounds(x, y) && IsEmpty(x, y)){
+            queue.push( TileNode(x, y, node.mCost-1) );
+        }
+        x = node.mX-1;
+        y = node.mY;
+        if(CheckBounds(x, y) && IsEmpty(x,y)){
+            queue.push( TileNode(x, y, node.mCost-1) );
+        }
+        x = node.mX;
+        y = node.mY+1;
+        if(CheckBounds(x, y) && IsEmpty(x,y)){
+            queue.push( TileNode(x, y, node.mCost-1) );
+        }
+        x = node.mX;
+        y = node.mY-1;
+        if(CheckBounds(x, y) && IsEmpty(x,y)){
+            queue.push( TileNode(x, y, node.mCost-1) );
+        }
+    }
+    
+    std::vector< TileNode > Dijstra(TileNode init){
+        std::vector< std::vector< bool >> closedNodes(mCols, std::vector<bool>(mRows, false));
+        std::priority_queue< TileNode > openNodes;
+        
+        std::vector< TileNode > result;
+        
+        TileNode current = init;
+        closedNodes[init.mX][init.mY] = true;
+        pushNeighbours(current, openNodes);
+        int iters = 0;
+        while(!openNodes.empty() && current.mCost >= 0){
+            current = openNodes.top();
+            openNodes.pop();
+            
+            if(!closedNodes[current.mX][current.mY]){
+                result.push_back(current);
+                if(current.mCost > 0){
+                    pushNeighbours(current, openNodes);
+                }
+            }
+            closedNodes[current.mX][current.mY] = true;     
+            iters++;
+        }
+        
+        return result;
+    }
+    
+public:    
     std::unordered_map< int, std::vector<EntityEngine::EntityID> > mEntitiesPosition;
     
 

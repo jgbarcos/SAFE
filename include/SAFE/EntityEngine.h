@@ -15,7 +15,7 @@
 
 namespace safe {
     
-class System;    // forward declaration
+class System;          // forward declaration
 
 /**
  * Engine of the ECS, updates systems and manages entities and components.
@@ -143,8 +143,7 @@ public:
     bool ExistsTemplate(EntityID id){
         return mEntityTemplates.find(id) != mEntityTemplates.end();
     }
-
-
+    
     /**
      * Adds a component creator function. It allows the creation of a component
      * from a string name.

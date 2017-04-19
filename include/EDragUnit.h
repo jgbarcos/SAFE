@@ -16,6 +16,8 @@ public:
     bool mIsPicked;
     bool mIsDropped;
     
+    Vector3 mDroppedPosition;
+    
     std::string toString() const override {
         if(mIsPicked){
             return mUnit + " " + "is picked";

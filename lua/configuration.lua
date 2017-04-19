@@ -13,6 +13,9 @@ local configuration = {
 
     -- Set random_seed to "-1" to seed randomly
     random_seed = -1,
+
+    default_font = "assets/fonts/Roboto_Condensed/Regular.ttf",
+    default_font_size = 12,
 }
 
 return configuration
