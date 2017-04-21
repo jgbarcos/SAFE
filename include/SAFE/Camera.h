@@ -28,8 +28,8 @@ public:
         return Vector2::Reduce( position * mTransform.mScale) + GetSize()/2.0;
     }
     Vector3 Screen2Camera(const Vector2 screenPos) const {
-        double z = mTransform.mPosition.z;
-        return Vector2::Extend(screenPos - GetSize()/2.0, z) / mTransform.mScale;
+        Vector2 v = ( screenPos - GetSize()/2.0 ) / Vector2::Reduce(mTransform.mScale);
+        return Vector2::Extend(v, mTransform.mPosition.z);
     }
 
     Vector2 World2Screen(const Vector3 position) const {

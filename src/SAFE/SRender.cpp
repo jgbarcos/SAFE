@@ -174,6 +174,10 @@ float SRender::GetDepth(CTransform* pTransform, CSprite* pSprite){
         std::cout << pTransform->mPosition.z << "," << std::endl;
     }
     
+    if(pTransform->mPosition.z != pTransform->mPosition.z){
+        std::cout << "error with:" << pTransform->mPosition << std::endl;
+    }
+    
 
     return pTransform->mPosition.z + 1000.0*(clip.y + clip.height * pTransform->mScale.y * vert); 
 }

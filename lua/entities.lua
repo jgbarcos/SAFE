@@ -52,7 +52,7 @@ templates[#templates+1] = {
         is_vertical = false
     },
     TransformComponent = { 
-        position = {x=0, y=0, z=-5},
+        position = {x=0, y=0, z=-5.1},
         scale = {x=1, y=1, z=1} 
     }
 }
@@ -65,7 +65,7 @@ templates[#templates+1] = {
         is_vertical = false
     },
     TransformComponent = { 
-        position = {x=0, y=0, z=-5},
+        position = {x=0, y=0, z=-5.1},
         scale = {x=1, y=1, z=1} 
     }
 }
@@ -78,7 +78,7 @@ templates[#templates+1] = {
         is_vertical = false
     },
     TransformComponent = { 
-        position = {x=0, y=0, z=-5},
+        position = {x=0, y=0, z=-5.0},
         scale = {x=1, y=1, z=1} 
     }
 }
@@ -113,13 +113,13 @@ for i, name in ipairs(names) do
             center = sp.get(sp.center, pre..name..post)
         },
         DraggableComponent = {},
-        GridUnitComponent = { x=2, y=i },
+        GridUnitComponent = { x=2, y=i, team=0 },
         CharacterDataComponent = {
             name = name,
             base_health = math.random(4,12),
             base_movement = math.random(2,4),
             base_attack = math.random(2,6),
-            attack_area = proc:hor_line_length(0,0, math.random(1,5))
+            attack_area = proc:hor_line_length(1,0, math.random(1,5))
         }
     }
 end
@@ -135,11 +135,13 @@ for i, name in ipairs(names) do
             center = sp.get(sp.center, pre..name..post)
         },
         DraggableComponent = {},
-        GridUnitComponent = { x=8, y=i },
+        GridUnitComponent = { x=8, y=i, team=1 },
         CharacterDataComponent = {
             name = name,
             base_health = math.random(4,12),
-            base_movement = math.random(2,4)
+            base_movement = math.random(2,4),
+            base_attack = math.random(2,6),
+            attack_area = proc:hor_line_length(1,0, math.random(1,5))
         }
     }
 end

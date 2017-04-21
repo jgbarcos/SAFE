@@ -6,6 +6,7 @@
 
 #include "SAFE/Entity.h"
 #include "SAFE/EntityEngine.h"
+#include "SAFE/EntityFactory.h"
 
 namespace safe {
 

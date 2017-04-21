@@ -15,7 +15,8 @@
 
 namespace safe {
     
-class System;          // forward declaration
+class System;        // forward declaration
+class EntityFactory; // forward declaration
 
 /**
  * Engine of the ECS, updates systems and manages entities and components.

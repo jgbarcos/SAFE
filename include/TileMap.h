@@ -65,8 +65,20 @@ public:
         return Map2World(pos.x, pos.y);
     }
     
+    Vector3 Map2World(Vector3 pos){
+        Vector3 res = Map2World(Vector2::Reduce(pos));
+        res.z = pos.z;
+        return res;
+    }
+    
     Vector3 Map2World(int x, int y){
         return mOrigin + Vector3(x*mTileWidth, y*mTileHeight,0);
+    }
+    
+    Vector3 Map2World(int x, int y, double z){
+        Vector3 pos = Map2World(x,y);
+        pos.z = z;
+        return pos;
     }
     
     int GetCols(){ return mCols; }

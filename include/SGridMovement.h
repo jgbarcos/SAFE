@@ -12,6 +12,7 @@
 #include "TileMap.h"
 
 #include "EDragUnit.h"
+#include "SAFE/Rect.h"
 
 using namespace safe;
 
@@ -19,7 +20,7 @@ class SGridMovement : public System
 {
 public:
     SGridMovement(TileMap* t)
-        : mpTileMap(t){}
+        : mpTileMap(t) {}
     
     void Init(std::vector<Entity*>& entities) override {        
         // Set tiles
@@ -55,10 +56,7 @@ public:
             if(!pTile) continue;
             
             auto pTransform = e->Get<CTransform>();
-            if(!pTransform){ // Create transform if not provided
-                pTransform = new CTransform();
-                e->Add<CTransform>(std::unique_ptr<Component>(pTransform) );
-            }
+            if(!pTransform) continue;
             pTransform->mPosition = mpTileMap->Map2World(pTile->mX, pTile->mY);
         }
         
@@ -71,16 +69,16 @@ public:
             return true;
         };
         mpEntityEngine->mEventDispatcher.Subscribe(EDragUnit().type(), onDragUnit);
+        
+        // Tiles EntityFactory
+        mAttackArea = EntityFactory(mpEntityEngine, "AttackArea");
+        mMovementArea = EntityFactory(mpEntityEngine, "MovementArea");
+        mReadyArea = EntityFactory(mpEntityEngine, "ReadyArea");
     }
     
-    void Update(float delta, std::vector<Entity*>& entities) override {          
-        for(auto pArea : mAttackArea){
-            pArea->mIsActive = false;
-        }
-        for(auto pArea : mReadyArea){
-            pArea->mIsActive = false;
-        }
-        int availableCount = 0;
+    void Update(float delta, std::vector<Entity*>& entities) override {    
+        mAttackArea.ReleaseAllEntities();
+        mReadyArea.ReleaseAllEntities();
         
         while(!mReceivedEvents.empty()){
             EDragUnit event = mReceivedEvents.front();
@@ -99,14 +97,12 @@ public:
             
             
             if(event.mIsPicked){
-                int count = 0;
                 int movement = pCharData->mBaseMovement;
                 
                 auto nodes = mpTileMap->Dijstra(TileNode(pUnit->mX, pUnit->mY, movement));
                 
                 for(auto n : nodes){
-                    auto pArea = RequestMovementArea(count);
-                    count += 1;
+                    auto pArea = mMovementArea.DemandEntity();
                     
                     auto pTileTransform = pArea->Get<CTransform>();
                     double z = pTileTransform->mPosition.z;
@@ -133,7 +129,7 @@ public:
                     }
                 }  
                 
-                HideMovementArea();
+                mMovementArea.ReleaseAllEntities();
             }
         }
         
@@ -171,77 +167,45 @@ public:
             
             // Render available units tile
             if(pUnit->mCanMove){
-                auto pArea = RequestReadyArea(availableCount);
-                availableCount++;
-                
-                auto pTileTransform = pArea->Get<CTransform>();
+                auto pTileTransform = mReadyArea.DemandEntity()->Get<CTransform>();
                 double z = pTileTransform->mPosition.z;
-                pTileTransform->mPosition = mpTileMap->Map2World(pUnit->mX, pUnit->mY);  
-                pTileTransform->mPosition.z = z;
+                pTileTransform->mPosition = mpTileMap->Map2World(pUnit->mX, pUnit->mY, z);
             }
             
             auto pCharData = e->Get<CCharacterData>();
-            if(pCharData && pDraggable && pDraggable->mBeingDragged){
-                auto pos = mpEntityEngine->GetEntity("Cursor")->Get<CTransform>()->mPosition;
-                
-                auto tilePos = mpTileMap->World2Map(pos);
-                int initx = tilePos.x;
-                int inity = tilePos.y;
+            if(pCharData){
+                Vector2 tilePos = Vector2(pUnit->mX, pUnit->mY);
+                if(pDraggable && pDraggable->mBeingDragged){
+                    Vector3 pos = mpEntityEngine->GetEntity("Cursor")->Get<CTransform>()->mPosition;
+                    tilePos = mpTileMap->World2Map(pos);
+                }
                 
                 int xunit = 1;
                 if(pTransform->mScale.x < 0){
                     xunit = -1;
                 }
                 
-                for(size_t i=0; i<pCharData->mAttackArea.size(); i++){
-                    Vector2 vec = pCharData->mAttackArea[i];
+                for(Vector2& vec : pCharData->mAttackArea){
+                    auto pTileEntity = mAttackArea.DemandEntity();
                     
-                    auto pArea = RequestAttackArea(i);
-                    
-                    auto pTileTransform = pArea->Get<CTransform>();
+                    auto pTileTransform = pTileEntity->Get<CTransform>();
                     double z = pTileTransform->mPosition.z;
                     
+                    pTileTransform->mPosition = mpTileMap->Map2World(tilePos.x + vec.x*xunit, tilePos.y + vec.y, z);  
                     
-                    pTileTransform->mPosition = mpTileMap->Map2World(initx + vec.x*xunit, inity + vec.y);  
-                    pTileTransform->mPosition.z = z+0.01;
+                    auto pTileSprite = pTileEntity->Get<CSprite>();
+                    if(xunit > 0){
+                        pTileSprite->mClip.y = 0.5;
+                        pTileSprite->mClip.height = 0.5;
+                        pTileSprite->mCenter.y = 0;
+                    }
+                    else{
+                        pTileSprite->mClip.y = 0;
+                        pTileSprite->mClip.height = 0.5;
+                        pTileSprite->mCenter.y = 1.0;
+                    }
                 }
             }
-        }
-    }
-    
-    Entity* RequestAttackArea(size_t i){
-        while(i >= mAttackArea.size()){
-            mAttackArea.push_back( mpEntityEngine->CreateEntityFromTemplate("AttackArea"));
-        }
-        
-        auto e = mAttackArea.at(i);
-        e->mIsActive = true;
-        return e;
-    }
-    
-    Entity* RequestReadyArea(size_t i){
-        while(i >= mReadyArea.size()){
-            mReadyArea.push_back( mpEntityEngine->CreateEntityFromTemplate("ReadyArea"));
-        }
-        
-        auto e = mReadyArea.at(i);
-        e->mIsActive = true;
-        return e;
-    }
-    
-    Entity* RequestMovementArea(size_t i){
-        while(i >= mMovementArea.size()){
-            mMovementArea.push_back( mpEntityEngine->CreateEntityFromTemplate("MovementArea") );
-        }
-        
-        auto e = mMovementArea.at(i);
-        e->mIsActive = true;
-        return e;
-    }
-    
-    void HideMovementArea(){
-        for(auto e : mMovementArea){
-            e->mIsActive = false;
         }
     }
     
@@ -250,10 +214,9 @@ private:
     
     TileMap* mpTileMap;
     
-    std::vector<Entity*> mAttackArea;
-    std::vector<Entity*> mMovementArea;
-    std::vector<Entity*> mReadyArea;
-    
+    EntityFactory mAttackArea;
+    EntityFactory mMovementArea;
+    EntityFactory mReadyArea;
 };
 
 
