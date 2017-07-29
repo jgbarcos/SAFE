@@ -18,9 +18,14 @@ It requires the following libraries to be installed:
  - SDL2_gfx
  - Box2D
  - Lua5.2 (it would probably also work with Lua5.1)
- - [Sol2](https://github.com/ThePhD/sol2) (already provided with a single header file at /include/sol.hpp)
  
-Download [this folder](https://www.dropbox.com/sh/7dvd05e6xlt1t14/AABFb1CHoQ_S2wz9L4k3wsyMa?dl=0) into the project folder. It contains some graphic assets.
+The following libraries are already provided within this repository or at build time:
+
+ - [Sol2](https://github.com/ThePhD/sol2) (/include/sol.hpp)
+ - [jagt's pprint](https://github.com/jagt/pprint.lua) (/lua/pprint.lua)
+ - GoogleTest
+ 
+Also, download [this folder](https://www.dropbox.com/sh/7dvd05e6xlt1t14/AABFb1CHoQ_S2wz9L4k3wsyMa?dl=0) into the project folder. It contains some graphic assets.
 
 ### Usage
 
