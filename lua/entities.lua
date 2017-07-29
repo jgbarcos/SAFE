@@ -1,5 +1,7 @@
-sp = require "lua.sprite_data"
-proc = require "lua.procedural"
+local sp = require "lua.sprite_data"
+local proc = require "lua.procedural"
+local units = require "lua.units"
+local pprint = require "lua.pprint"
 
 local entities = {}
 local templates = {}
@@ -43,11 +45,12 @@ templates[#templates+1] = {
         scale = {x=1, y=1, z=1} 
     }
 }
+ animations = {} 
 
 templates[#templates+1] = {
     TemplateName = "MovementArea",
     SpriteComponent = { 
-        filename = "assets/BlueArea.png", 
+        filename = "assets/BlueArea2.png", 
         center = {x=0.5, y=0.5},
         is_vertical = false
     },
@@ -73,7 +76,20 @@ templates[#templates+1] = {
 templates[#templates+1] = {
     TemplateName = "AttackArea",
     SpriteComponent = { 
-        filename = "assets/RedArea.png", 
+        filename = "assets/RedArea2.png", 
+        center = {x=0.5, y=0.5},
+        is_vertical = false
+    },
+    TransformComponent = { 
+        position = {x=0, y=0, z=-5.0},
+        scale = {x=1, y=1, z=1} 
+    }
+}
+
+templates[#templates+1] = {
+    TemplateName = "DamageArea",
+    SpriteComponent = { 
+        filename = "assets/DamageArea3.png", 
         center = {x=0.5, y=0.5},
         is_vertical = false
     },
@@ -99,11 +115,29 @@ local post = ".png"
 local names = {"Rebel_Rifle", "Rebel_Spear",
     "Mercenary_Pistol", "Mercenary_Sniper",
     "Armored_Heavy", "Rebel_Flamefighter",
-    "Soldier_Assault", "Soldier_Shield"
+    "Soldier_Assault", "Soldier_Shield",
+    "Soldier_Sniper"
 }
 
+local classes = {
+  Rebel_Rifle = {"Ranged", "Assault"},
+  Rebel_Spear = "Melee",
+  Mercenary_Pistol = "Assault",
+  Mercenary_Sniper = "Ranged",
+  Armored_Heavy = "Heavy",
+  Rebel_Flamefighter = {"Melee", "Support"},
+  Soldier_Assault = "Assault",
+  Soldier_Shield = {"Heavy", "Support"},
+  Soldier_Sniper = {"Ranged"},
+}
+
+
 for i, name in ipairs(names) do
-    entities[#entities+1] = {
+    local class = proc:random_element(classes[name])
+    local char_data = units:gen_archetype(class)
+    char_data.name = name.."("..class..")"
+
+    local ent = {
         TransformComponent = {
             position = { x=-100, y=-50 },
             scale = {x=1, y=1, z=1} 
@@ -113,21 +147,28 @@ for i, name in ipairs(names) do
             center = sp.get(sp.center, pre..name..post)
         },
         DraggableComponent = {},
-        GridUnitComponent = { x=2, y=i, team=0 },
-        CharacterDataComponent = {
-            name = name,
-            base_health = math.random(4,12),
-            base_movement = math.random(2,4),
-            base_attack = math.random(2,6),
-            attack_area = proc:hor_line_length(1,0, math.random(1,5))
-        }
+        GridUnitComponent = { x=2, y=i-1, team=0 },
+        CharacterDataComponent = char_data
     }
+
+    if sp.sheet[pre..name..post] then
+        ent["SheetAnimationComponent"] = {
+            animations = sp.sheet[pre..name..post],
+            start_anim = "idle"
+        }
+    end
+
+    entities[#entities+1] = ent
 end
 
 for i, name in ipairs(names) do
-    entities[#entities+1] = {
+    local class = proc:random_element(classes[name])
+    local char_data = units:gen_archetype(class)
+    char_data.name = name.."("..class..")"
+
+    local ent = {
         TransformComponent = {
-            position = { x=100, y=-50 },
+            position = { x=-100, y=-50 },
             scale = {x=-1, y=1, z=1} 
         },
         SpriteComponent = {
@@ -135,15 +176,18 @@ for i, name in ipairs(names) do
             center = sp.get(sp.center, pre..name..post)
         },
         DraggableComponent = {},
-        GridUnitComponent = { x=8, y=i, team=1 },
-        CharacterDataComponent = {
-            name = name,
-            base_health = math.random(4,12),
-            base_movement = math.random(2,4),
-            base_attack = math.random(2,6),
-            attack_area = proc:hor_line_length(1,0, math.random(1,5))
-        }
+        GridUnitComponent = { x=8, y=i-1, team=1 },
+        CharacterDataComponent = char_data
     }
+
+    if sp.sheet[pre..name..post] then
+        ent["SheetAnimationComponent"] = {
+            animations = sp.sheet[pre..name..post],
+            start_anim = "shoot"
+        }
+    end
+
+    entities[#entities+1] = ent
 end
 
 

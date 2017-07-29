@@ -26,13 +26,9 @@ void SSpriteSheetAnimator::Update(float delta, std::vector<Entity*>& entities) {
         }
 
         // Update Logic             
-        int anim = -1;
-        if( pTransform->mVelocity.y < 0) anim = 0;
-        else if(pTransform->mVelocity.y > 0) anim = 1;
-        else if(pTransform->mVelocity.x < 0) anim = 2;
-        else if(pTransform->mVelocity.x > 0) anim = 3;
+        auto anim = pSheet->mCurrentAnimation;
 
-        bool should_play = anim >= 0;
+        bool should_play = pSheet->mIsPlaying;
         bool should_change = should_play && anim != pSheet->mCurrentAnimation;
 
         if(should_change){

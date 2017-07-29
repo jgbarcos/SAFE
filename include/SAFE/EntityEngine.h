@@ -13,6 +13,8 @@
 #include "SAFE/Component.h"
 #include "SAFE/EventDispatcher.h"
 
+#include "SAFE/CSheetAnimation.h" //Remove when understanding sol2 usertypes/members
+
 namespace safe {
     
 class System;        // forward declaration
@@ -29,6 +31,11 @@ private:
  
 public:
     typedef std::string EntityID;
+    
+    /**
+     * Constructor
+     */
+    EntityEngine(sol::state& lua);
     
     /**
      * Allows the initialization, if required, of the registered systems.
@@ -87,7 +94,6 @@ public:
     bool ExistsEntity(EntityID id){
         return mEntities.find(id) != mEntities.end();
     }
-    
     
     /**
      * Registers a template of an entity. It eases the creation of a entity.
@@ -155,9 +161,25 @@ public:
         std::function<ReqData()> f = [&](){
             return ReqData(new T(), std::type_index(typeid(T)));
         };
-        mCompCreator[T().mComponentName] = f;
+        
+        auto t = T();
+        
+        // Mapping between a component name (string) and 
+        // a function that creates instances of that component
+        mCompCreator[t.mComponentName] = f;
+        
+        // Allows the component to setup usertypes and bind Entity::Get<T> to a function
+        std::string getter = t.PrepareLua(mLuaView);
+        if(!getter.empty()){
+            mLuaView.set_function(getter, &Entity::Get<T>);
+        }
+        
     }
     
+    
+    CSheetAnimation* getSheetAnimation(EntityID entityID){
+        return mEntities.at(entityID)->Get<CSheetAnimation>();
+    }
     
     /**
      * Creates an unique ID for a new entity
@@ -171,6 +193,7 @@ public:
     std::unordered_map<std::string, std::function<ReqData()> > mCompCreator;
     
     EventDispatcher mEventDispatcher;
+    sol::state_view mLuaView;
     
 private:
     void FillWithComponents(Entity* pEntity, sol::table luaT);

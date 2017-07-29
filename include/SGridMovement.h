@@ -173,36 +173,25 @@ public:
             }
             
             auto pCharData = e->Get<CCharacterData>();
-            if(pCharData){
-                Vector2 tilePos = Vector2(pUnit->mX, pUnit->mY);
-                if(pDraggable && pDraggable->mBeingDragged){
-                    Vector3 pos = mpEntityEngine->GetEntity("Cursor")->Get<CTransform>()->mPosition;
-                    tilePos = mpTileMap->World2Map(pos);
-                }
-                
-                int xunit = 1;
-                if(pTransform->mScale.x < 0){
-                    xunit = -1;
-                }
-                
-                for(Vector2& vec : pCharData->mAttackArea){
-                    auto pTileEntity = mAttackArea.DemandEntity();
+            if(pCharData){                
+                Vector3 pos = mpEntityEngine->GetEntity("Cursor")->Get<CTransform>()->mPosition;
+                Vector2 tilePos = mpTileMap->World2Map(pos);
                     
-                    auto pTileTransform = pTileEntity->Get<CTransform>();
-                    double z = pTileTransform->mPosition.z;
+                if( (pDraggable && pDraggable->mBeingDragged)
+                || (pUnit->mX == tilePos.x && pUnit->mY == tilePos.y) ){
                     
-                    pTileTransform->mPosition = mpTileMap->Map2World(tilePos.x + vec.x*xunit, tilePos.y + vec.y, z);  
-                    
-                    auto pTileSprite = pTileEntity->Get<CSprite>();
-                    if(xunit > 0){
-                        pTileSprite->mClip.y = 0.5;
-                        pTileSprite->mClip.height = 0.5;
-                        pTileSprite->mCenter.y = 0;
+                    int xunit = 1;
+                    if(pTransform->mScale.x < 0){
+                        xunit = -1;
                     }
-                    else{
-                        pTileSprite->mClip.y = 0;
-                        pTileSprite->mClip.height = 0.5;
-                        pTileSprite->mCenter.y = 1.0;
+
+                    for(Vector2& vec : pCharData->mAttackArea){
+                        auto pTileEntity = mAttackArea.DemandEntity();
+
+                        auto pTileTransform = pTileEntity->Get<CTransform>();
+                        double z = pTileTransform->mPosition.z;
+
+                        pTileTransform->mPosition = mpTileMap->Map2World(tilePos.x + vec.x*xunit, tilePos.y + vec.y, z);  
                     }
                 }
             }

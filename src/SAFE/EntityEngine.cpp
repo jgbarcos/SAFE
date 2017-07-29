@@ -3,8 +3,15 @@
 #include "CCharacterData.h"
 
 namespace safe {
+  
+EntityEngine::EntityEngine(sol::state& lua) : mLuaView(lua){
+    
+}
 
 void EntityEngine::Init (){
+    mLuaView.new_usertype<Entity>("Entity");
+    mLuaView.set_function("get_entity", &EntityEngine::GetEntity, this);
+  
     GatherEntities();
   
     for(auto&& s : mSystems){

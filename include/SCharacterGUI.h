@@ -68,6 +68,7 @@ public:
             auto v = mpTileMap->World2Map(pos);
             int x = v.x;
             int y = v.y;
+            mpDisplayEntity->mIsActive = false;
             for( auto id : mpTileMap->GetEntitiesAt(x,y)){
                 if(Input::IsPressed(SDL_SCANCODE_K)){
                     auto pEntity = mpEntityEngine->GetEntity(id);
@@ -81,6 +82,7 @@ public:
                 auto pCharData = pEntity->Get<CCharacterData>();
 
                 if(pCharData){
+                    mpDisplayEntity->mIsActive = true;
                     mpDisplayEntity->Get<CTextBox>()->mText = 
                           "- ID: " + id + '\n'
                         + "- Name: " + pCharData->mName + '\n'

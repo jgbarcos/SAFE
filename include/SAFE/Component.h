@@ -14,6 +14,12 @@ class Component
         virtual ~Component() {};  
         
         /**
+         * Called once, it allows to initialize and set lua bindings.
+         * @param lua the lua state.
+         */
+        virtual std::string PrepareLua(sol::state_view& lua){return "";};
+        
+        /**
          * Loads member data from lua table.
          * @param luaT lua table with the component contents.
          */

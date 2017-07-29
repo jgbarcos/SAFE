@@ -1,49 +1,33 @@
 local module = {}
 
-module.animations_data = {
-    dir_4_frames_2 = {
-        [0] = {
-            { time=0.3, rect={x=0,y=0, w=0.25, h=0.25} },
-            { time=0.3, rect={x=0,y=0.25, w=0.25, h=0.25} }
-        },
-        [1] = {
-            { time=0.3, rect={x=0.25,y=0, w=0.25, h=0.25} },
-            { time=0.3, rect={x=0.25,y=0.25, w=0.25, h=0.25} }
-        },
-        [2] = {
-            { time=0.3, rect={x=0.5,y=0, w=0.25, h=0.25} },
-            { time=0.3, rect={x=0.5,y=0.25, w=0.25, h=0.25} }
-        },
-        [3] = {
-            { time=0.3, rect={x=0.75,y=0, w=0.25, h=0.25} },
-            { time=0.3, rect={x=0.75,y=0.25, w=0.25, h=0.25} }
-        }
-    },
+local t_idle=0.3
+local t_stance_change=0.2
+local t_fast_shoot=0.1
 
-    dir_4_frames_3 = {
-        [0] = {
-            { time=0.3, rect={x=0,y=0, w=0.25, h=0.25} },
-            { time=0.3, rect={x=0,y=0.25, w=0.25, h=0.25} },
-            { time=0.3, rect={x=0,y=0, w=0.25, h=0.25} },
-            { time=0.3, rect={x=0,y=0.5, w=0.25, h=0.25} }
+module.animations_data = {
+    custom_sheet = {
+        idle = {
+            { rect={x=0/7, y=0/2, w=1/7, h=1/2}, time= t_idle },
+            { rect={x=1/7, y=0/2, w=1/7, h=1/2}, time= t_idle },
+            { rect={x=2/7, y=0/2, w=1/7, h=1/2}, time= t_idle },
+            { rect={x=3/7, y=0/2, w=1/7, h=1/2}, time= t_idle }
         },
-        [1] = {
-            { time=0.3, rect={x=0.25,y=0, w=0.25, h=0.25} },
-            { time=0.3, rect={x=0.25,y=0.25, w=0.25, h=0.25} },
-            { time=0.3, rect={x=0.25,y=0, w=0.25, h=0.25} },
-            { time=0.3, rect={x=0.25,y=0.5, w=0.25, h=0.25} }
-        },
-        [2] = {
-            { time=0.3, rect={x=0.5,y=0, w=0.25, h=0.25} },
-            { time=0.3, rect={x=0.5,y=0.25, w=0.25, h=0.25} },
-            { time=0.3, rect={x=0.5,y=0, w=0.25, h=0.25} },
-            { time=0.3, rect={x=0.5,y=0.5, w=0.25, h=0.25} }
-        },
-        [3] = {
-            { time=0.3, rect={x=0.75,y=0, w=0.25, h=0.25} },
-            { time=0.3, rect={x=0.75,y=0.25, w=0.25, h=0.25} },
-            { time=0.3, rect={x=0.75,y=0, w=0.25, h=0.25} },
-            { time=0.3, rect={x=0.75,y=0.5, w=0.25, h=0.25} }
+        shoot = {
+            { rect={x=0/7, y=0/2, w=1/7, h=1/2}, time= t_idle },
+            { rect={x=1/7, y=0/2, w=1/7, h=1/2}, time= t_idle },
+            { rect={x=2/7, y=0/2, w=1/7, h=1/2}, time= t_idle },
+            { rect={x=3/7, y=0/2, w=1/7, h=1/2}, time= t_idle },
+            { rect={x=0/7, y=0/2, w=1/7, h=1/2}, time= t_idle },
+            { rect={x=0/7, y=1/2, w=1/7, h=1/2}, time= t_stance_change },
+            { rect={x=1/7, y=1/2, w=1/7, h=1/2}, time= t_stance_change },
+            { rect={x=2/7, y=1/2, w=1/7, h=1/2}, time= t_fast_shoot },
+            { rect={x=3/7, y=1/2, w=1/7, h=1/2}, time= t_fast_shoot },
+            { rect={x=4/7, y=1/2, w=1/7, h=1/2}, time= t_fast_shoot },
+            { rect={x=5/7, y=1/2, w=1/7, h=1/2}, time= t_fast_shoot },
+            { rect={x=6/7, y=1/2, w=1/7, h=1/2}, time= t_fast_shoot },
+            { rect={x=2/7, y=1/2, w=1/7, h=1/2}, time= t_fast_shoot },
+            { rect={x=3/7, y=1/2, w=1/7, h=1/2}, time= t_fast_shoot },
+            { rect={x=0/7, y=1/2, w=1/7, h=1/2}, time= t_stance_change }
         }
     }
 }
@@ -64,8 +48,13 @@ module.center = {
     ["assets/Mercenary_Pistol.png"] = { x=0.25, y=1},
     ["assets/Armored_Heavy.png"] = { x=0.4, y=1},
     ["assets/Rebel_Firefighter.png"] = { x=0.4, y=1},
-    ["assets/Soldier_Assault.png"] = { x=0.6, y=1},
-    ["assets/Soldier_Shield.png"] = { x=0.5, y=1}
+    ["assets/Soldier_Assault.png"] = { x=0.5, y=1},
+    ["assets/Soldier_Shield.png"] = { x=0.5, y=1},
+    ["assets/Soldier_Sniper.png"] = { x=0.25, y=1},
+}
+
+module.sheet = {
+    ["assets/Soldier_Assault.png"] = module.animations_data.custom_sheet 
 }
 
 return module

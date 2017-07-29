@@ -15,14 +15,26 @@ class CSheetAnimation : public Component
 public:
     typedef std::pair<Rect, float> Frame;
     typedef std::vector < Frame > Animation;
-    typedef int AnimIndex;
+    typedef std::string AnimIndex;
 
     CSheetAnimation() :
-        mCurrentAnimation(0),
+        mCurrentAnimation(),
         mCurrentFrame(0),
         mIsPlaying(true),
-        mIsReset(true)
+        mIsReset(true),
+        mPlayOnce(false)
     {   mComponentName = "SheetAnimationComponent"; }
+    
+    std::string PrepareLua(sol::state_view& lua) override {
+        lua.new_usertype<CSheetAnimation>(
+            "SheetAnimationComponent", 
+            "change_animation", &CSheetAnimation::ChangeAnimation,
+            "is_playing", &CSheetAnimation::mIsPlaying,
+            "play_once", &CSheetAnimation::mPlayOnce
+        );
+        
+        return "get_sheet_animation";
+    }
 
     void FromLua(sol::table luaT) override {
         sol::table t = luaT.get<sol::table>("animations");
@@ -32,7 +44,10 @@ public:
             };
             t.for_each(fx);
         }
-        mCurrentAnimation = luaT.get_or("start_anim", mAnimations.begin()->first);
+        auto index = luaT.get_or("start_anim", mAnimations.begin()->first);
+        index = ErrorCheckAnimationExists(index);
+        
+        mCurrentAnimation = index;
     }
 
 
@@ -48,7 +63,6 @@ public:
         }
     }
 
-
     // Required
     std::map< AnimIndex, Animation > mAnimations;
     AnimIndex mCurrentAnimation;
@@ -59,6 +73,7 @@ public:
     float mTimeRemaining;
     bool mIsPlaying;
     bool mIsReset;
+    bool mPlayOnce;
 
 
     // Functions (Const functions should not modify the component)
@@ -71,6 +86,8 @@ public:
     }
 
     void ChangeAnimation(AnimIndex index) {
+        index = ErrorCheckAnimationExists(index);
+        
         mCurrentAnimation = index;
         mCurrentFrame = 0;
         ResetFrame();
@@ -84,9 +101,25 @@ public:
     void AdvanceTime(float delta){
         mTimeRemaining -= delta;
         if( mTimeRemaining < 0){
-            mCurrentFrame = (mCurrentFrame+1) % GetCurrentAnimation().size();
+            int numFrames = GetCurrentAnimation().size();
+            
+            mIsPlaying = !(mPlayOnce && mCurrentFrame == numFrames-1);
+            
+            mCurrentFrame = (mCurrentFrame+1) % numFrames;
             ResetFrame();
         }
+    }
+    
+    AnimIndex ErrorCheckAnimationExists(AnimIndex index){
+        if(mAnimations.find(index) == mAnimations.end()){
+            std::cout << "[CSheetAnimation]" << "(Error) " 
+                << "animation \"" << index << "\" does not exist"
+            << std::endl;
+            
+            // Use valid animation
+            index = mAnimations.begin()->first;
+        }
+        return index;
     }
 
 };

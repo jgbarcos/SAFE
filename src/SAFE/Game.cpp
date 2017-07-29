@@ -53,7 +53,12 @@ Game::Game(int screenWidth, int screenHeight, SDL_Window* pWindow, SDL_Renderer*
 {
     Texture::SetDefaultRenderer(mpRenderer);
     
-    mLua.open_libraries(sol::lib::base, sol::lib::package, sol::lib::math);
+    mLua.open_libraries(sol::lib::base, 
+                        sol::lib::package, 
+                        sol::lib::math, 
+                        sol::lib::io,
+                        sol::lib::string,
+                        sol::lib::table);
 }
 
 void Game::Start(){
@@ -110,7 +115,7 @@ void Game::Start(){
     /*
      * Entity-Component-System Configuration
      */
-    EntityEngine engine;
+    EntityEngine engine(mLua);
     engine.mEventDispatcher.mDebugLog = luaConf.get_or("event_dispatcher_logs", false);
     
     sol::table luaSafe = mLua.create_named_table("safe"); // set safe namespace in lua
@@ -148,7 +153,7 @@ void Game::Start(){
     engine.AddComponentCreator<CCharacterData>();
     engine.AddComponentCreator<CDraggable>();
     engine.AddComponentCreator<CGridTile>();
-    engine.AddComponentCreator<CGridUnit>();    
+    engine.AddComponentCreator<CGridUnit>();   
         
     /*
      * Lua entity scripts
@@ -183,10 +188,24 @@ void Game::Start(){
             {
                 quit = true;
             }
-            else if(event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_F1){
+            else if(event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_F1)
+            {
                 for(auto&& i : engine.mEntities){
                     std::cout << i.second->GetName() << std::endl; 
                 }
+            }
+            // Simple command line console
+            else if(event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_TAB)
+            {
+                std::string luaConsole;
+                std::cout << "[CONSOLE MODE]" << std::endl;
+                std::cout << ">";
+                
+                while(getline(std::cin, luaConsole) && !luaConsole.empty()){
+                    mLua.script(luaConsole);
+                    std::cout << ">";
+                }
+                std::cout << "[RESUMING GAME]" << std::endl;
             }
             
             Input::ProcessEvent(&event);
