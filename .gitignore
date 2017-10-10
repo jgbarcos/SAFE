@@ -8,6 +8,9 @@ Makefile
 nbproject/
 compile_commands.json
 
+#GoogleTest
+*.pc
+
 # Project
 dev0
 test_all

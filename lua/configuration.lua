@@ -18,4 +18,13 @@ local configuration = {
     default_font_size = 12,
 }
 
+-- Define globals for libraries
+class = require "lib.middleclass"
+pprint = require "lib.pprint"
+util = require "safe.utility"
+
+-- Define globas for common lua modules
+game = {}
+game.actions = require "actions_list"
+
 return configuration

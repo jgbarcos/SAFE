@@ -59,6 +59,10 @@ Game::Game(int screenWidth, int screenHeight, SDL_Window* pWindow, SDL_Renderer*
                         sol::lib::io,
                         sol::lib::string,
                         sol::lib::table);
+    
+    // Add "/lua/" folder into the lua path
+    const std::string package_path = mLua["package"]["path"];
+    mLua["package"]["path"] = package_path + (!package_path.empty() ? ";" : "") + "./lua/?.lua";
 }
 
 void Game::Start(){
@@ -71,7 +75,7 @@ void Game::Start(){
     /*
      * Lua configuration file
      */
-    sol::table luaConf = mLua.script_file("./lua/configuration.lua");
+    sol::table luaConf = mLua.script_file("lua/configuration.lua");
     
     // Set random seed
     int seed = luaConf.get_or("random_seed", -1);
@@ -97,6 +101,9 @@ void Game::Start(){
         Texture::SetDefaultFont(font);
     }
     
+    /*
+     * Setting camera and tilemap 
+     */
     int w = 0;
     int h = 0;
     SDL_GetWindowSize(mpWindow,&w, &h);
@@ -115,18 +122,25 @@ void Game::Start(){
     /*
      * Entity-Component-System Configuration
      */
-    EntityEngine engine(mLua);
+    EntityEngine engine(mLua.lua_state());
     engine.mEventDispatcher.mDebugLog = luaConf.get_or("event_dispatcher_logs", false);
     
+    // Lua bindings and namespace
     sol::table luaSafe = mLua.create_named_table("safe"); // set safe namespace in lua
     luaSafe.set_function("create_entity", &EntityEngine::CreateEntityFromLua, &engine);
     luaSafe.set_function("create_template", &EntityEngine::RegisterTemplate, &engine);
+    
+    luaSafe.new_usertype<Entity>("Entity");
+    luaSafe.set_function("get_entity", &EntityEngine::GetEntity, &engine);
+    
+    luaSafe.set_function("add_action_list", &ActionListManager::LuaAdd, &engine.mActionListManager);
 
     // Define Systems
     auto pRender = new SRender(&textureManager, &camera);
     pRender->dRenderPhysics = luaConf.get_or("render_physics", false);
     pRender->dRenderSpriteRect = luaConf.get_or("render_sprite_rect", false);
     
+    // Order matters between some of these systems
     engine.RegisterSystem(std::unique_ptr<System>( new STileMapUpdate(&tileMap) ));
     engine.RegisterSystem(std::unique_ptr<System>( new STurnOrder(&tileMap, &camera) ));
     engine.RegisterSystem(std::unique_ptr<System>( new SPlayerMovement() ));
@@ -163,6 +177,9 @@ void Game::Start(){
     } catch (sol::error& e){
         std::cout << e.what() << std::endl;
     }
+    
+    // Debug anything right at the start of the execution
+    mLua.script_file("./lua/debug_script.lua");
     
     // Keyboard state
     Input::StartInput();

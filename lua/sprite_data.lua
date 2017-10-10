@@ -1,6 +1,6 @@
 local module = {}
 
-local t_idle=0.3
+local t_idle=0.4
 local t_stance_change=0.2
 local t_fast_shoot=0.1
 
@@ -13,11 +13,6 @@ module.animations_data = {
             { rect={x=3/7, y=0/2, w=1/7, h=1/2}, time= t_idle }
         },
         shoot = {
-            { rect={x=0/7, y=0/2, w=1/7, h=1/2}, time= t_idle },
-            { rect={x=1/7, y=0/2, w=1/7, h=1/2}, time= t_idle },
-            { rect={x=2/7, y=0/2, w=1/7, h=1/2}, time= t_idle },
-            { rect={x=3/7, y=0/2, w=1/7, h=1/2}, time= t_idle },
-            { rect={x=0/7, y=0/2, w=1/7, h=1/2}, time= t_idle },
             { rect={x=0/7, y=1/2, w=1/7, h=1/2}, time= t_stance_change },
             { rect={x=1/7, y=1/2, w=1/7, h=1/2}, time= t_stance_change },
             { rect={x=2/7, y=1/2, w=1/7, h=1/2}, time= t_fast_shoot },

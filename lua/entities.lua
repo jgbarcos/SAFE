@@ -1,7 +1,6 @@
-local sp = require "lua.sprite_data"
-local proc = require "lua.procedural"
-local units = require "lua.units"
-local pprint = require "lua.pprint"
+local sp = require "sprite_data"
+local proc = require "procedural"
+local units = require "units"
 
 local entities = {}
 local templates = {}
@@ -131,8 +130,13 @@ local classes = {
   Soldier_Sniper = {"Ranged"},
 }
 
+--names = {"Soldier_Assault"}
 
-for i, name in ipairs(names) do
+local num_units = 5
+
+for i=1,num_units,1 do
+    name = proc:random_element(names)
+
     local class = proc:random_element(classes[name])
     local char_data = units:gen_archetype(class)
     char_data.name = name.."("..class..")"
@@ -147,7 +151,7 @@ for i, name in ipairs(names) do
             center = sp.get(sp.center, pre..name..post)
         },
         DraggableComponent = {},
-        GridUnitComponent = { x=2, y=i-1, team=0 },
+        GridUnitComponent = { x=2, y=i+1, team=0 },
         CharacterDataComponent = char_data
     }
 
@@ -161,7 +165,9 @@ for i, name in ipairs(names) do
     entities[#entities+1] = ent
 end
 
-for i, name in ipairs(names) do
+for i=1,num_units,1 do
+    name = proc:random_element(names)
+
     local class = proc:random_element(classes[name])
     local char_data = units:gen_archetype(class)
     char_data.name = name.."("..class..")"
@@ -176,14 +182,14 @@ for i, name in ipairs(names) do
             center = sp.get(sp.center, pre..name..post)
         },
         DraggableComponent = {},
-        GridUnitComponent = { x=8, y=i-1, team=1 },
+        GridUnitComponent = { x=8, y=i+1, team=1 },
         CharacterDataComponent = char_data
     }
 
     if sp.sheet[pre..name..post] then
         ent["SheetAnimationComponent"] = {
             animations = sp.sheet[pre..name..post],
-            start_anim = "shoot"
+            start_anim = "idle"
         }
     end
 

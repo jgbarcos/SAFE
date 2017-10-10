@@ -2,6 +2,7 @@
 #define CCHARACTERDATA_H
 
 #include "SAFE/Vector2.h"
+#include "SAFE/Component.h"
 
 using namespace safe;
 
@@ -16,6 +17,20 @@ public:
     {   
         mComponentName = "CharacterDataComponent";
         mCurrentHealth = mBaseHealth;
+    }
+        
+    std::string PrepareLua(sol::state_view& lua) override {
+        typedef CCharacterData Comp;
+        lua.new_usertype<Comp>(
+            mComponentName, 
+            "name", &Comp::mName,
+            "base_health", &Comp::mBaseHealth,
+            "health", &Comp::mCurrentHealth,
+            "base_movement", &Comp::mBaseMovement,
+            "base_attack", &Comp::mBaseAttack
+        );
+        
+        return "get_character_data";
     }
 
     void FromLua(sol::table luaT) override {

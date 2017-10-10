@@ -1,17 +1,14 @@
+#include <vector>
+
 #include "SAFE/EntityEngine.h"
 #include "SAFE/System.h"
 #include "CCharacterData.h"
 
 namespace safe {
   
-EntityEngine::EntityEngine(sol::state& lua) : mLuaView(lua){
-    
-}
+EntityEngine::EntityEngine(lua_State* pState) : mLua(pState) {}
 
 void EntityEngine::Init (){
-    mLuaView.new_usertype<Entity>("Entity");
-    mLuaView.set_function("get_entity", &EntityEngine::GetEntity, this);
-  
     GatherEntities();
   
     for(auto&& s : mSystems){
@@ -21,6 +18,7 @@ void EntityEngine::Init (){
   
 void EntityEngine::Update (float delta){
     mEventDispatcher.PropagateEvents();
+    mActionListManager.Update(delta);
     
     GatherEntities();
   

@@ -1,4 +1,4 @@
-proc = require "lua.procedural"
+proc = require "procedural"
 
 local module = {}
 

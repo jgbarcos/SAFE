@@ -19,18 +19,20 @@ public:
 
     CSheetAnimation() :
         mCurrentAnimation(),
+        mPlayOnce(false),
         mCurrentFrame(0),
         mIsPlaying(true),
-        mIsReset(true),
-        mPlayOnce(false)
+        mIsReset(true)
     {   mComponentName = "SheetAnimationComponent"; }
     
     std::string PrepareLua(sol::state_view& lua) override {
-        lua.new_usertype<CSheetAnimation>(
-            "SheetAnimationComponent", 
-            "change_animation", &CSheetAnimation::ChangeAnimation,
-            "is_playing", &CSheetAnimation::mIsPlaying,
-            "play_once", &CSheetAnimation::mPlayOnce
+        typedef CSheetAnimation Comp;
+        lua.new_usertype<Comp>(
+            mComponentName, 
+            "change_animation", &Comp::ChangeAnimation,
+            "is_playing", &Comp::mIsPlaying,
+            "play_once", &Comp::mPlayOnce,
+            "current_frame", &Comp::mCurrentFrame
         );
         
         return "get_sheet_animation";
@@ -40,7 +42,7 @@ public:
         sol::table t = luaT.get<sol::table>("animations");
         if(t.valid()){
             auto fx = [&](sol::object key, sol::object value){
-                createAnimation( key.as<AnimIndex>(), value.as<sol::table>() );
+                CreateAnimation( key.as<AnimIndex>(), value.as<sol::table>() );
             };
             t.for_each(fx);
         }
@@ -51,7 +53,7 @@ public:
     }
 
 
-    void createAnimation(AnimIndex key, sol::table luaT){
+    void CreateAnimation(AnimIndex key, sol::table luaT){
         mAnimations[key] = std::vector<Frame>();
 
         for(size_t i=0; i<luaT.size(); i++){
@@ -66,14 +68,16 @@ public:
     // Required
     std::map< AnimIndex, Animation > mAnimations;
     AnimIndex mCurrentAnimation;
+    
+    // Optional
+    bool mPlayOnce;
+    int mCurrentFrame;
 
     // Generated
     bool mIsInit = false;
-    int mCurrentFrame;
     float mTimeRemaining;
     bool mIsPlaying;
     bool mIsReset;
-    bool mPlayOnce;
 
 
     // Functions (Const functions should not modify the component)
@@ -99,14 +103,17 @@ public:
     }
 
     void AdvanceTime(float delta){
+        if(!mIsPlaying) return;
+        
         mTimeRemaining -= delta;
         if( mTimeRemaining < 0){
             int numFrames = GetCurrentAnimation().size();
             
             mIsPlaying = !(mPlayOnce && mCurrentFrame == numFrames-1);
-            
+
             mCurrentFrame = (mCurrentFrame+1) % numFrames;
             ResetFrame();
+            
         }
     }
     
