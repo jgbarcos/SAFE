@@ -1,25 +1,25 @@
 #include "SAFE/SPhysics.h"
 
-namespace safe{
+namespace safe {
 
 void SPhysics::Update(float delta, std::vector<Entity*>& entities) {
     // Pre-Physics
-    for(auto&& e : entities){
+    for (auto&& e : entities) {
         // Preconditions
         auto pCollider = e->Get<CCollider>();
-        if(!pCollider) continue;
+        if (!pCollider) continue;
 
         auto pTransform = e->Get<CTransform>();
-        if(!pTransform) continue;
+        if (!pTransform) continue;
 
         // Update Logic                
-        if(!pCollider->mpBody) AddCollider(pCollider, pTransform);
+        if (!pCollider->mpBody) AddCollider(pCollider, pTransform);
 
         b2Vec2 vel;
         vel.x = pTransform->mVelocity.x / mPixelsPerMeter;
         vel.y = pTransform->mVelocity.y / mPixelsPerMeter;
         pCollider->mpBody->SetLinearVelocity(vel);
-        
+
         b2Vec2 pos;
         pos.x = pTransform->mPosition.x / mPixelsPerMeter;
         pos.y = pTransform->mPosition.y / mPixelsPerMeter;
@@ -30,28 +30,27 @@ void SPhysics::Update(float delta, std::vector<Entity*>& entities) {
     mWorld.Step(delta, 6, 2);
 
     // Post-Physics
-    for(auto&& e : entities){
+    for (auto&& e : entities) {
         // Preconditions
         auto pTransform = e->Get<CTransform>();
-        if(!pTransform) continue;
+        if (!pTransform) continue;
 
         auto pCollider = e->Get<CCollider>();
         // Update Logic
-        if(!pCollider)
+        if (!pCollider)
             pTransform->mPosition += pTransform->mVelocity * delta;
-        else{
+        else {
             pTransform->mPosition.x = pCollider->mpBody->GetPosition().x * mPixelsPerMeter;
             pTransform->mPosition.y = pCollider->mpBody->GetPosition().y * mPixelsPerMeter;
         }
     }
 }
 
-
-void SPhysics::AddCollider (CCollider* pCollider, CTransform* pTransform){
+void SPhysics::AddCollider(CCollider* pCollider, CTransform* pTransform) {
     // Configure body
     b2BodyDef bodyDef;
-    if(pCollider->mType == CCollider::Type::DYNAMIC) bodyDef.type = b2_dynamicBody;
-    else if(pCollider->mType == CCollider::Type::STATIC) bodyDef.type = b2_staticBody;
+    if (pCollider->mType == CCollider::Type::DYNAMIC) bodyDef.type = b2_dynamicBody;
+    else if (pCollider->mType == CCollider::Type::STATIC) bodyDef.type = b2_staticBody;
     bodyDef.position.Set(pTransform->mPosition.x / mPixelsPerMeter, pTransform->mPosition.y / mPixelsPerMeter);
     pCollider->mpBody = mWorld.CreateBody(&bodyDef);
 
@@ -62,8 +61,8 @@ void SPhysics::AddCollider (CCollider* pCollider, CTransform* pTransform){
 
     std::unique_ptr<b2Shape> pShape;
 
-    switch( pCollider->mShape ){
-    case( CCollider::Shape::CIRCLE ):
+    switch (pCollider->mShape) {
+    case( CCollider::Shape::CIRCLE):
         b2CircleShape* pCircle;
         pCircle = new b2CircleShape;
         pCircle->m_p.Set(pos.x, pos.y);
@@ -71,10 +70,10 @@ void SPhysics::AddCollider (CCollider* pCollider, CTransform* pTransform){
         pShape.reset(pCircle);
         break;
 
-    case( CCollider::Shape::RECTANGLE ):
+    case( CCollider::Shape::RECTANGLE):
         b2PolygonShape* pRect;
         pRect = new b2PolygonShape;
-        pRect->SetAsBox(size.x, size.y, b2Vec2(pos.x, pos.y),angle);
+        pRect->SetAsBox(size.x, size.y, b2Vec2(pos.x, pos.y), angle);
         pShape.reset(pRect);
         break;
     }

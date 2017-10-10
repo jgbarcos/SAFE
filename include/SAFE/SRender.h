@@ -12,14 +12,12 @@
 
 namespace safe {
 
-
-class SRender : public System
-{
+class SRender : public System {
 public:
+
     SRender(TextureManager* textureMgr, Camera* camera) :
-        mpTextureManager(textureMgr),
-        mpCamera(camera)
-    {}
+    mpTextureManager(textureMgr),
+    mpCamera(camera) { }
 
     void Update(float delta, std::vector<Entity*>& entities) override;
 

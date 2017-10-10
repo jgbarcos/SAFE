@@ -3,35 +3,34 @@
 
 #include "SAFE/Event.h"
 
-class EDragUnit : public safe::Event
-{
+class EDragUnit : public safe::Event {
 public:
+
     EDragUnit()
-        : mUnit(""), mIsPicked(false), mIsDropped(false) {}
-    
+    : mUnit(""), mIsPicked(false), mIsDropped(false) { }
+
     EDragUnit(safe::EntityEngine::EntityID id, bool picked, bool dropped)
-        : mUnit(id), mIsPicked(picked), mIsDropped(dropped) {}
-    
+    : mUnit(id), mIsPicked(picked), mIsDropped(dropped) { }
+
     safe::EntityEngine::EntityID mUnit;
     bool mIsPicked;
     bool mIsDropped;
-    
+
     Vector3 mDroppedPosition;
-    
+
     std::string toString() const override {
-        if(mIsPicked){
+        if (mIsPicked) {
             return mUnit + " " + "is picked";
         }
-        else if (mIsDropped){
+        else if (mIsDropped) {
             return mUnit + " " + "is dropped";
         }
-        else{
+        else {
             return "nothing happened";
         }
     }
 
-    virtual Type type() const override
-    {
+    virtual Type type() const override {
         return "DragUnitEvent";
     }
 };

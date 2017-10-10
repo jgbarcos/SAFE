@@ -4,7 +4,7 @@
 #include "SAFE/CSprite.h"
 #include "SAFE/CTransform.h"
 
-namespace safe{
+namespace safe {
 
 void SSpriteSheetAnimator::Update(float delta, std::vector<Entity*>& entities) {
     for (auto&& e : entities) {
@@ -16,10 +16,10 @@ void SSpriteSheetAnimator::Update(float delta, std::vector<Entity*>& entities) {
         if (!pSprite) continue;
 
         auto pTransform = e->Get<CTransform>();
-        if (!pTransform) continue; 
+        if (!pTransform) continue;
 
         // Initializations
-        if( !pSheet->mIsInit ){
+        if (!pSheet->mIsInit) {
             pSheet->mIsInit = true;
 
             pSprite->mClip = pSheet->GetCurrentFrame().first;
@@ -31,22 +31,22 @@ void SSpriteSheetAnimator::Update(float delta, std::vector<Entity*>& entities) {
         bool should_play = pSheet->mIsPlaying;
         bool should_change = should_play && anim != pSheet->mCurrentAnimation;
 
-        if(should_change){
+        if (should_change) {
             pSheet->ChangeAnimation(anim);
         }
 
-        if(should_play){
+        if (should_play) {
             // Update Sheet
-            if( pSheet->mIsReset) pSheet->ResetFrame();
-            if( pSheet->mIsPlaying) pSheet->AdvanceTime(delta);
+            if (pSheet->mIsReset) pSheet->ResetFrame();
+            if (pSheet->mIsPlaying) pSheet->AdvanceTime(delta);
 
             // Update Sprite
             pSprite->mClip = pSheet->GetCurrentFrame().first;
-        }            
+        }
     }
 }
-    
 
-  
+
+
 } // namespace safe
 

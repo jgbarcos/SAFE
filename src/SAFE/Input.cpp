@@ -19,23 +19,19 @@ int Input::sMouseY;
 
 int Input::sMouseWheelY;
 
-bool Input::IsDown(Uint8 key)
-{
+bool Input::IsDown(Uint8 key){
     return spKeyboard[key];
 }
 
-bool Input::WasDown(Uint8 key)
-{
+bool Input::WasDown(Uint8 key){
     return spPrevKeyboard[key];
 }
 
-bool Input::IsReleased(Uint8 key)
-{
+bool Input::IsReleased(Uint8 key){
     return WasDown(key) && !IsDown(key);
 }
 
-bool Input::IsPressed(Uint8 key)
-{
+bool Input::IsPressed(Uint8 key){
     return !WasDown(key) && IsDown(key);
 }
 
@@ -69,8 +65,7 @@ bool Input::IsMousePressed(int button){
     return !WasMouseDown(button) && IsMouseDown(button);
 }
 
-void Input::StartInput()
-{
+void Input::StartInput(){
     spKeyboard = SDL_GetKeyboardState(&sNumKeys);
     spPrevKeyboard = (unsigned char*)malloc(sizeof(unsigned char) * sNumKeys);
     
@@ -78,8 +73,7 @@ void Input::StartInput()
     sPrevMouseState = 0;
 }
 
-void Input::UpdateInput()
-{
+void Input::UpdateInput(){
     memcpy(spPrevKeyboard, spKeyboard, sNumKeys);
     SDL_PumpEvents();
     

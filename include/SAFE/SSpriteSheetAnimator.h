@@ -7,7 +7,7 @@
 namespace safe {
 
 class SSpriteSheetAnimator : public System {
-public:    
+public:
     void Update(float delta, std::vector<Entity*>& entities) override;
 };
 

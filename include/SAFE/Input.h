@@ -12,8 +12,7 @@ namespace safe {
 /**
  * Updates and gives access to the input current state. Updated at Game loop.
  */
-class Input
-{
+class Input {
 public:
     static bool IsDown(Uint8 key);
     static bool WasDown(Uint8 key);
@@ -30,7 +29,7 @@ public:
     static bool WasMouseDown(int button);
     static bool IsMouseReleased(int button);
     static bool IsMousePressed(int button);
-    
+
 
     static void StartInput();
     static void UpdateInput();
@@ -46,7 +45,7 @@ private:
 
     static int sMouseX;
     static int sMouseY;
-    
+
     static int sMouseWheelY;
 };
 

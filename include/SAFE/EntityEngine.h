@@ -17,27 +17,27 @@
 #include "SAFE/CSheetAnimation.h" //Remove when understanding sol2 usertypes/members
 
 namespace safe {
-    
-class System;        // forward declaration
-class EntityFactory; // forward declaration
+
+class System; // forward declaration
 
 /**
  * Engine of the ECS, updates systems and manages entities and components.
  */
-    
-class EntityEngine
-{
+
+class EntityEngine {
 private:
-    typedef std::pair< Component*, std::type_index> ReqData;    
- 
+    typedef std::pair< Component*, std::type_index> ReqData;
+
 public:
     typedef std::string EntityID;
-    
+
     /**
      * Constructor
+     * 
+     * @param pState
      */
     EntityEngine(lua_State* pState);
-    
+
     /**
      * Allows the initialization, if required, of the registered systems.
      * Called just before the first update.
@@ -48,8 +48,8 @@ public:
      * Updates all the systems. Update order is based on added order.
      * @param delta
      */
-    void Update (float delta);
-    
+    void Update(float delta);
+
     /**
      * Registers a new System.
      * @param system (ownership)
@@ -62,7 +62,7 @@ public:
      * @return pointer to the created entity or nullptr
      */
     Entity* CreateEntity(EntityID id);
-    
+
     /**
      * Creates a new Entity from the content of a Lua table.
      * 
@@ -71,76 +71,39 @@ public:
      * @return pointer to the created entity or nullptr
      */
     Entity* CreateEntityFromLua(sol::table luaT);
-            
+
     /**
      * Get the an Entity by its id.
      * 
      * @param id identifier of the entity.
      * @return Entity pointer or nullptr if not found.
      */
-    Entity* GetEntity(EntityID id){
-        auto it = mEntities.find(id);
-        if(it != mEntities.end()){
-            return it->second.get();
-        }
-        return nullptr;
-    }
-      
-    
+    Entity* GetEntity(EntityID id);
+
+
     /**
      * Checks if an entity exists.
      * 
      * @param id identifier of the entity.
      * @return true if exists.
      */
-    bool ExistsEntity(EntityID id){
-        return mEntities.find(id) != mEntities.end();
-    }
-    
+    bool ExistsEntity(EntityID id);
+
     /**
      * Registers a template of an entity. It eases the creation of a entity.
      * @param t lua table with the entity components
      */
-    void RegisterTemplate(sol::table t){
-        sol::object name = t.get<sol::object>("TemplateName");
-        if(name.valid()){
-            mEntityTemplates[name.as<EntityID>()] = t;
-        }
-        else{
-            std::cout 
-                << "[EntityEngine]" << "RegisterTemplate()"
-                << " FAILED (reason: not a valid TemplateName found)"
-            << std::endl;
-        }
-    }
-    
-    
+    void RegisterTemplate(sol::table t);
+
+
     /**
      * Creates a new Entity from a registered template.
      * 
      * @param tmpID identifier of the registered template
      * @param entID identifier of the new entity
      * @return pointer to the created entity or nullptr
-     */  
-    Entity* CreateEntityFromTemplate(EntityID tmpID, EntityID entID = ""){
-        if(entID == ""){
-            entID = GetNextID();
-        }
-        if(ExistsTemplate(tmpID)){
-            sol::table t = mEntityTemplates[tmpID];
-            auto pEntity = CreateEntity(entID);
-            
-            FillWithComponents(pEntity, t);
-            return pEntity;
-        }
-        else{
-            std::cout 
-                << "[EntityEngine]" << "ApplyTemplate() with arg " << tmpID
-                << " FAILED (reason: template does not exists)"
-            << std::endl;
-            return nullptr;
-        }
-    }
+     */
+    Entity* CreateEntityFromTemplate(EntityID tmpID, EntityID entID = "");
 
 
     /**
@@ -149,34 +112,33 @@ public:
      * @param id identifier of the registered template.
      * @return true if exists.
      */
-    bool ExistsTemplate(EntityID id){
-        return mEntityTemplates.find(id) != mEntityTemplates.end();
-    }
-    
+    bool ExistsTemplate(EntityID id);
+
     /**
      * Adds a component creator function. It allows the creation of a component
      * from a string name.
      * @tparam T Derived class of Component
      */
     template<typename T>
-    void AddComponentCreator(){
-        std::function<ReqData()> f = [&](){
-            return ReqData(new T(), std::type_index(typeid(T)));
+    void AddComponentCreator() {
+        std::function < ReqData() > f = [&]()
+        {
+            return ReqData(new T(), std::type_index(typeid (T)));
         };
-        
+
         auto t = T();
-        
+
         // Mapping between a component name (string) and 
         // a function that creates instances of that component
         mCompCreator[t.mComponentName] = f;
-        
+
         // Allows the component to setup usertypes and bind Entity::Get<T> to a function
         std::string getter = t.PrepareLua(mLua);
-        if(!getter.empty()){
+        if (!getter.empty()) {
             mLua.set_function(getter, &Entity::Get<T>);
         }
     }
-    
+
     /**
      * Creates an unique ID for a new entity
      * @return Entity identifier
@@ -187,20 +149,20 @@ public:
     std::unordered_map<EntityID, std::unique_ptr<Entity> > mEntities;
     std::unordered_map<EntityID, sol::table > mEntityTemplates;
     std::unordered_map<std::string, std::function<ReqData()> > mCompCreator;
-    
+
     EventDispatcher mEventDispatcher;
     ActionListManager mActionListManager;
     sol::state_view mLua;
-    
+
 private:
     void FillWithComponents(Entity* pEntity, sol::table luaT);
-    
+
     /**
      * Gathers all the active entity pointers into mVecOfEntities
      */
     void GatherEntities();
     std::vector<Entity*> mVecOfEntities;
-    
+
     int mUniqueNumber = 0;
     bool mIsInitialized = false;
 };

@@ -3,5 +3,4 @@
 
 namespace safe {
 
-
 } // namespace safe

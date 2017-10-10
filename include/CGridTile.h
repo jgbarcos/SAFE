@@ -6,22 +6,25 @@
 
 using namespace safe;
 
-class CGridTile : public Component
-{
+class CGridTile : public Component {
 public:
+
     CGridTile() :
-        mX(-1), mY(-1)
-    {   mComponentName = "GridTileComponent"; }    
-    
+        mX(-1), 
+        mY(-1) 
+    {
+        mComponentName = "GridTileComponent";
+    }
+
     void FromLua(sol::table luaT) override {
         mX = luaT.get_or("x", mX);
         mY = luaT.get_or("y", mY);
     }
-    
+
     // Required
-    int mX; 
+    int mX;
     int mY;
-    
+
 };
 
 

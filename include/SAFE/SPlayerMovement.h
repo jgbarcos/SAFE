@@ -7,7 +7,7 @@
 namespace safe {
 
 class SPlayerMovement : public System {
-public:    
+public:
     void Update(float delta, std::vector<Entity*>& entities) override;
 };
 

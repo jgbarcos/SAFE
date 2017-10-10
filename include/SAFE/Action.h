@@ -3,10 +3,14 @@
 
 namespace safe {
 
-class Action
-{
+class Action {
 public:
-    virtual void Update(float delta){ mHasFinished = true; };
+
+    virtual ~Action() { }
+
+    virtual void Update(float delta) {
+        mHasFinished = true;
+    };
     bool mHasFinished = false;
 };
 

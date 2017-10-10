@@ -3,16 +3,17 @@
 
 namespace safe {
 
-class Event
-{
+class Event {
 public:
     typedef const char* Type;
-    
-    virtual ~Event(){}
-    
-    virtual Type type() const= 0;
-    
-    virtual std::string toString() const { return std::string(type()); }
+
+    virtual ~Event() { }
+
+    virtual Type type() const = 0;
+
+    virtual std::string toString() const {
+        return std::string(type());
+    }
 };
 
 

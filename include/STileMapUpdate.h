@@ -13,20 +13,21 @@
 using namespace safe;
 
 class STileMapUpdate : public System {
-public:    
-    STileMapUpdate(TileMap* tileMap) : mpTileMap(tileMap) {}
-    
-    void Update(float delta, std::vector<Entity*>& entities) override {        
+public:
+
+    STileMapUpdate(TileMap* tileMap) : mpTileMap(tileMap) { }
+
+    void Update(float delta, std::vector<Entity*>& entities) override {
         mpTileMap->mEntitiesPosition.clear();
-            
-        for(auto&& e : entities){
+
+        for (auto&& e : entities) {
             auto pUnit = e->Get<CGridUnit>();
-            if(!pUnit) continue;
-            
+            if (!pUnit) continue;
+
             mpTileMap->SetUnit(pUnit->mX, pUnit->mY, e->GetName());
-        }        
-    }    
-    
+        }
+    }
+
 private:
     TileMap* mpTileMap;
 };

@@ -9,19 +9,18 @@
 
 namespace safe {
 
-class Game
-{
-    public:
-        Game(int screenWidth, int screenHeight, SDL_Window* pWindow, SDL_Renderer* pRenderer);
+class Game {
+public:
+    Game(int screenWidth, int screenHeight, SDL_Window* pWindow, SDL_Renderer* pRenderer);
 
-        void Start();
-    protected:
-    private:
-        Vector2 mScreenSize;
-        SDL_Window* mpWindow = nullptr;
-        SDL_Renderer* mpRenderer = nullptr;
-        sol::state mLua;
-        
+    void Start();
+
+private:
+    Vector2 mScreenSize;
+    SDL_Window* mpWindow = nullptr;
+    SDL_Renderer* mpRenderer = nullptr;
+    sol::state mLua;
+
 };
 
 } // namespace safe

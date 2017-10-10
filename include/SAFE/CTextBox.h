@@ -8,31 +8,34 @@
 
 namespace safe {
 
-class CTextBox : public Component
-{
+class CTextBox : public Component {
 public:
+
     CTextBox() :
         mText(""),
         mAutoResize(true),
-        mSize(1,1),
-        mCenter(0.5,0.5),  // Middle point
-        mTextColor(0,0,0,255)
-    {   mComponentName = "TextBoxComponent"; }
-        
+        mSize(1, 1),
+        mCenter(0.5, 0.5), // Middle point
+        mTextColor(0, 0, 0, 255) 
+    {
+        mComponentName = "TextBoxComponent";
+    }
+
     void FromLua(sol::table luaT) override {
         mText = luaT.get<std::string>("text");
         mAutoResize = luaT.get_or("auto_resize", true);
         sol::table t = luaT.get<sol::table>("size");
         if (t.valid()) mSize = Vector2(t);
-        t =  luaT.get<sol::table>("center") ;
+        t = luaT.get<sol::table>("center");
         if (t.valid()) mCenter = Vector2(t);
     }
-    
+
     // Returns the Size of the sprite with clipping applied in local coordinates (no zoom involved)
-    Rect GetLocalRect(Vector2 scale = Vector2(1,1)){
+
+    Rect GetLocalRect(Vector2 scale = Vector2(1, 1)) {
         int w = mpTexture->GetWidth();
         int h = mpTexture->GetHeight();
-        return Rect(-w*scale.x*mCenter.x, -h*scale.y*mCenter.y, w*scale.x, h*scale.y);
+        return Rect(-w * scale.x * mCenter.x, -h * scale.y * mCenter.y, w * scale.x, h * scale.y);
     }
 
     // Required
