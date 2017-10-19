@@ -2,7 +2,7 @@
 
 #include "SAFE/EntityEngine.h"
 #include "SAFE/System.h"
-#include "CCharacterData.h"
+#include "SAFE/SystemLua.h"
 
 namespace safe {
 
@@ -32,6 +32,11 @@ void EntityEngine::RegisterSystem(std::unique_ptr<System> system) {
         system->Init(mVecOfEntities);
     }
     system->SetEngine(this);
+    mSystems.push_back(std::move(system));
+}
+
+void EntityEngine::RegisterSystemLua(sol::table luaT) {
+    std::unique_ptr<System> system = std::make_unique<SystemLua>(luaT);
     mSystems.push_back(std::move(system));
 }
 
@@ -115,6 +120,16 @@ void EntityEngine::FillWithComponents(Entity* pEntity, sol::table luaT) {
             ReqData pair = iter->second(); // call the ComponentCreator function
             pEntity->AddComponent(pair.second, std::unique_ptr<Component>(pair.first));
             pair.first->FromLua(res);
+        }
+    }
+    
+    // Check for Lua components
+    for (auto&& iter = mLuaCompCreator.begin(); iter != mLuaCompCreator.end(); ++iter) {
+        sol::table params = luaT.get<sol::table>(iter->first);
+        if (params.valid()) {
+            //TODO: Add component fields
+            sol::table instance = iter->second(params);
+            pEntity->AddExtraComponent(iter->first, instance);
         }
     }
 }

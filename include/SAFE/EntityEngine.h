@@ -57,6 +57,12 @@ public:
     void RegisterSystem(std::unique_ptr<System> system);
 
     /**
+     * Registers a Lua System
+     * @param lua table with the system (see fields in SAFE/SystemLua.h)
+     */
+    void RegisterSystemLua(sol::table luaT);
+    
+    /**
      * Creates a empty Entity to be filled with Components.
      * 
      * @return pointer to the created entity or nullptr
@@ -138,6 +144,13 @@ public:
             mLua.set_function(getter, &Entity::Get<T>);
         }
     }
+    
+    void RegisterComponent(sol::table luaClass) {
+        mLuaCompCreator[luaClass.get<std::string>("name")] = [luaClass](sol::table params){ 
+            sol::table instance = luaClass["new"](luaClass, params);
+            return instance;
+        };
+    }
 
     /**
      * Creates an unique ID for a new entity
@@ -149,6 +162,7 @@ public:
     std::unordered_map<EntityID, std::unique_ptr<Entity> > mEntities;
     std::unordered_map<EntityID, sol::table > mEntityTemplates;
     std::unordered_map<std::string, std::function<ReqData()> > mCompCreator;
+    std::unordered_map<std::string, std::function<sol::table(sol::table)> > mLuaCompCreator;
 
     EventDispatcher mEventDispatcher;
     ActionListManager mActionListManager;

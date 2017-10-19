@@ -131,7 +131,9 @@ void Game::Start() {
 
     luaSafe.new_usertype<Entity>("Entity");
     luaSafe.set_function("get_entity", &EntityEngine::GetEntity, &engine);
-
+    luaSafe.set_function("get_component", &Entity::GetComponent);
+    luaSafe.set_function("register_system", &EntityEngine::RegisterSystemLua, &engine);
+    luaSafe.set_function("register_component", &EntityEngine::RegisterComponent, &engine);
     luaSafe.set_function("add_action_list", &ActionListManager::LuaAdd, &engine.mActionListManager);
 
     // Define Systems

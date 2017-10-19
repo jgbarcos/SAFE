@@ -1,5 +1,5 @@
 local Action = class("Action")
-Action._num_calls=0
+
 function Action:initialize(params) 
    -- Called when the instance is created
 end

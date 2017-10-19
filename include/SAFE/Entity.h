@@ -5,6 +5,7 @@
 #include <typeinfo>
 #include <memory>
 #include <unordered_map>
+#include <iostream>
 
 #include "SAFE/Component.h"
 
@@ -60,6 +61,16 @@ public:
         mComponents[type] = std::move(pComponent);
         return *this;
     }
+    
+    
+    Entity& AddExtraComponent(std::string name, sol::table component) {
+        mExtraComponents[name] = component;
+        return *this;
+    }
+    
+    sol::table GetComponent(std::string name){
+        return mExtraComponents[name];
+    }
 
     /**
      * Returns the name of the entity
@@ -72,6 +83,7 @@ public:
     bool mIsActive;
 private:
     std::unordered_map<std::type_index, std::unique_ptr<Component> > mComponents;
+    std::unordered_map<std::string, sol::table > mExtraComponents;
 
     std::string mEntityName;
 
