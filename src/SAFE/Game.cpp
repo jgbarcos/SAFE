@@ -34,7 +34,6 @@
 #include "SAFE/SSpriteSheetAnimator.h"
 
 // GAME
-#include "CCharacterData.h"
 #include "CDraggable.h"
 #include "CGridTile.h"
 
@@ -129,12 +128,15 @@ void Game::Start() {
     luaSafe.set_function("create_entity", &EntityEngine::CreateEntityFromLua, &engine);
     luaSafe.set_function("create_template", &EntityEngine::RegisterTemplate, &engine);
 
-    luaSafe.new_usertype<Entity>("Entity");
+    luaSafe.new_usertype<Entity>("Entity", "get_name", &Entity::GetName);
     luaSafe.set_function("get_entity", &EntityEngine::GetEntity, &engine);
     luaSafe.set_function("get_component", &Entity::GetComponent);
     luaSafe.set_function("register_system", &EntityEngine::RegisterSystemLua, &engine);
     luaSafe.set_function("register_component", &EntityEngine::RegisterComponent, &engine);
     luaSafe.set_function("add_action_list", &ActionListManager::LuaAdd, &engine.mActionListManager);
+    
+    luaSafe.set_function("post_event", &EventDispatcher::PostLua, &engine.mEventDispatcher);
+    luaSafe.set_function("subscribe", &EventDispatcher::SubscribeLua, &engine.mEventDispatcher);
 
     // Define Systems
     auto pRender = new SRender(&textureManager, &camera);
@@ -165,10 +167,31 @@ void Game::Start() {
     engine.AddComponentCreator<CTextBox>();
     engine.AddComponentCreator<CTransform>();
 
-    engine.AddComponentCreator<CCharacterData>();
     engine.AddComponentCreator<CDraggable>();
     engine.AddComponentCreator<CGridTile>();
-    engine.AddComponentCreator<CGridUnit>();
+    
+    // Usertypes
+    luaSafe.new_usertype<Vector2>(
+        "Vector2",
+        "x", &Vector2::x,
+        "y", &Vector2::y
+    );
+    
+    luaSafe.new_usertype<Vector3>(
+        "Vector3",
+        "x", &Vector3::x,
+        "y", &Vector3::y,
+        "z", &Vector3::z
+    );
+    luaSafe.new_usertype<EventLua>(
+        "EventLua",
+        "payload", &EventLua::mPayload,
+        "type", &EventLua::mType
+    );
+    
+    
+    // Initialize game
+    mLua.script_file("./lua/game/init.lua");
 
     /*
      * Lua entity scripts

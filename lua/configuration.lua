@@ -21,9 +21,11 @@ local configuration = {
 -- Define globals for libraries
 class = require "lib.middleclass"
 pprint = require "lib.pprint"
+pprint.setup( { show_function = true } )
+
 util = require "safe.utility"
 
--- Define globas for common lua modules
+-- Define globals for common lua modules
 game = {}
 game.actions = require "actions_list"
 

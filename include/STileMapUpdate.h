@@ -8,7 +8,6 @@
 #include "SAFE/System.h"
 
 #include "TileMap.h"
-#include "CGridUnit.h"
 
 using namespace safe;
 
@@ -21,10 +20,10 @@ public:
         mpTileMap->mEntitiesPosition.clear();
 
         for (auto&& e : entities) {
-            auto pUnit = e->Get<CGridUnit>();
-            if (!pUnit) continue;
+            auto unit = e->GetComponent("GridUnitComponent");
+            if (!unit.valid()) continue;
 
-            mpTileMap->SetUnit(pUnit->mX, pUnit->mY, e->GetName());
+            mpTileMap->SetUnit(unit["x"], unit["y"], e->GetName());
         }
     }
 

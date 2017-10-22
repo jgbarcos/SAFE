@@ -67,9 +67,17 @@ public:
         mExtraComponents[name] = component;
         return *this;
     }
+    bool HasComponent(std::string name){
+        return mExtraComponents.find(name) != mExtraComponents.end();
+    }
     
-    sol::table GetComponent(std::string name){
-        return mExtraComponents[name];
+    sol::table GetComponent(std::string name) {
+        if (HasComponent(name)) {
+            return mExtraComponents[name];
+        }
+        else {
+            return sol::table();
+        }
     }
 
     /**

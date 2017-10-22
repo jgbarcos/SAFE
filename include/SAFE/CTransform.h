@@ -16,6 +16,18 @@ public:
     {
         mComponentName = "TransformComponent";
     }
+        
+    std::string PrepareLua(sol::state_view& lua) override {
+        typedef CTransform Comp;
+        lua.new_usertype<Comp>(
+            mComponentName,
+            "pos", &Comp::mPosition,
+            "vel", &Comp::mVelocity,
+            "scale", &Comp::mScale
+        );
+
+        return "get_transform";
+    }
 
     void FromLua(sol::table luaT) override {
         sol::table t = luaT.get<sol::table>("position");

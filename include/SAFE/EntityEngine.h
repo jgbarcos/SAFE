@@ -141,7 +141,8 @@ public:
         // Allows the component to setup usertypes and bind Entity::Get<T> to a function
         std::string getter = t.PrepareLua(mLua);
         if (!getter.empty()) {
-            mLua.set_function(getter, &Entity::Get<T>);
+            sol::table luaSafe = mLua["safe"];
+            luaSafe.set_function(getter, &Entity::Get<T>);
         }
     }
     

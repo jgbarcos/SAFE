@@ -5,7 +5,7 @@ namespace safe {
 
 class Event {
 public:
-    typedef const char* Type;
+    typedef std::string Type;
 
     virtual ~Event() { }
 
@@ -14,8 +14,9 @@ public:
     virtual std::string toString() const {
         return std::string(type());
     }
+    
+    bool mIsLuaEvent = false;
 };
-
 
 } // namespace safe
 

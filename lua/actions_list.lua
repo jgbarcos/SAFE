@@ -13,7 +13,7 @@ module.PlayAnimation = class("PlayAnimation", Action)
 
     function module.PlayAnimation:on_enter()
         local ptr = safe.get_entity(self.entity)
-        self.sheet = get_sheet_animation(ptr)
+        self.sheet = safe.get_sheet_animation(ptr)
 
         if self.sheet ~= nil then
             self.sheet.is_playing = true
@@ -82,9 +82,9 @@ module.DealDamage = class("DealDamage", Action)
 
     function module.DealDamage:on_enter()
         local ptr = safe.get_entity(self.target)
-        local char_data = get_character_data(ptr)
+        local char_data = safe.get_component(ptr, "CharacterDataComponent")
 
-        char_data.health = char_data.health - self.damage
+        char_data.current_health = char_data.current_health - self.damage
     end
     
 return module

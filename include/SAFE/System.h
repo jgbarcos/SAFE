@@ -21,7 +21,7 @@ public:
     /**
      * Initializes the system, if required.
      */
-    virtual void Init(std::vector<Entity*>& entities) { /* do nothing*/ }
+    virtual void Init(std::vector<Entity*>& entities) { /* do nothing */ }
 
     /**
      * Updates the system. Its called by GameEngine update.
@@ -37,6 +37,8 @@ public:
     void SetEngine(EntityEngine* pEngine) {
         mpEntityEngine = pEngine;
     }
+    
+    bool mActive = true;
 protected:
     EntityEngine* mpEntityEngine = nullptr;
 

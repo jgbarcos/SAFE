@@ -119,6 +119,6 @@ TEST(EventSystem, DanglingFunction) {
     DemoEvent e2("payload2");
     dispatcher.Send(e2);
 
-    EXPECT_EQ(dispatcher.mEventsHandlers[e2.type()].size(), (unsigned int) 0);
+    EXPECT_EQ(dispatcher.mEventHandler[e2.type()].size(), (unsigned int) 0);
     EXPECT_EQ(dispatcher.mObserverSubs[id].size(), (unsigned int) 0);
 }

@@ -8,19 +8,34 @@ namespace safe {
 
 void EventDispatcher::PropagateEvents() {
     for (auto&& e : mEventList) {
-        Send(*e);
+        DispatchEvent<Event,EventHandler>(e->type(), *e, mEventHandler);
     }
+    
+    for (auto&& e : mEventList) {        
+        const EventLua& luaEvent = static_cast<const EventLua&> (*e);
+        DispatchEvent<sol::object,EventHandlerLua>(luaEvent.type(), luaEvent.mPayload, mEventHandlerLua);
+    }
+    
+    
     mEventList.clear();
 }
 
+
 void EventDispatcher::Subscribe(EventDispatcher::ObserverID id, const Event::Type& descriptor, Func&& func) {
     mObserverSubs[id].insert(descriptor);
-    mEventsHandlers[descriptor].push_back(std::pair< int, Func >(id, func));
+    mEventHandler[descriptor].push_back(std::pair< int, Func >(id, func));
 }
 
-EventDispatcher::EventDispatcher::ObserverID EventDispatcher::Subscribe(const Event::Type& descriptor, Func&& func) {
+EventDispatcher::ObserverID EventDispatcher::Subscribe(const Event::Type& descriptor, Func&& func) {
     auto id = GetNextID();
     Subscribe(id, descriptor, std::move(func));
+    return id;
+}
+
+EventDispatcher::ObserverID EventDispatcher::SubscribeLua(const Event::Type& descriptor, FuncLua&& func) {
+    auto id = GetNextID();
+    mObserverSubs[id].insert(descriptor);
+    mEventHandlerLua[descriptor].push_back(std::pair< int, FuncLua >(id, func));
     return id;
 }
 
@@ -31,18 +46,9 @@ void EventDispatcher::Unsubscribe(EventDispatcher::ObserverID id, const Event::T
 }
 
 void EventDispatcher::Unsubscribe(std::vector<EventDispatcher::ObserverID>& list, const Event::Type& descriptor) {
-    mEventsHandlers[descriptor].erase(
-        std::remove_if(
-                       mEventsHandlers[descriptor].begin(),
-                       mEventsHandlers[descriptor].end(),
-                       [&](std::pair< int, Func> elem) -> bool
-                       {
-                           return std::find(list.begin(), list.end(), elem.first) != list.end();
-                       }
-                       ),
-        mEventsHandlers[descriptor].end()
-        );
-
+    EraseHandlers<EventHandler>(mEventHandler, list, descriptor);
+    EraseHandlers<EventHandlerLua>(mEventHandlerLua, list, descriptor);
+    
     for (auto id : list) {
         mObserverSubs[id].erase(descriptor);
     }
@@ -63,35 +69,15 @@ void EventDispatcher::Post(Event* pEvent) {
     Post(p);
 }
 
-void EventDispatcher::Send(const Event& event) {
-    if (mDebugLog) {
-        std::cout << "[EventDispatcher]" << "(Event send)" << event.type()
-                << ": " << event.toString()
-                << std::endl;
-    }
+void EventDispatcher::PostLua(std::string type, sol::object payload){
+    std::unique_ptr<Event> p = std::make_unique<EventLua>(type, payload);
+    Post(p);
+}
 
-    std::vector< EventDispatcher::ObserverID > removeList;
-
-    Event::Type const type = event.type();
-
-    // Ignore events for which we do not have an observer (yet).
-    if (mEventsHandlers.find(type) == mEventsHandlers.end())
-        return;
-
-    auto&& eventObservers = mEventsHandlers.at(type);
-
-    for (auto&& obv : eventObservers) {
-        bool valid = true;
-        if (bool(obv.second)) {
-            valid = obv.second(event);
-        }
-
-        if (!valid) {
-            removeList.push_back(obv.first);
-        }
-    }
-
-    Unsubscribe(removeList, type);
+void EventDispatcher::Send(const Event& event){
+    DispatchEvent<Event,EventHandler>(event.type(), event, mEventHandler);
+    const EventLua& luaEvent = static_cast<const EventLua&> (event);
+    DispatchEvent<sol::object,EventHandlerLua>(luaEvent.type(), luaEvent.mPayload, mEventHandlerLua);
 }
 
 EventDispatcher::ObserverID EventDispatcher::GetNextID() {

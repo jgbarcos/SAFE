@@ -23,7 +23,7 @@ void EntityEngine::Update(float delta) {
     GatherEntities();
 
     for (auto&& s : mSystems) {
-        s->Update(delta, mVecOfEntities);
+        if(s->mActive) s->Update(delta, mVecOfEntities);
     }
 }
 

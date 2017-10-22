@@ -9,11 +9,9 @@
 #include "SAFE/Input.h"
 
 #include "TileMap.h"
-#include "CGridUnit.h"
 #include "SAFE/Camera.h"
 #include "SAFE/CSprite.h"
 #include "SAFE/CTransform.h"
-#include "CCharacterData.h"
 
 using namespace safe;
 
@@ -33,10 +31,10 @@ public:
         // Get teams from entities
         mCurrentTurn = 0;
         for (auto&& e : entities) {
-            auto pUnit = e->Get<CGridUnit>();
-            if (pUnit) {
-                if (std::find(mTeams.begin(), mTeams.end(), pUnit->mTeam) == mTeams.end()) {
-                    mTeams.push_back(pUnit->mTeam);
+            auto unit = e->GetComponent("GridUnitComponent");
+            if (unit.valid()) {
+                if (std::find(mTeams.begin(), mTeams.end(), unit["team"]) == mTeams.end()) {
+                    mTeams.push_back(unit["team"]);
                 }
             }
         }
@@ -45,23 +43,27 @@ public:
         mDamageArea = EntityFactory(mpEntityEngine, "DamageArea");
 
         SetTurn(entities);
+        
+        // Tilemap lua access
+        sol::table luaSafe = mpEntityEngine->mLua["safe"];
+        luaSafe.set_function("get_entities_at", &TileMap::GetEntitiesAt, mpTileMap);
     }
 
     void Update(float delta, std::vector<Entity*>& entities) override {
         for (auto&& e : entities) {
-            auto pCharData = e->Get<CCharacterData>();
-            if (!pCharData) continue;
+            auto charData = e->GetComponent("CharacterDataComponent");
+            if (!charData.valid()) continue;
 
-            auto pUnit = e->Get<CGridUnit>();
-            if (!pUnit) continue;
+            auto unit = e->GetComponent("GridUnitComponent");
+            if (!unit.valid()) continue;
 
-            if (pCharData->mCurrentHealth <= 0) {
-                pCharData->mCurrentHealth = 0;
+            if (charData.get<int>("current_health") <= 0) {
+                charData["current_health"] = 0;
                 e->mIsActive = false;
 
                 std::cout << "> "
-                        << "[" << pUnit->mTeam << "]"
-                        << pCharData->mName << " dies."
+                        << "[" << unit.get<std::string>("team") << "]"
+                        << charData.get<std::string>("name") << " dies."
                         << std::endl;
             }
         }
@@ -87,82 +89,8 @@ public:
                 }
                     // Damage enemies phase
                 else {
-                    // Prepare action list
-                    auto& lua = mpEntityEngine->mLua;
-                    auto& alm = mpEntityEngine->mActionListManager;
-                    sol::table luaActions = lua["game"]["actions"];
-                    std::vector<sol::table> actionList;
-
-                    // Check all entities
-                    for (auto&& e : entities) {
-                        auto pUnit = e->Get<CGridUnit>();
-                        if (!pUnit) continue;
-
-                        auto pData = e->Get<CCharacterData>();
-                        if (!pData) continue;
-
-                        if (pUnit->mTeam == mTeams.at(mCurrentTurn)) {
-                            for (auto& pos : pData->mAttackArea) {
-
-                                int x = pUnit->mX + pos.x;
-                                int y = pUnit->mY + pos.y;
-
-                                // TODO: Get facing information from CGridUnit
-                                auto pTransform = e->Get<CTransform>();
-                                // Change attack direction based on unit facing dir
-                                if (pTransform->mScale.x < 0) {
-                                    x = pUnit->mX - pos.x;
-                                }
-
-                                for (auto id : mpTileMap->GetEntitiesAt(x, y)) {
-                                    auto pTarget = mpEntityEngine->GetEntity(id);
-
-                                    auto pTargetUnit = pTarget->Get<CGridUnit>();
-                                    if (!pTargetUnit) continue;
-
-                                    auto pTargetData = pTarget->Get<CCharacterData>();
-                                    if (!pTargetData) continue;
-
-                                    actionList.push_back(alm.NewAction(luaActions, "PlayAnimation",
-                                        lua.create_table_with(
-                                            "entity", e->GetName(),
-                                            "anim", "shoot"
-                                        )
-                                    ));
-
-                                    actionList.push_back(alm.NewAction(luaActions, "PlayAnimation",
-                                        lua.create_table_with(
-                                            "entity", e->GetName(),
-                                            "anim", "idle",
-                                            "play_once", false
-                                        )
-                                    ));
-
-                                    actionList.push_back(alm.NewAction(luaActions, "DealDamage",
-                                        lua.create_table_with(
-                                            "target", pTarget->GetName(),
-                                            "damage", pData->mBaseAttack
-                                        )
-                                    ));
-
-                                    actionList.push_back(alm.NewAction(luaActions, "PrintDamage",
-                                        lua.create_table_with(
-                                            "att_team", pUnit->mTeam,
-                                            "att", pData->mName,
-                                            "def_team", pTargetUnit->mTeam,
-                                            "def", pTargetData->mName,
-                                            "damage", pData->mBaseAttack
-                                        )
-                                    ));
-                                }
-                            }
-                        }
-                    }
-
-                    // Queue actions
-                    if (!actionList.empty()) {
-                        alm.Add(actionList);
-                    }
+                    sol::object team = sol::make_object<int>( mpEntityEngine->mLua, mTeams.at(mCurrentTurn) );
+                    mpEntityEngine->mEventDispatcher.PostLua("damage_phase", team);
                 }
             }
         }
@@ -174,28 +102,29 @@ public:
             int rows = mpTileMap->GetRows();
             std::vector < std::vector<bool>> damageArea(cols, std::vector<bool>(rows, false));
             for (auto&& e : entities) {
-                auto pUnit = e->Get<CGridUnit>();
-                if (!pUnit) continue;
+                auto unit = e->GetComponent("GridUnitComponent");
+                if (!unit.valid()) continue;
 
-                auto pCharData = e->Get<CCharacterData>();
-                if (!pCharData) continue;
+                auto charData = e->GetComponent("CharacterDataComponent");
+                if (!charData.valid()) continue;
 
                 auto pTransform = e->Get<CTransform>();
                 if (!pTransform) continue;
 
-                if (pUnit->mTeam != mTeams.at(mCurrentTurn)) {
+                if (unit.get<int>("team") != mTeams.at(mCurrentTurn)) {
                     int xunit = 1;
                     if (pTransform->mScale.x < 0) {
                         xunit = -1;
                     }
-
-                    for (Vector2& vec : pCharData->mAttackArea) {
-                        int x = pUnit->mX + vec.x * xunit;
-                        int y = pUnit->mY + vec.y;
+                    
+                    auto fx = [&](sol::object key, sol::object value){
+                        Vector2 vec = Vector2(value.as<sol::table>());int x = unit.get<int>("x") + vec.x * xunit;
+                        int y = unit.get<int>("y") + vec.y;
                         if (mpTileMap->CheckBounds(x, y)) {
                             damageArea[x][y] = true;
                         }
-                    }
+                    };
+                    charData.get<sol::table>("attack_area").for_each(fx);
                 }
             }
             for (int x = 0; x < cols; x++) {
@@ -234,9 +163,9 @@ public:
 
     void SetTurn(std::vector<Entity*>& entities) {
         for (auto&& e : entities) {
-            auto pUnit = e->Get<CGridUnit>();
-            if (pUnit) {
-                pUnit->mCanMove = pUnit->mTeam == mTeams.at(mCurrentTurn);
+            auto unit = e->GetComponent("GridUnitComponent");
+            if (unit.valid()) {
+                unit["can_move"] = unit["team"] == mTeams.at(mCurrentTurn);
             }
         }
     }

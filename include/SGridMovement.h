@@ -4,10 +4,8 @@
 #include "SAFE/CTransform.h"
 #include "SAFE/System.h"
 
-#include "CCharacterData.h"
 #include "CDraggable.h"
 #include "CGridTile.h"
-#include "CGridUnit.h"
 #include "TileMap.h"
 
 #include "EDragUnit.h"
@@ -85,20 +83,20 @@ public:
 
             auto pEntity = mpEntityEngine->GetEntity(event.mUnit);
 
-            auto pUnit = pEntity->Get<CGridUnit>();
-            if (!pUnit) continue;
+            auto unit = pEntity->GetComponent("GridUnitComponent");
+            if (!unit.valid()) continue;
 
-            auto pCharData = pEntity->Get<CCharacterData>();
-            if (!pCharData) continue;
+            auto charData = pEntity->GetComponent("CharacterDataComponent");
+            if (!charData.valid()) continue;
 
             auto pTransform = pEntity->Get<CTransform>();
             if (!pTransform) continue;
 
 
             if (event.mIsPicked) {
-                int movement = pCharData->mBaseMovement;
+                int movement = charData["base_movement"];
 
-                auto nodes = mpTileMap->Dijstra(TileNode(pUnit->mX, pUnit->mY, movement));
+                auto nodes = mpTileMap->Dijstra(TileNode(unit["x"], unit["y"], movement));
 
                 for (auto n : nodes) {
                     auto pArea = mMovementArea.DemandEntity();
@@ -115,17 +113,17 @@ public:
                 int y = tilePos.y;
                 if (mpTileMap->CheckBounds(pTransform->mPosition)) {
                     bool canReach = false;
-                    for (auto& n : mpTileMap->Dijstra(TileNode(pUnit->mX, pUnit->mY, 
-                                                               pCharData->mBaseMovement))) {
+                    for (auto& n : mpTileMap->Dijstra(TileNode(unit["x"], unit["y"], 
+                                                               charData["base_movement"]))) {
                         if (n.mX == x && n.mY == y) {
                             canReach = true;
                             break;
                         }
                     }
                     if (canReach) {
-                        pUnit->mX = tilePos.x;
-                        pUnit->mY = tilePos.y;
-                        pUnit->mCanMove = false;
+                        unit["x"] = tilePos.x;
+                        unit["y"] = tilePos.y;
+                        unit["can_move"] = false;
                     }
                 }
 
@@ -134,15 +132,15 @@ public:
         }
 
         for (auto&& e : entities) {
-            auto pUnit = e->Get<CGridUnit>();
-            if (!pUnit) continue;
+            auto unit = e->GetComponent("GridUnitComponent");
+            if (!unit.valid()) continue;
 
             auto pTransform = e->Get<CTransform>();
             if (!pTransform) continue;
 
             auto pDraggable = e->Get<CDraggable>();
             if (pDraggable) {
-                pDraggable->mIsDraggable = pUnit->mCanMove;
+                pDraggable->mIsDraggable = unit["can_move"];
             }
 
             // Snap into grid if not dragged by player
@@ -152,7 +150,7 @@ public:
             if (!pDraggable || !pDraggable->mBeingDragged) {
 
                 // Snap into tile position
-                Vector3 dest = mpTileMap->Map2World(pUnit->mX, pUnit->mY);
+                Vector3 dest = mpTileMap->Map2World(unit["x"], unit["y"]);
 
                 float speed = 400;
                 Vector3 dir = dest - pos;
@@ -166,33 +164,36 @@ public:
             }
 
             // Render available units tile
-            if (pUnit->mCanMove) {
+            if (unit.get<bool>("can_move")) {
                 auto pTileTransform = mReadyArea.DemandEntity()->Get<CTransform>();
                 double z = pTileTransform->mPosition.z;
-                pTileTransform->mPosition = mpTileMap->Map2World(pUnit->mX, pUnit->mY, z);
+                pTileTransform->mPosition = mpTileMap->Map2World(unit["x"], unit["y"], z);
             }
 
-            auto pCharData = e->Get<CCharacterData>();
-            if (pCharData) {
+            auto charData = e->GetComponent("CharacterDataComponent");
+            if (charData.valid()) {
                 Vector3 pos = mpEntityEngine->GetEntity("Cursor")->Get<CTransform>()->mPosition;
                 Vector2 tilePos = mpTileMap->World2Map(pos);
 
                 if ((pDraggable && pDraggable->mBeingDragged)
-                    || (pUnit->mX == tilePos.x && pUnit->mY == tilePos.y)) {
+                    || (unit["x"] == tilePos.x && unit["y"] == tilePos.y)) {
 
                     int xunit = 1;
                     if (pTransform->mScale.x < 0) {
                         xunit = -1;
                     }
-
-                    for (Vector2& vec : pCharData->mAttackArea) {
+                    
+                    auto fx = [&](sol::object key, sol::object value)
+                    {
+                        Vector2 vec = Vector2(value.as<sol::table>());
                         auto pTileEntity = mAttackArea.DemandEntity();
 
                         auto pTileTransform = pTileEntity->Get<CTransform>();
                         double z = pTileTransform->mPosition.z;
 
                         pTileTransform->mPosition = mpTileMap->Map2World(tilePos.x + vec.x*xunit, tilePos.y + vec.y, z);
-                    }
+                    };
+                    charData.get<sol::table>("attack_area").for_each(fx);
                 }
             }
         }

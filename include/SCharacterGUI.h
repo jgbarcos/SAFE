@@ -8,7 +8,6 @@
 #include "SAFE/Camera.h"
 
 #include "TileMap.h"
-#include "CCharacterData.h"
 #include "SAFE/CTransform.h"
 #include "SAFE/CTextBox.h"
 
@@ -30,8 +29,8 @@ public:
         // Show character data
         for (auto&& e : entities) {
             // Preconditions
-            auto pCharacterData = e->Get<CCharacterData>();
-            if (!pCharacterData) continue;
+            auto characterData = e->GetComponent("CharacterDataComponent");
+            if (!characterData.valid()) continue;
 
             auto pTransform = e->Get<CTransform>();
             if (!pTransform) continue;
@@ -47,7 +46,7 @@ public:
             Vector2 end = mpCamera->World2Screen(pos + barSize * 0.5);
             rectangleColor(renderer, init.x, init.y, end.x, end.y, red.to32BE());
 
-            double frac = pCharacterData->mCurrentHealth / (double) pCharacterData->mBaseHealth;
+            double frac = characterData.get<int>("current_health") / (double) characterData.get<int>("base_health");
             Vector2 fillEnd = end;
             fillEnd.x = init.x + (end.x - init.x) * frac;
 
@@ -71,26 +70,19 @@ public:
             int y = v.y;
             mpDisplayEntity->mIsActive = false;
             for (auto id : mpTileMap->GetEntitiesAt(x, y)) {
-                if (Input::IsPressed(SDL_SCANCODE_K)) {
-                    auto pEntity = mpEntityEngine->GetEntity(id);
-                    auto pCharData = pEntity->Get<CCharacterData>();
-                    if (pCharData && pCharData->mCurrentHealth > 0) {
-                        pCharData->mCurrentHealth -= 1;
-                    }
-                }
 
                 auto pEntity = mpEntityEngine->GetEntity(id);
-                auto pCharData = pEntity->Get<CCharacterData>();
+                auto charData = pEntity->GetComponent("CharacterDataComponent");
 
-                if (pCharData) {
+                if (charData.valid()) {
                     mpDisplayEntity->mIsActive = true;
                     mpDisplayEntity->Get<CTextBox>()->mText =
                         "- ID: " + id + '\n'
-                        + "- Name: " + pCharData->mName + '\n'
-                        + "- Health: " + std::to_string(pCharData->mCurrentHealth) 
-                        + "/" + std::to_string(pCharData->mBaseHealth) + '\n'
-                        + "- Mov: " + std::to_string(pCharData->mBaseMovement)
-                        + "- Att: " + std::to_string(pCharData->mBaseAttack);
+                        + "- Name: " + charData.get<std::string>("name") + '\n'
+                        + "- Health: " + charData.get<std::string>("current_health") 
+                        + "/" + charData.get<std::string>("base_health") + '\n'
+                        + "- Mov: " + charData.get<std::string>("base_movement")
+                        + "- Att: " + charData.get<std::string>("base_attack");
                 }
             }
         }

@@ -19,9 +19,11 @@ public:
         mSelf = luaT;
         mInit = luaT.get < InitFunc >("init");
         mUpdate = luaT.get < UpdateFunc >("update");
+        luaT["set_active"] = [&](bool active){ mActive = active; };
+        luaT["get_active"] = [&](){ return mActive; };
     }
 
-    void Init(std::vector<Entity*>& entities) { 
+    void Init(std::vector<Entity*>& entities) {
         mInit(mSelf, entities);
     }
 
