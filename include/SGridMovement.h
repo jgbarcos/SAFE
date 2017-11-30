@@ -155,7 +155,7 @@ public:
                 float speed = 400;
                 Vector3 dir = dest - pos;
 
-                if (dir.length() < speed * delta) {
+                if (dir.length() <= speed * delta) {
                     pTransform->mPosition = dest;
                 }
                 else {
