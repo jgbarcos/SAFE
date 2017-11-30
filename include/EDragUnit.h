@@ -2,6 +2,7 @@
 #define EDRAGUNIT_H
 
 #include "SAFE/Event.h"
+#include "SAFE/Vector3.h"
 
 class EDragUnit : public safe::Event {
 public:
@@ -16,7 +17,7 @@ public:
     bool mIsPicked;
     bool mIsDropped;
 
-    Vector3 mDroppedPosition;
+    safe::Vector3 mDroppedPosition;
 
     std::string toString() const override {
         if (mIsPicked) {

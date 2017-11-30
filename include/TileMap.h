@@ -7,9 +7,8 @@
 
 #include "SAFE/Vector2.h"
 #include "SAFE/Vector3.h"
-#include "SAFE/EntityEngine.h"
 
-namespace safe {
+#include "SAFE/EntityEngine.h"
 
 class TileNode {
 public:
@@ -29,13 +28,13 @@ public:
 class TileMap {
 public:
 
-    TileMap(Vector3 origin, int cols, int rows, int tileWidth, int tileHeight)
+    TileMap(safe::Vector3 origin, int cols, int rows, int tileWidth, int tileHeight)
     : mOrigin(origin),
     mCols(cols), mRows(rows),
     mTileWidth(tileWidth), mTileHeight(tileHeight) { }
 
-    bool CheckBounds(Vector3 pos) {
-        Vector2 i = World2Map(pos);
+    bool CheckBounds(safe::Vector3 pos) {
+        safe::Vector2 i = World2Map(pos);
         return CheckBounds(i.x, i.y);
     }
 
@@ -43,37 +42,37 @@ public:
         return x >= 0 && x < mCols && y >= 0 && y < mRows;
     }
 
-    Vector3 SnapToMap(Vector3 pos) {
-        Vector3 v = Map2World(World2Map(pos));
+    safe::Vector3 SnapToMap(safe::Vector3 pos) {
+        safe::Vector3 v = Map2World(World2Map(pos));
         v.z = pos.z;
         return v;
     }
 
-    Vector2 World2Map(Vector3 pos) {
-        Vector3 local = pos - mOrigin;
+    safe::Vector2 World2Map(safe::Vector3 pos) {
+        safe::Vector3 local = pos - mOrigin;
 
         local.x = round(local.x / (float) mTileWidth);
         local.y = round(local.y / (float) mTileHeight);
 
-        return Vector2::Reduce(local);
+        return safe::Vector2::Reduce(local);
     }
 
-    Vector3 Map2World(Vector2 pos) {
+    safe::Vector3 Map2World(safe::Vector2 pos) {
         return Map2World(pos.x, pos.y);
     }
 
-    Vector3 Map2World(Vector3 pos) {
-        Vector3 res = Map2World(Vector2::Reduce(pos));
+    safe::Vector3 Map2World(safe::Vector3 pos) {
+        safe::Vector3 res = Map2World(safe::Vector2::Reduce(pos));
         res.z = pos.z;
         return res;
     }
 
-    Vector3 Map2World(int x, int y) {
-        return mOrigin + Vector3(x*mTileWidth, y*mTileHeight, 0);
+    safe::Vector3 Map2World(int x, int y) {
+        return mOrigin + safe::Vector3(x*mTileWidth, y*mTileHeight, 0);
     }
 
-    Vector3 Map2World(int x, int y, double z) {
-        Vector3 pos = Map2World(x, y);
+    safe::Vector3 Map2World(int x, int y, double z) {
+        safe::Vector3 pos = Map2World(x, y);
         pos.z = z;
         return pos;
     }
@@ -95,7 +94,7 @@ public:
         }
     }
 
-    bool SetUnit(int x, int y, EntityEngine::EntityID id) {
+    bool SetUnit(int x, int y, safe::EntityEngine::EntityID id) {
         if (CheckBounds(x, y)) {
             mEntitiesPosition[x + y * mCols].push_back(id);
             return true;
@@ -103,11 +102,11 @@ public:
         return false;
     }
 
-    std::vector<EntityEngine::EntityID> GetEntitiesAt(int x, int y) {
+    std::vector<safe::EntityEngine::EntityID> GetEntitiesAt(int x, int y) {
         if (CheckBounds(x, y) && mEntitiesPosition.count(x + y * mCols) > 0) {
             return mEntitiesPosition.at(x + y * mCols);
         }
-        return std::vector<EntityEngine::EntityID>();
+        return std::vector<safe::EntityEngine::EntityID>();
     }
 
     void pushNeighbours(TileNode node, std::priority_queue<TileNode>& queue) {
@@ -173,18 +172,16 @@ public:
     }
 
 public:
-    std::unordered_map< int, std::vector<EntityEngine::EntityID> > mEntitiesPosition;
+    std::unordered_map< int, std::vector<safe::EntityEngine::EntityID> > mEntitiesPosition;
 
 
 private:
-    Vector3 mOrigin;
+    safe::Vector3 mOrigin;
     int mCols;
     int mRows;
     int mTileWidth;
     int mTileHeight;
 
 };
-
-} // namespace safe
 
 #endif // TILEMAP_H

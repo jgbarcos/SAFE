@@ -34,6 +34,13 @@ elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL "MSVC")
 	endif()
 endif()
 
+# Use ccache if available
+find_program(CCACHE_PROGRAM ccache)
+if(CCACHE_PROGRAM)
+    message( "Using ccache" )
+    set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "${CCACHE_PROGRAM}")
+endif()
+
 # Look up SDL2 and add the include directory to our include path
 find_package(SDL2 REQUIRED)
 find_package(SDL2_image REQUIRED)
