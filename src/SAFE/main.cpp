@@ -6,6 +6,8 @@
 
 #include "SAFE/Game.h"
 
+#include <fenv.h> // It allows catch NaN
+
 //Screen dimensions
 const int SCREEN_WIDTH = 1000;
 const int SCREEN_HEIGHT = 768;
@@ -73,6 +75,9 @@ void close() {
 }
 
 int main() {
+    // Set up NaN signal catching mechanism
+    feenableexcept(FE_INVALID | FE_OVERFLOW | FE_DIVBYZERO);
+    
     //Start up SDL and create window
     bool success = init();
 

@@ -172,6 +172,9 @@ void SRender::Update(float delta, std::vector<Entity*>& entities) {
 }
 
 float SRender::GetDepth(CTransform* pTransform, CSprite* pSprite) {
+    if(pTransform->mPosition.z != pTransform->mPosition.z){
+        std::cout << "error with: GetDepth() checkpoint 1: " << pTransform->mPosition << std::endl;
+    }
     Rect clip = pSprite->GetLocalRect() + Vector2::Reduce(pTransform->mPosition);
 
     float vert = 0.0; // 0.0 is pick the top y
@@ -182,7 +185,7 @@ float SRender::GetDepth(CTransform* pTransform, CSprite* pSprite) {
     }
 
     if (pTransform->mPosition.z != pTransform->mPosition.z) {
-        std::cout << "error with:" << pTransform->mPosition << std::endl;
+        std::cout << "error with: GetDepth() checkpoint 2: " << pTransform->mPosition << std::endl;
     }
 
 

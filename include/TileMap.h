@@ -116,22 +116,22 @@ public:
 
         x = node.mX + 1;
         y = node.mY;
-        if (CheckBounds(x, y) && IsEmpty(x, y)) {
+        if (CheckBounds(x, y) /*&& IsEmpty(x, y)*/) {
             queue.push(TileNode(x, y, node.mCost - 1));
         }
         x = node.mX - 1;
         y = node.mY;
-        if (CheckBounds(x, y) && IsEmpty(x, y)) {
+        if (CheckBounds(x, y) /*&& IsEmpty(x, y)*/) {
             queue.push(TileNode(x, y, node.mCost - 1));
         }
         x = node.mX;
         y = node.mY + 1;
-        if (CheckBounds(x, y) && IsEmpty(x, y)) {
+        if (CheckBounds(x, y) /*&& IsEmpty(x, y)*/) {
             queue.push(TileNode(x, y, node.mCost - 1));
         }
         x = node.mX;
         y = node.mY - 1;
-        if (CheckBounds(x, y) && IsEmpty(x, y)) {
+        if (CheckBounds(x, y) /*&& IsEmpty(x, y)*/) {
             queue.push(TileNode(x, y, node.mCost - 1));
         }
     }
@@ -159,6 +159,15 @@ public:
             closedNodes[current.mX][current.mY] = true;
             iters++;
         }
+        
+        // Remove already occuped tiles
+        result.erase(
+            std::remove_if(
+                result.begin(), result.end(),
+                [&](TileNode n){
+                    return !IsEmpty(n.mX, n.mY); 
+                }),
+            result.end());
 
         return result;
     }

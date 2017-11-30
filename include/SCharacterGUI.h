@@ -23,9 +23,12 @@ public:
         mpCursor = mpEntityEngine->CreateEntityFromTemplate("Cursor", "Cursor");
 
         mpDisplayEntity = mpEntityEngine->CreateEntityFromTemplate("CharDataDisplay");
+        mEFAbilities = EntityFactory(mpEntityEngine, "AbilityIcon");
     }
 
     void Update(float delta, std::vector<Entity*>& entities) override {
+        mEFAbilities.ReleaseAllEntities();
+        
         // Show character data
         for (auto&& e : entities) {
             // Preconditions
@@ -35,7 +38,7 @@ public:
             auto pTransform = e->Get<CTransform>();
             if (!pTransform) continue;
 
-            // Logic
+            // Health Bars
             auto renderer = mpCamera->getSDLRenderer();
             Color red(255, 0, 0, 255);
 
@@ -51,6 +54,38 @@ public:
             fillEnd.x = init.x + (end.x - init.x) * frac;
 
             boxColor(renderer, init.x, init.y, fillEnd.x, fillEnd.y, red.to32BE());
+            
+            // Show character abilities as GUI
+            auto abilityComp = e->GetComponent("AbilitiesComponent");
+
+            if(abilityComp.valid()){
+                int i = 0;
+                auto fx = [&](sol::object key, sol::table ability)
+                {
+                    Entity* pAbIcon = mEFAbilities.DemandEntity();
+                    auto pTextBox = pAbIcon->Get<CTextBox>();
+                    auto pTransform = pAbIcon->Get<CTransform>();
+
+                    pTextBox->mText = ability.get<std::string>("name");
+                    pTransform->mPosition = e->Get<CTransform>()->mPosition + Vector3(0,30+i*14,0);
+                    i++;
+
+                    // Check for button press
+                    if (Input::IsMousePressed(1)) {
+                        Vector3 pos = pTransform->mPosition;
+
+                        Rect area = pTextBox->GetLocalRect(Vector2::Reduce(pTransform->mScale)) + Vector2::Reduce(pos);
+
+                        Vector3 mouse = mpCamera->Screen2World(Input::GetMousePos());
+
+                        if (area.Contains(Vector2::Reduce(mouse))) {
+                            sol::table context = mpEntityEngine->mLua.create_table_with("owner", e->GetName());
+                            ability["perform"](ability, context);
+                        }
+                    }
+                };
+                abilityComp.get<sol::table>("abilities").for_each(fx);
+            }
         }
 
         // Display cursor over tiles
@@ -97,6 +132,8 @@ private:
 
     Entity* mpCursor;
     Entity* mpDisplayEntity;
+    
+    EntityFactory mEFAbilities;
 };
 
 

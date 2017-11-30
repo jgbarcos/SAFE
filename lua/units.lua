@@ -2,6 +2,8 @@ proc = require "procedural"
 
 local module = {}
 
+module.base_abilities = {"shoot"}
+
 --
 -- UNIT ARCHETYPES DATA
 -- 
@@ -10,10 +12,10 @@ module.archetypes = {
     base_health =   {min=5, max=10},
     base_movement = {min=4, max=6},
     base_attack =   {min=4, max=7},
+    abilities = {"talk"},
     
     attack_area = {
       forward_length = {min=1, max=2},
-      side_length = 1,
       back_length = {min=1, max=2}
     }
   },
@@ -21,6 +23,7 @@ module.archetypes = {
     base_health =   {min=3, max=6},
     base_movement = {min=3, max=5},
     base_attack =   {min=3, max=6},
+    abilities = {"talk"},
     
     attack_area = {
       forward_init = 3,
@@ -31,6 +34,7 @@ module.archetypes = {
     base_health =   {min=4, max=8},
     base_movement = {min=2, max=5},
     base_attack =   {min=4, max=7},
+    abilities = {"talk"},
     
     attack_area = {
       forward_length = {min=2, max=4}
@@ -40,20 +44,21 @@ module.archetypes = {
     base_health =   {min=8, max=11},
     base_movement = {min=3, max=4},
     base_attack =   {min=3, max=5},
+    abilities = {"talk"},
     
     attack_area = {
       forward_init = {min=1, max=2},
       forward_length = {min=3, max=4}
-    } 
+    }
   },
   ["Heavy"] = {
     base_health =   {min=10, max=15},
     base_movement = {min=2, max=3},
     base_attack =   {min=4, max=5},
+    abilities = {"talk"},
     
     attack_area = {
-      forward_length = {min=2, max=3},
-      side_length = {min=2, max=3}
+      forward_length = {min=2, max=3}
     }  
   },
 }
@@ -63,19 +68,27 @@ module.archetypes = {
 --
 function module:gen_archetype(key)
   local data = {}
-
-  if( self.archetypes[key] == nil ) then
+  
+  local arch = self.archetypes[key]
+  if( arch == nil ) then
     error("Archetype "..key.." does not exist")
     return data
   end
+  
+  data.char_data = {}
+  data.abilities = {}
+  self:append(data.abilities, self.base_abilities)
 
-  for k,v in pairs( self.archetypes[key] ) do
+  for k,v in pairs( arch ) do
     if (k == "attack_area") then
-      data["attack_area"] = self:gen_attack_area(v)
+      data.char_data["attack_area"] = self:gen_attack_area(v)
+    elseif (k == "abilities") then
+      self:append(data.abilities, v)
     else
-      data[k] = self:gen_value(v)
+      data.char_data[k] = self:gen_value(v)
     end
   end
+  
   return data
 end
 

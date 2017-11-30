@@ -20,6 +20,12 @@ module.enforce = function (value, depth, field)
     end
         
     return value
+end  
+
+module.concat = function (this, other)
+    for _,v in ipairs(other) do
+        this[#this+1] = v
+    end
 end
 
 return module

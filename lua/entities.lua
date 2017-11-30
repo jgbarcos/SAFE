@@ -3,109 +3,6 @@ local proc = require "procedural"
 local units = require "units"
 
 local entities = {}
-local templates = {}
-
--- 
--- Create Templates
---
-templates[#templates+1] = {
-    TemplateName = "Tile",
-    TransformComponent = { 
-        position = {x=0, y=0, z=-10},
-        scale = {x=1, y=1, z=1} 
-    },
-    GridTileComponent = {},
-    SpriteComponent = { 
-        filename = 'assets/floor_tile.png',
-        center = {x=0.5, y=0.5},
-        is_vertical = false
-    }
-}
-
-templates[#templates+1] = {
-    TemplateName = "EndTurnButton",
-    TransformComponent = {
-        position = {x=0, y=0; z=10},
-    },
-    SpriteComponent = {
-        filename = 'assets/EndTurnButton.png',
-        center = {x=0.5, y=0.5},
-    }
-}
-
-templates[#templates+1] = {
-    TemplateName = "Cursor",
-    SpriteComponent = { 
-        filename = "assets/Cursor.png", 
-        center = {x=0.5, y=0.5}
-    },
-    TransformComponent = { 
-        position = {x=0, y=0, z=-3},
-        scale = {x=1, y=1, z=1} 
-    }
-}
- animations = {} 
-
-templates[#templates+1] = {
-    TemplateName = "MovementArea",
-    SpriteComponent = { 
-        filename = "assets/BlueArea2.png", 
-        center = {x=0.5, y=0.5},
-        is_vertical = false
-    },
-    TransformComponent = { 
-        position = {x=0, y=0, z=-5.1},
-        scale = {x=1, y=1, z=1} 
-    }
-}
-
-templates[#templates+1] = {
-    TemplateName = "ReadyArea",
-    SpriteComponent = { 
-        filename = "assets/WhiteArea.png", 
-        center = {x=0.5, y=0.5},
-        is_vertical = false
-    },
-    TransformComponent = { 
-        position = {x=0, y=0, z=-5.1},
-        scale = {x=1, y=1, z=1} 
-    }
-}
-
-templates[#templates+1] = {
-    TemplateName = "AttackArea",
-    SpriteComponent = { 
-        filename = "assets/RedArea2.png", 
-        center = {x=0.5, y=0.5},
-        is_vertical = false
-    },
-    TransformComponent = { 
-        position = {x=0, y=0, z=-5.0},
-        scale = {x=1, y=1, z=1} 
-    }
-}
-
-templates[#templates+1] = {
-    TemplateName = "DamageArea",
-    SpriteComponent = { 
-        filename = "assets/DamageArea3.png", 
-        center = {x=0.5, y=0.5},
-        is_vertical = false
-    },
-    TransformComponent = { 
-        position = {x=0, y=0, z=-5.0},
-        scale = {x=1, y=1, z=1} 
-    }
-}
-
-templates[#templates+1] = {
-    TemplateName = "CharDataDisplay",
-    TransformComponent = { },
-    TextBoxComponent = {
-        center = {x=0, y=1},
-    }
-}
-
 --
 -- Create Entities
 --
@@ -130,17 +27,18 @@ local classes = {
   Soldier_Sniper = {"Ranged"},
 }
 
---names = {"Soldier_Assault"}
+-- Force "Soldier_Assault"
+names = {"Soldier_Assault"}
 
-local num_units = 5
+local num_units = 1
 
 for i=1,num_units,1 do
     name = proc:random_element(names)
 
     local class = proc:random_element(classes[name])
-    local char_data = units:gen_archetype(class)
-    char_data.name = name.."("..class..")"
-
+    local unit = units:gen_archetype(class)
+    unit.char_data.name = name.."("..class..")"
+    
     local ent = {
         TransformComponent = {
             position = { x=-100, y=-50 },
@@ -151,8 +49,9 @@ for i=1,num_units,1 do
             center = sp.get(sp.center, pre..name..post)
         },
         DraggableComponent = {},
-        GridUnitComponent = { x=2, y=i+1, team=0 },
-        CharacterDataComponent = char_data
+        GridUnitComponent = { x=i, y=0, team=0 },
+        CharacterDataComponent = unit.char_data,
+        AbilitiesComponent = { ability_names = unit.abilities }
     }
 
     if sp.sheet[pre..name..post] then
@@ -169,8 +68,8 @@ for i=1,num_units,1 do
     name = proc:random_element(names)
 
     local class = proc:random_element(classes[name])
-    local char_data = units:gen_archetype(class)
-    char_data.name = name.."("..class..")"
+    local unit = units:gen_archetype(class)
+    unit.char_data.name = name.."("..class..")"
 
     local ent = {
         TransformComponent = {
@@ -182,8 +81,9 @@ for i=1,num_units,1 do
             center = sp.get(sp.center, pre..name..post)
         },
         DraggableComponent = {},
-        GridUnitComponent = { x=8, y=i+1, team=1 },
-        CharacterDataComponent = char_data
+        GridUnitComponent = { x=i+num_units+5, y=0, team=1 },
+        CharacterDataComponent = unit.char_data,
+        AbilitiesComponent = { ability_names = unit.abilities }
     }
 
     if sp.sheet[pre..name..post] then
@@ -314,12 +214,9 @@ for j, row in pairs(raw_map) do
 end
 ]]--
 
--- Create entities and templates
+-- Create entities
 
 for i, e in ipairs(entities) do
     safe.create_entity(e)
-end
-for i, t in ipairs(templates) do
-    safe.create_template(t)
 end
     

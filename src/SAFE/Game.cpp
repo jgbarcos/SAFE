@@ -111,7 +111,7 @@ void Game::Start() {
     camera.mTransform.mPosition = Vector3(luaConf.get<sol::table>("camera_pos"));
 
     int cols = 11;
-    int rows = 9;
+    int rows = 1;
     int tile_size = 24;
     int posx = -cols * tile_size / 2;
     int posy = -rows * tile_size / 2;
@@ -196,6 +196,12 @@ void Game::Start() {
     /*
      * Lua entity scripts
      */
+    try {
+        mLua.script_file("./lua/templates.lua");
+    }
+    catch (sol::error& e) {
+        std::cout << e.what() << std::endl;
+    }
     try {
         mLua.script_file("./lua/entities.lua");
     }
