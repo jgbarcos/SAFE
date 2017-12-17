@@ -1,4 +1,4 @@
-local Effect = require "game.ability_effect"
+local Effect = require "game.effect"
 
 local DialogEffect = class("DialogEffect", Effect)
 function DialogEffect:initialize(params)

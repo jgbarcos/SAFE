@@ -1,11 +1,3 @@
--- Componets
-safe.register_component( require "game.character_data_component" )
-safe.register_component( require "game.grid_unit_component" )
-safe.register_component( require "game.abilities_component" )
-
--- Systems
-safe.register_system( require "game.damage_phase_system" )
-
 -- Game data
 gamedata = { 
   abilities_class = {},
@@ -28,9 +20,14 @@ function gamedata.get_ability( name )
   
 end
 
-require "gamedata.ability_shoot"
-require "gamedata.ability_talk"
-require "gamedata.effect_dialog"
-require "gamedata.effect_damage_tile"
-require "gamedata.trigger_on_use"
-require "gamedata.targetting_relative_fixed"
+require "gamedata.abilities.ab_cripple_shoot"
+require "gamedata.abilities.ab_shoot"
+require "gamedata.abilities.ab_talk"
+require "gamedata.abilities.ab_weakness_detection"
+
+require "gamedata.abilities.ef_dialog"
+require "gamedata.abilities.ef_damage_tile"
+require "gamedata.abilities.ef_edit_context"
+
+require "gamedata.abilities.ta_relative_tiles"
+require "gamedata.abilities.ta_self"

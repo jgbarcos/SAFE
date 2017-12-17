@@ -190,6 +190,7 @@ void Game::Start() {
     
     // Initialize game
     mLua.script_file("./lua/game/init.lua");
+    mLua.script_file("./lua/game/ecs/init.lua");
 
     /*
      * Lua entity scripts

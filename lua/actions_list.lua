@@ -84,7 +84,7 @@ module.DealDamage = class("DealDamage", Action)
         local ptr = safe.get_entity(self.target)
         local char_data = safe.get_component(ptr, "CharacterDataComponent")
 
-        char_data.current_health = char_data.current_health - self.damage
+        char_data.current.health = char_data.current.health - self.damage
     end
     
 return module

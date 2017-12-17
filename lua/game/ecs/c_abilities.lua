@@ -5,14 +5,12 @@ local AbilitiesComponent = class ("AbilitiesComponent", Component)
         Component.initialize(self, params)
         
         self.ability_names =  util.default( params.ability_names, {})
-        self.abilities = util.default( params.abilities, {} )
+        self.abilities =      util.default( params.abilities,     {} )
         
         -- Instantiate abilities
-        self.abilities = {}
         for _,name in pairs(self.ability_names) do
             self.abilities[name] = gamedata.get_ability(name)
         end
-                
-    end
+    end    
 
 return AbilitiesComponent

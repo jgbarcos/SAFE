@@ -1,6 +1,7 @@
 local talk_ability = {
-  name = "talk",
-  category = "active",
+  name =      "talk",
+  category =  "active",
+  endturn =   false,
   effects_template = {
     { name = "dialog", text = "Hello there" }
   }

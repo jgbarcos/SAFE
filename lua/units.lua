@@ -2,16 +2,16 @@ proc = require "procedural"
 
 local module = {}
 
-module.base_abilities = {"shoot"}
+module.base_abilities = {"shoot", "weakness_detection", "cripple_shoot"}
 
 --
 -- UNIT ARCHETYPES DATA
 -- 
 module.archetypes = {
   ["Melee"] = {
-    base_health =   {min=5, max=10},
-    base_movement = {min=4, max=6},
-    base_attack =   {min=4, max=7},
+    health =   {min=5, max=10},
+    movement = {min=4, max=6},
+    attack =   {min=4, max=7},
     abilities = {"talk"},
     
     attack_area = {
@@ -20,9 +20,9 @@ module.archetypes = {
     }
   },
   ["Ranged"] = {
-    base_health =   {min=3, max=6},
-    base_movement = {min=3, max=5},
-    base_attack =   {min=3, max=6},
+    health =   {min=3, max=6},
+    movement = {min=3, max=5},
+    attack =   {min=3, max=6},
     abilities = {"talk"},
     
     attack_area = {
@@ -31,9 +31,9 @@ module.archetypes = {
     }  
   },
   ["Assault"] = {
-    base_health =   {min=4, max=8},
-    base_movement = {min=2, max=5},
-    base_attack =   {min=4, max=7},
+    health =   {min=4, max=8},
+    movement = {min=2, max=5},
+    attack =   {min=4, max=7},
     abilities = {"talk"},
     
     attack_area = {
@@ -41,9 +41,9 @@ module.archetypes = {
     }  
   },
   ["Support"] = {
-    base_health =   {min=8, max=11},
-    base_movement = {min=3, max=4},
-    base_attack =   {min=3, max=5},
+    health =   {min=8, max=11},
+    movement = {min=3, max=4},
+    attack =   {min=3, max=5},
     abilities = {"talk"},
     
     attack_area = {
@@ -52,9 +52,9 @@ module.archetypes = {
     }
   },
   ["Heavy"] = {
-    base_health =   {min=10, max=15},
-    base_movement = {min=2, max=3},
-    base_attack =   {min=4, max=5},
+    health =   {min=10, max=15},
+    movement = {min=2, max=3},
+    attack =   {min=4, max=5},
     abilities = {"talk"},
     
     attack_area = {

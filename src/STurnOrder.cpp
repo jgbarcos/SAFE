@@ -45,9 +45,11 @@ void STurnOrder::Update(float delta, std::vector<Entity*>& entities) {
 
         auto unit = e->GetComponent("GridUnitComponent");
         if (!unit.valid()) continue;
+        
+        sol::table current = charData["current"];
 
-        if (charData.get<int>("current_health") <= 0) {
-            charData["current_health"] = 0;
+        if (current.get<int>("health") <= 0) {
+            current["health"] = 0;
             e->mIsActive = false;
 
             std::cout << "> "
@@ -76,7 +78,7 @@ void STurnOrder::Update(float delta, std::vector<Entity*>& entities) {
             if (mFirstTurn) {
                 mFirstTurn = false;
             }
-                // Damage enemies phase
+            // Damage enemies phase
             else {
                 sol::object team = sol::make_object<int>(mpEntityEngine->mLua, mTeams.at(mCurrentTurn));
                 mpEntityEngine->mEventDispatcher.PostLua("damage_phase", team);

@@ -30,7 +30,11 @@ public:
     }
 
     Vector3 Screen2Camera(const Vector2 screenPos) const {
-        Vector2 v = (screenPos - GetSize() / 2.0) / Vector2::Reduce(mTransform.mScale);
+        Vector2 v = (screenPos - GetSize() / 2.0);
+        // Avoid division by zero (may show graphic glitches)
+        if(mTransform.mScale.x != 0 && mTransform.mScale.y != 0){
+            v = v/Vector2::Reduce(mTransform.mScale);
+        }
         return Vector2::Extend(v, mTransform.mPosition.z);
     }
 

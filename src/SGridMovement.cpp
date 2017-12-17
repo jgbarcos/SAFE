@@ -1,6 +1,7 @@
 #include "SGridMovement.h"
 
 #include "SAFE/CTransform.h"
+#include "SAFE/CSprite.h"
 #include "SAFE/Vector3.h"
 
 #include "CDraggable.h"
@@ -85,7 +86,7 @@ void SGridMovement::Update(float delta, std::vector<Entity*>& entities) {
 
 
         if (event.mIsPicked) {
-            int movement = charData["base_movement"];
+            int movement = charData["current"]["movement"];
 
             auto nodes = mpTileMap->Dijstra(TileNode(unit["x"], unit["y"], movement));
 
@@ -105,7 +106,7 @@ void SGridMovement::Update(float delta, std::vector<Entity*>& entities) {
             if (mpTileMap->CheckBounds(pTransform->mPosition)) {
                 bool canReach = false;
                 for (auto& n : mpTileMap->Dijstra(TileNode(unit["x"], unit["y"],
-                                                           charData["base_movement"]))) {
+                                                           charData["current"]["movement"]))) {
                     if (n.mX == x && n.mY == y) {
                         canReach = true;
                         break;
@@ -163,28 +164,32 @@ void SGridMovement::Update(float delta, std::vector<Entity*>& entities) {
 
         auto charData = e->GetComponent("CharacterDataComponent");
         if (charData.valid()) {
-            Vector3 pos = mpEntityEngine->GetEntity("Cursor")->Get<CTransform>()->mPosition;
-            Vector2 tilePos = mpTileMap->World2Map(pos);
+            auto pCursor = mpEntityEngine->GetEntity("Cursor");
+            if( pCursor->Get<CSprite>()->mRender ){
+                Vector3 pos = pCursor->Get<CTransform>()->mPosition;
 
-            if ((pDraggable && pDraggable->mBeingDragged)
-                || (unit["x"] == tilePos.x && unit["y"] == tilePos.y)) {
+                Vector2 tilePos = mpTileMap->World2Map(pos);
 
-                int xunit = 1;
-                if (pTransform->mScale.x < 0) {
-                    xunit = -1;
+                if ((pDraggable && pDraggable->mBeingDragged)
+                    || (unit["x"] == tilePos.x && unit["y"] == tilePos.y)) {
+
+                    int xunit = 1;
+                    if (pTransform->mScale.x < 0) {
+                        xunit = -1;
+                    }
+
+                    auto fx = [&](sol::object key, sol::object value)
+                    {
+                        Vector2 vec = Vector2(value.as<sol::table>());
+                        auto pTileEntity = mAttackArea.DemandEntity();
+
+                        auto pTileTransform = pTileEntity->Get<CTransform>();
+                        double z = pTileTransform->mPosition.z;
+
+                        pTileTransform->mPosition = mpTileMap->Map2World(tilePos.x + vec.x*xunit, tilePos.y + vec.y, z);
+                    };
+                    charData.get<sol::table>("attack_area").for_each(fx);
                 }
-
-                auto fx = [&](sol::object key, sol::object value)
-                {
-                    Vector2 vec = Vector2(value.as<sol::table>());
-                    auto pTileEntity = mAttackArea.DemandEntity();
-
-                    auto pTileTransform = pTileEntity->Get<CTransform>();
-                    double z = pTileTransform->mPosition.z;
-
-                    pTileTransform->mPosition = mpTileMap->Map2World(tilePos.x + vec.x*xunit, tilePos.y + vec.y, z);
-                };
-                charData.get<sol::table>("attack_area").for_each(fx);
             }
         }
     }
