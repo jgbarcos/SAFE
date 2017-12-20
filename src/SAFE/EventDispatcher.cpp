@@ -13,7 +13,7 @@ void EventDispatcher::PropagateEvents() {
     
     for (auto&& e : mEventList) {        
         const EventLua& luaEvent = static_cast<const EventLua&> (*e);
-        DispatchEvent<sol::object,EventHandlerLua>(luaEvent.type(), luaEvent.mPayload, mEventHandlerLua);
+        DispatchEvent<sol::object,EventHandlerLua>(luaEvent.type(), luaEvent.mEvent, mEventHandlerLua);
     }
     
     
@@ -69,15 +69,15 @@ void EventDispatcher::Post(Event* pEvent) {
     Post(p);
 }
 
-void EventDispatcher::PostLua(std::string type, sol::object payload){
-    std::unique_ptr<Event> p = std::make_unique<EventLua>(type, payload);
+void EventDispatcher::PostLua(sol::table event){
+    std::unique_ptr<Event> p = std::make_unique<EventLua>(event);
     Post(p);
 }
 
 void EventDispatcher::Send(const Event& event){
     DispatchEvent<Event,EventHandler>(event.type(), event, mEventHandler);
     const EventLua& luaEvent = static_cast<const EventLua&> (event);
-    DispatchEvent<sol::object,EventHandlerLua>(luaEvent.type(), luaEvent.mPayload, mEventHandlerLua);
+    DispatchEvent<sol::table,EventHandlerLua>(luaEvent.type(), luaEvent.mEvent, mEventHandlerLua);
 }
 
 EventDispatcher::ObserverID EventDispatcher::GetNextID() {

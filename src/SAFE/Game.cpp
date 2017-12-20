@@ -181,11 +181,6 @@ void Game::Start() {
         "y", &Vector3::y,
         "z", &Vector3::z
     );
-    luaSafe.new_usertype<EventLua>(
-        "EventLua",
-        "payload", &EventLua::mPayload,
-        "type", &EventLua::mType
-    );
     
     
     // Initialize game

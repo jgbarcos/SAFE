@@ -13,19 +13,21 @@ class EventLua : public Event {
 public:
     EventLua() { }
 
-    EventLua(std::string type, sol::object payload) : mPayload(payload), mType(type) { mIsLuaEvent = true; }
+    EventLua(sol::table event) : mEvent(event) { mIsLuaEvent = true; }
     
     virtual Type type() const override {
-        return mType.c_str();
+        return mEvent.get<std::string>("type");
     }
     
     virtual std::string toString() const override {
-        if (mPayload.is<std::string>()) return mPayload.as<std::string>();
+        sol::object payload = mEvent["payload"];
+        if (payload.is<std::string>()){
+            return mEvent.get<std::string>("payload");
+        }
         else return "?";
     }
     
-    sol::object mPayload;
-    std::string mType;
+    sol::table mEvent;
 };
 
 } // namespace safe

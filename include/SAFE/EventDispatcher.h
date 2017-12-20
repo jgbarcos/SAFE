@@ -14,7 +14,7 @@ namespace safe {
 class EventDispatcher {
 public:
     typedef std::function< bool (const Event&) > Func;
-    typedef std::function< bool (sol::object) > FuncLua;
+    typedef std::function< bool (sol::table) > FuncLua;
     typedef int ObserverID;
     typedef std::unordered_map<Event::Type, std::vector< std::pair< ObserverID, Func > > > EventHandler;
     typedef std::unordered_map<Event::Type, std::vector< std::pair< ObserverID, FuncLua > > > EventHandlerLua;
@@ -34,7 +34,7 @@ public:
      */
     void Post(std::unique_ptr<Event>& pEvent);
     void Post(Event* pEvent);
-    void PostLua(std::string type, sol::object payload);
+    void PostLua(sol::table event);
 
     /**
      * Send an event now. The event will be received and treated 

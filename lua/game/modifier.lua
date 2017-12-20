@@ -4,6 +4,9 @@ function Modifier:initialize( params )
   self.name =       util.enforce( params.name, 4,  "name" )
   self.stats =      util.enforce( params.stats, 4, "stats" )
   self.can_stack =  util.default( params.can_stack,   false )
+  -- Removes modifier when event count is achieved
+  self.event_count = util.default( params.event_count, 1 )
+  self.event =      util.default( params.event, nil )
   
   -- Set default values to multiplicative and additive values
   for _,v in pairs(self.stats) do

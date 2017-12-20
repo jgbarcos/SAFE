@@ -80,8 +80,11 @@ void STurnOrder::Update(float delta, std::vector<Entity*>& entities) {
             }
             // Damage enemies phase
             else {
-                sol::object team = sol::make_object<int>(mpEntityEngine->mLua, mTeams.at(mCurrentTurn));
-                mpEntityEngine->mEventDispatcher.PostLua("damage_phase", team);
+                auto event = mpEntityEngine->mLua.create_table_with(
+                    "type", "damage_phase", 
+                    "payload", mTeams.at(mCurrentTurn)
+                );
+                mpEntityEngine->mEventDispatcher.PostLua(event);
             }
         }
     }
