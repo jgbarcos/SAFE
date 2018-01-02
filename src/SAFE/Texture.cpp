@@ -174,6 +174,17 @@ void Texture::RenderSDL(SDL_Renderer* renderer, int xpos, int ypos, float xscale
 
     renderQuad.w *= xscale;
     renderQuad.h *= yscale;
+    
+    if(renderQuad.w < 0){
+        renderQuad.w = -renderQuad.w;
+        renderQuad.x -= renderQuad.w;
+        flip = (SDL_RendererFlip)(flip ^ SDL_FLIP_HORIZONTAL);
+    }
+    if(renderQuad.h < 0){
+        renderQuad.h = -renderQuad.h;
+        renderQuad.y -= renderQuad.h;
+        flip = (SDL_RendererFlip)(flip ^ SDL_FLIP_VERTICAL);
+    }
 
     SubmitIfRequired();
 
