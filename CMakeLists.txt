@@ -36,7 +36,7 @@ endif()
 
 # Use ccache if available
 find_program(CCACHE_PROGRAM ccache)
-if(CCACHE_PROGRAM)
+if(CCACHE_FOUND)
     message( "Using ccache" )
     set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "${CCACHE_PROGRAM}")
 endif()
@@ -154,7 +154,7 @@ endif()
 
 # Remove main.cpp from src files
 set( PROJECT_SRC_NO_MAIN ${PROJECT_SRC} )
-list(FILTER PROJECT_SRC_NO_MAIN EXCLUDE REGEX "main")
+list(REMOVE_ITEM PROJECT_SRC_NO_MAIN "${CMAKE_CURRENT_SOURCE_DIR}/src/SAFE/main.cpp")
 
 add_executable(test_all ${PROJECT_TESTS}
                         ${PROJECT_HEADERS} 
