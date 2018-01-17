@@ -9,6 +9,7 @@
 #include "SAFE/Input.h"
 
 #include "TileMap.h"
+#include "CDraggable.h"
 
 using namespace safe;
 
@@ -60,6 +61,9 @@ void SCharacterGUI::Update(float delta, std::vector<Entity*>& entities) {
             auto abilityComp = e->GetComponent("AbilitiesComponent");
 
             if(abilityComp.valid()){
+                bool ability_used = false;
+                sol::table ability_table;
+                
                 int i = 0;
                 auto fx = [&](sol::object key, sol::table ability)
                 {
@@ -80,15 +84,20 @@ void SCharacterGUI::Update(float delta, std::vector<Entity*>& entities) {
                         Vector3 mouse = mpCamera->Screen2World(Input::GetMousePos());
 
                         if (area.Contains(Vector2::Reduce(mouse))) {
-                            sol::table context = mpEntityEngine->mLua.create_table_with("owner", e->GetName());
-                            ability["perform"](ability, context);
-                            if(ability.get<bool>("endturn")){
-                                unit["can_move"] = false;
-                            }
+                            ability_used = true;
+                            ability_table = ability;
                         }
                     }
                 };
                 abilityComp.get<sol::table>("abilities").for_each(fx);
+                
+                if(ability_used){
+                    sol::table context = mpEntityEngine->mLua.create_table_with("owner", e->GetName());
+                    ability_table["perform"](ability_table, context);
+                    if(ability_table.get<bool>("endturn")){
+                        unit["can_move"] = false;
+                    }
+                }
             }
         }
     }

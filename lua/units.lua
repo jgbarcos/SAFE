@@ -12,7 +12,7 @@ module.archetypes = {
     health =   {min=5, max=10},
     movement = {min=4, max=6},
     attack =   {min=4, max=7},
-    abilities = {"talk"},
+    abilities = {},
     
     attack_area = {
       forward_length = {min=1, max=2},
@@ -23,7 +23,7 @@ module.archetypes = {
     health =   {min=3, max=6},
     movement = {min=3, max=5},
     attack =   {min=3, max=6},
-    abilities = {"talk"},
+    abilities = {},
     
     attack_area = {
       forward_init = 3,
@@ -34,7 +34,7 @@ module.archetypes = {
     health =   {min=4, max=8},
     movement = {min=2, max=5},
     attack =   {min=4, max=7},
-    abilities = {"talk"},
+    abilities = {},
     
     attack_area = {
       forward_length = {min=2, max=4}
@@ -44,7 +44,7 @@ module.archetypes = {
     health =   {min=8, max=11},
     movement = {min=3, max=4},
     attack =   {min=3, max=5},
-    abilities = {"talk"},
+    abilities = {},
     
     attack_area = {
       forward_init = {min=1, max=2},
@@ -55,7 +55,7 @@ module.archetypes = {
     health =   {min=10, max=15},
     movement = {min=2, max=3},
     attack =   {min=4, max=5},
-    abilities = {"talk"},
+    abilities = {},
     
     attack_area = {
       forward_length = {min=2, max=3}

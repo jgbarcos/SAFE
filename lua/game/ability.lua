@@ -31,7 +31,6 @@ function Ability:is_active()
 end
 
 function Ability:target()
-  
   -- Call self.targetting
 end
 

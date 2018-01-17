@@ -9,8 +9,13 @@ local AbilitiesComponent = class ("AbilitiesComponent", Component)
         
         -- Instantiate abilities
         for _,name in pairs(self.ability_names) do
-            self.abilities[name] = gamedata.get_ability(name)
+            self:add_ability(name)
         end
-    end    
+    end
+    
+    function AbilitiesComponent:add_ability(name)
+        self.abilities[name] = gamedata.get_ability(name)
+    end
+    
 
 return AbilitiesComponent

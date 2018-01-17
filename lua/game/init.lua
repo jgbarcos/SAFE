@@ -26,6 +26,7 @@ require "gamedata.abilities.ab_talk"
 require "gamedata.abilities.ab_weakness_detection"
 
 require "gamedata.abilities.ef_dialog"
+require "gamedata.abilities.ef_add_ability"
 require "gamedata.abilities.ef_damage_tile"
 require "gamedata.abilities.ef_edit_context"
 

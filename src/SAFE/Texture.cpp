@@ -98,7 +98,7 @@ void Texture::PlotText(TTF_Font* font, const std::string& text,
     }
     if (resizeIfRequired) {
         auto size = TextSize(font, text);
-        if (mWidth < size.x || mHeight < size.y) {
+        if (mWidth != size.x || mHeight != size.y) {
             CreateEmpty(size.x, size.y);
         }
     }
