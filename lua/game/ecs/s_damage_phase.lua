@@ -10,7 +10,7 @@ function DamagePhaseSystem:init(entities)
     self.current_team = payload
     return true
   end    
-  --safe.subscribe("damage_phase", callback)
+  safe.subscribe("new_turn", callback)
 end
 
 function DamagePhaseSystem:update(_, entities)   
@@ -24,7 +24,14 @@ function DamagePhaseSystem:update(_, entities)
     local transform = safe.get_transform(ent)
     local char_data = safe.get_component(ent, "CharacterDataComponent")
     local unit = safe.get_component(ent, "GridUnitComponent")
-
+    
+    -- Reset orig position
+    if unit then
+      unit.origx = unit.x
+      unit.origy = unit.y
+    end
+    
+    --[[
     if char_data and unit and unit.team == current_turn then
       
       for _,vec in pairs(char_data.attack_area) do
@@ -67,11 +74,10 @@ function DamagePhaseSystem:update(_, entities)
           end
         end
       end
-    end
+    end --]]
   end
   -- Submit actions
   safe.add_action_list( action_list )
 end
-                        
 
 return DamagePhaseSystem

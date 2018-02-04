@@ -1,34 +1,48 @@
 -- Game data
 gamedata = { 
-  abilities_class = {},
-  abilities_template = {},
+  abilities = {
+    classes = {},
+    templates = {}
+  },  
   effects = {},
   triggers = {},
   conditions = {},
-  targetting = {}
+  targetting = {},
+  actions = {}
 }
 
 local Ability = require "game.ability"
 
-function gamedata.get_ability( name ) 
-  if gamedata.abilities_template[name] ~= nil then
-    return Ability:new( gamedata.abilities_template[name] )
-  elseif gamedata.abilities_class[name] ~= nil then
-    return gamedata.abilities_class[name]:new()
+function gamedata.abilities.get( name ) 
+  if gamedata.abilities.templates[name] ~= nil then
+    return Ability:new( gamedata.abilities.templates[name] )
+  elseif gamedata.abilities.classes[name] ~= nil then
+    return gamedata.abilities.classes[name]:new()
   end  
   print ("error: ability ".. name .. "does not exist in gamedata")
-  
 end
 
-require "gamedata.abilities.ab_cripple_shoot"
-require "gamedata.abilities.ab_shoot"
-require "gamedata.abilities.ab_talk"
-require "gamedata.abilities.ab_weakness_detection"
+function gamedata.reload_all()
+  util.load( "gamedata.abilities.cripple_shoot" )
+  util.load( "gamedata.abilities.shoot" )
+  util.load( "gamedata.abilities.talk" )
+  util.load( "gamedata.abilities.weakness_detection" )
+  
+  util.load( "gamedata.actions.deal_damage" )
+  util.load( "gamedata.actions.delay" )
+  util.load( "gamedata.actions.play_animation" )
+  util.load( "gamedata.actions.print_console" )
+  util.load( "gamedata.actions.print_damage" )
+  util.load( "gamedata.actions.push_unit" )
 
-require "gamedata.abilities.ef_dialog"
-require "gamedata.abilities.ef_add_ability"
-require "gamedata.abilities.ef_damage_tile"
-require "gamedata.abilities.ef_edit_context"
+  util.load( "gamedata.effects.dialog" )
+  util.load( "gamedata.effects.add_ability" )
+  util.load( "gamedata.effects.damage_tile" )
+  util.load( "gamedata.effects.edit_context" )
+  util.load( "gamedata.effects.push_horizontal" )
 
-require "gamedata.abilities.ta_relative_tiles"
-require "gamedata.abilities.ta_self"
+  util.load( "gamedata.targetting.relative_tiles" )
+  util.load( "gamedata.targetting.self" )
+end
+
+gamedata.reload_all()

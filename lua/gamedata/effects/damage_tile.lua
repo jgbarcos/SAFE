@@ -11,10 +11,10 @@ function DamageTile:perform(context)
   local unit = safe.get_component(ent, "GridUnitComponent")
   
   local actions = {
-    game.actions.PlayAnimation { 
+    gamedata.actions.play_animation { 
       entity = owner, 
       anim = "shoot" },
-    game.actions.PlayAnimation { 
+    gamedata.actions.play_animation { 
       entity = owner, 
       anim = "idle", 
       play_once = false }
@@ -29,10 +29,10 @@ function DamageTile:perform(context)
     local target_unit = safe.get_component(target, "GridUnitComponent")
   
     local actions = {
-      game.actions.DealDamage { 
+      gamedata.actions.deal_damage { 
         target = target:get_name(), 
         damage = damage },
-      game.actions.PrintDamage { 
+      gamedata.actions.print_damage { 
         att_team = unit.team, 
         att = char_data.name, 
         def_team = target_unit.team, 

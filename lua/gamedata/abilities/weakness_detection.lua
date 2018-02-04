@@ -19,4 +19,4 @@ local weakness_detection_ability = {
   }
 }
 
-gamedata.abilities_template["weakness_detection"] = weakness_detection_ability
+gamedata.abilities.templates["weakness_detection"] = weakness_detection_ability

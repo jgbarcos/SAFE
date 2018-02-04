@@ -8,6 +8,9 @@ local GridUnitComponent = class ("GridUnitComponent", Component)
         self.y =        util.enforce( params.y,     4, "y" )
         self.team =     util.enforce( params.team,  4, "team" )
         self.can_move = util.default( params.can_move, true )
+        
+        self.origx = self.x
+        self.origy = self.y
     end
 
 return GridUnitComponent

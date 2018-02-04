@@ -20,4 +20,4 @@ function ShootAbility:perform(context)
   Ability.perform(self, context)
 end
 
-gamedata.abilities_class["shoot"] = ShootAbility
+gamedata.abilities.classes["shoot"] = ShootAbility

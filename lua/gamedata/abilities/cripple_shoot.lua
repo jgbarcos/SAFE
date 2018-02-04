@@ -8,17 +8,19 @@ local cripple_shoot_ability = {
     { name = "edit_context",
       edit_context = { damage = 1 }
     },
-    { name = "damage_tile" }
+    { name = "damage_tile" },
+    { name = "push_horizontal",
+      tiles = 2 },
   },
   
   modifiers = {
     { name = "cripple_shoot",
       stacks = false,
       stats = {
-        movement = { add = -2 }
+        movement = { add = -1 }
       }
     }
   }
 }
 
-gamedata.abilities_template["cripple_shoot"] = cripple_shoot_ability
+gamedata.abilities.templates["cripple_shoot"] = cripple_shoot_ability

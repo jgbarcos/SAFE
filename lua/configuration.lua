@@ -25,8 +25,4 @@ pprint.setup( { show_function = true } )
 
 util = require "safe.utility"
 
--- Define globals for common lua modules
-game = {}
-game.actions = require "actions_list"
-
 return configuration

@@ -28,4 +28,9 @@ module.concat = function (this, other)
     end
 end
 
+module.load = function (mod)
+  package.loaded[mod] = nil
+  require(mod)  
+end
+
 return module

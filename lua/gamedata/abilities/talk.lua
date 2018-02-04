@@ -7,4 +7,4 @@ local talk_ability = {
   }
 }
 
-gamedata.abilities_template["talk"] = talk_ability
+gamedata.abilities.templates["talk"] = talk_ability

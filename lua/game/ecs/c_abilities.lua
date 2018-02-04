@@ -14,7 +14,7 @@ local AbilitiesComponent = class ("AbilitiesComponent", Component)
     end
     
     function AbilitiesComponent:add_ability(name)
-        self.abilities[name] = gamedata.get_ability(name)
+        self.abilities[name] = gamedata.abilities.get(name)
     end
     
 
