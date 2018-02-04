@@ -30,6 +30,7 @@ private:
 
 public:
     typedef std::string EntityID;
+    typedef std::string SystemID;
 
     /**
      * Constructor
@@ -63,6 +64,11 @@ public:
     void RegisterSystemLua(sol::table luaT);
     
     /**
+     * Get a System by its id.
+     */
+    System* GetSystem(SystemID id);
+    
+    /**
      * Creates a empty Entity to be filled with Components.
      * 
      * @return pointer to the created entity or nullptr
@@ -79,7 +85,7 @@ public:
     Entity* CreateEntityFromLua(sol::table luaT);
 
     /**
-     * Get the an Entity by its id.
+     * Get an Entity by its id.
      * 
      * @param id identifier of the entity.
      * @return Entity pointer or nullptr if not found.

@@ -14,7 +14,10 @@ using namespace safe;
 class STileMapUpdate : public System {
 public:
 
-    STileMapUpdate(TileMap* tileMap) : mpTileMap(tileMap) { }
+    STileMapUpdate(TileMap* tileMap) : mpTileMap(tileMap) 
+    {
+        mName = "TileMapUpdateSystem";
+    }
 
     void Update(float delta, std::vector<Entity*>& entities) override {
         mpTileMap->mEntitiesPosition.clear();

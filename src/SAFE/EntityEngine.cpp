@@ -40,6 +40,14 @@ void EntityEngine::RegisterSystemLua(sol::table luaT) {
     mSystems.push_back(std::move(system));
 }
 
+
+System* EntityEngine::GetSystem(SystemID id){
+    for (size_t i=0; i<mSystems.size(); i++){
+        if (mSystems[i]->mName == id) return mSystems[i].get();
+    }
+    return nullptr;
+}
+
 Entity* EntityEngine::CreateEntity(EntityID id) {
     mEntities[id] = std::make_unique<Entity>(id);
     return mEntities[id].get();

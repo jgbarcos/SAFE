@@ -8,6 +8,9 @@ namespace safe {
 
 class SPlayerMovement : public System {
 public:
+    SPlayerMovement () {
+        mName = "PlayerMovementSystem";
+    }
     void Update(float delta, std::vector<Entity*>& entities) override;
 };
 

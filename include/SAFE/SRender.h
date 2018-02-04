@@ -17,7 +17,10 @@ public:
 
     SRender(TextureManager* textureMgr, Camera* camera) :
     mpTextureManager(textureMgr),
-    mpCamera(camera) { }
+    mpCamera(camera)  
+    {
+        mName = "RenderSystem";
+    }
 
     void Update(float delta, std::vector<Entity*>& entities) override;
 

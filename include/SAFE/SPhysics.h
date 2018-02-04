@@ -20,8 +20,11 @@ class SPhysics : public System {
 public:
 
     SPhysics(float scale) :
-    mPixelsPerMeter(scale),
-    mWorld(b2Vec2(0.0f, 0.0f)) { }
+        mPixelsPerMeter(scale),
+        mWorld(b2Vec2(0.0f, 0.0f)) 
+    {
+        mName = "PhysicsSystem";
+    }
 
     void Update(float delta, std::vector<Entity*>& entities) override;
 

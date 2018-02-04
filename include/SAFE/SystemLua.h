@@ -17,6 +17,7 @@ public:
     
     SystemLua(sol::table luaT){
         mSelf = luaT;
+        mName = luaT["name"];
         mInit = luaT.get < InitFunc >("init");
         mUpdate = luaT.get < UpdateFunc >("update");
         luaT["set_active"] = [&](bool active){ mActive = active; };

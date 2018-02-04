@@ -14,7 +14,9 @@ namespace safe {
 class SCameraMovement : public System {
 public:
 
-    SCameraMovement(Camera* camera) : mpCamera(camera) { }
+    SCameraMovement(Camera* camera) : mpCamera(camera) {
+        mName = "CameraMovementSystem";
+    }
 
     void Update(float delta, std::vector<Entity*>& entities) override {
         if (Input::IsMousePressed(SDL_BUTTON_MIDDLE)) {

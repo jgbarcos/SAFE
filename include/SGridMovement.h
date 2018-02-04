@@ -9,7 +9,10 @@
 class SGridMovement : public safe::System {
 public:
 
-    SGridMovement(TileMap* t) : mpTileMap(t) { }
+    SGridMovement(TileMap* t) : mpTileMap(t) 
+    {
+        mName = "GridMovementSystem";
+    }
 
     void Init(std::vector<safe::Entity*>& entities) override;
 

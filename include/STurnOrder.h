@@ -12,7 +12,10 @@
 class STurnOrder : public safe::System {
 public:
 
-    STurnOrder(TileMap* tileMap, safe::Camera* camera) : mpTileMap(tileMap), mpCamera(camera), mEndTurnPosition(0.95, 0.95) { }
+    STurnOrder(TileMap* tileMap, safe::Camera* camera) : mpTileMap(tileMap), mpCamera(camera), mEndTurnPosition(0.95, 0.95) 
+    {
+        mName = "TurnOrderSystem";
+    }
 
     void Init(std::vector<safe::Entity*>& entities) override;
 

@@ -32,9 +32,11 @@ void STurnOrder::Init(std::vector<Entity*>& entities) {
 
     SetTurn(entities);
 
+    //TODO: Change location of this binding
     // Tilemap lua access
     sol::table luaSafe = mpEntityEngine->mLua["safe"];
     luaSafe.set_function("get_entities_at", &TileMap::GetEntitiesAt, mpTileMap);
+    luaSafe.set_function("check_bounds", sol::resolve<bool(int,int)>( &TileMap::CheckBounds ), mpTileMap);
 }
 
 
@@ -48,6 +50,7 @@ void STurnOrder::Update(float delta, std::vector<Entity*>& entities) {
         
         sol::table current = charData["current"];
 
+        // Kill dead units
         if (current.get<int>("health") <= 0) {
             current["health"] = 0;
             e->mIsActive = false;
@@ -81,7 +84,7 @@ void STurnOrder::Update(float delta, std::vector<Entity*>& entities) {
             // Damage enemies phase
             else {
                 auto event = mpEntityEngine->mLua.create_table_with(
-                    "type", "damage_phase", 
+                    "type", "new_turn", 
                     "payload", mTeams.at(mCurrentTurn)
                 );
                 mpEntityEngine->mEventDispatcher.PostLua(event);
@@ -89,6 +92,7 @@ void STurnOrder::Update(float delta, std::vector<Entity*>& entities) {
         }
     }
 
+    /*
     // Show damage area of enemy team
     if (!mFirstTurn) {
         mDamageArea.ReleaseAllEntities();
@@ -151,7 +155,7 @@ void STurnOrder::Update(float delta, std::vector<Entity*>& entities) {
                 }
             }
         }
-    }
+    }*/
 
     auto pos = mpCamera->Percentage2Pixel(mEndTurnPosition);
     mpEndTurnButton->Get<CTransform>()->mPosition = mpCamera->Screen2World(pos);

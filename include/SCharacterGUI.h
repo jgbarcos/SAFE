@@ -11,7 +11,10 @@ class SCharacterGUI : public safe::System {
 public:
 
     SCharacterGUI(TileMap* tileMap, safe::Camera* camera)
-    : mpTileMap(tileMap), mpCamera(camera) { }
+    : mpTileMap(tileMap), mpCamera(camera) 
+    { 
+        mName = "CharacterGUISystem";
+    }
 
     void Init(std::vector<safe::Entity*>& entities) override;
 

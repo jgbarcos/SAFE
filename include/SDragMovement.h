@@ -11,7 +11,10 @@ using namespace safe;
 class SDragMovement : public System {
 public:
 
-    SDragMovement(Camera* camera) : mpCamera(camera) { }
+    SDragMovement(Camera* camera) : mpCamera(camera) 
+    { 
+        mName = "DragMovementSystem";
+    }
 
     void Update(float delta, std::vector<Entity*>& entities) override;
 

@@ -135,9 +135,15 @@ public:
         }
     }
 
-    std::vector< TileNode > Dijstra(TileNode init) {
+    std::vector< TileNode > Dijstra(TileNode init, std::vector<TileNode>& blockedTiles) {
         std::vector < std::vector< bool >> closedNodes(mCols, std::vector<bool>(mRows, false));
         std::priority_queue< TileNode > openNodes;
+        
+        for (auto&& n : blockedTiles){
+            if(CheckBounds(n.mX, n.mY)) {
+                closedNodes[n.mX][n.mY] = true;
+            }
+        }
 
         std::vector< TileNode > result;
 
@@ -173,7 +179,6 @@ public:
 
 public:
     std::unordered_map< int, std::vector<safe::EntityEngine::EntityID> > mEntitiesPosition;
-
 
 private:
     safe::Vector3 mOrigin;

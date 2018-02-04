@@ -39,6 +39,7 @@ public:
     }
     
     bool mActive = true;
+    std::string mName;
 protected:
     EntityEngine* mpEntityEngine = nullptr;
 

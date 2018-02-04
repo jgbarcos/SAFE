@@ -14,6 +14,7 @@ void SGridMovement::Init(std::vector<Entity*>& entities) {
     std::string name = "Tile";
     if (mpEntityEngine->ExistsTemplate(name)) {
 
+        // Create tiles
         for (int i = 0; i < mpTileMap->GetCols(); i++) {
             for (int j = 0; j < mpTileMap->GetRows(); j++) {
                 auto e = mpEntityEngine->CreateEntityFromTemplate(name);
@@ -44,6 +45,7 @@ void SGridMovement::Init(std::vector<Entity*>& entities) {
 
         auto pTransform = e->Get<CTransform>();
         if (!pTransform) continue;
+        
         pTransform->mPosition = mpTileMap->Map2World(pTile->mX, pTile->mY);
     }
 
@@ -87,9 +89,29 @@ void SGridMovement::Update(float delta, std::vector<Entity*>& entities) {
 
         if (event.mIsPicked) {
             int movement = charData["current"]["movement"];
+            
+            // Add enemies as blocked tiles
+            std::vector<TileNode> blockedTiles;
+            for(auto&& mapit : mpTileMap->mEntitiesPosition){
+                for(auto&& id : mapit.second){
+                    auto pOtherEntity = mpEntityEngine->GetEntity(id);
+                    auto otherUnit = pOtherEntity->GetComponent("GridUnitComponent");
+                    
+                    if(otherUnit.get<int>("team") != unit.get<int>("team")){
+                        blockedTiles.push_back(TileNode(otherUnit["x"], otherUnit["y"], -1));
+                    }
+                }
+            }
 
-            auto nodes = mpTileMap->Dijstra(TileNode(unit["x"], unit["y"], movement));
-
+            // perform dijkstra, including original position
+            auto nodes = mpTileMap->Dijstra(TileNode(unit["origx"], unit["origy"], movement), blockedTiles);
+            nodes.push_back(TileNode(unit["origx"], unit["origy"], -1));
+                        
+            if(unit.get<int>("origx") != unit.get<int>("x") 
+            || unit.get<int>("origy") != unit.get<int>("y") ){
+                nodes.push_back(TileNode(unit["x"], unit["y"], -1));
+            }
+            
             for (auto n : nodes) {
                 auto pArea = mMovementArea.DemandEntity();
 
@@ -104,9 +126,25 @@ void SGridMovement::Update(float delta, std::vector<Entity*>& entities) {
             int x = tilePos.x;
             int y = tilePos.y;
             if (mpTileMap->CheckBounds(pTransform->mPosition)) {
+                // Add enemies as blocked tiles
+                std::vector<TileNode> blockedTiles;
+                for(auto&& mapit : mpTileMap->mEntitiesPosition){
+                    for(auto&& id : mapit.second){
+                        auto pOtherEntity = mpEntityEngine->GetEntity(id);
+                        auto otherUnit = pOtherEntity->GetComponent("GridUnitComponent");
+
+                        if(otherUnit.get<int>("team") != unit.get<int>("team")){
+                            blockedTiles.push_back(TileNode(otherUnit["x"], otherUnit["y"], -1));
+                        }
+                    }
+                }
+                // perform dijkstra, including original position
+                auto nodes = mpTileMap->Dijstra(TileNode(unit["origx"], unit["origy"], charData["current"]["movement"]), blockedTiles);
+                nodes.push_back(TileNode(unit["origx"], unit["origy"], -1));
+                
                 bool canReach = false;
-                for (auto& n : mpTileMap->Dijstra(TileNode(unit["x"], unit["y"],
-                                                           charData["current"]["movement"]))) {
+                for (auto& n : nodes) 
+                {
                     if (n.mX == x && n.mY == y) {
                         canReach = true;
                         break;
@@ -115,7 +153,6 @@ void SGridMovement::Update(float delta, std::vector<Entity*>& entities) {
                 if (canReach) {
                     unit["x"] = tilePos.x;
                     unit["y"] = tilePos.y;
-                    unit["can_move"] = false;
                 }
             }
 
@@ -153,13 +190,13 @@ void SGridMovement::Update(float delta, std::vector<Entity*>& entities) {
             else {
                 pTransform->mPosition += dir.normalize() * speed * delta;
             }
-        }
-
-        // Render available units tile
-        if (unit.get<bool>("can_move")) {
-            auto pTileTransform = mReadyArea.DemandEntity()->Get<CTransform>();
-            double z = pTileTransform->mPosition.z;
-            pTileTransform->mPosition = mpTileMap->Map2World(unit["x"], unit["y"], z);
+            
+            // Render available units tile
+            if (unit.get<bool>("can_move")) {
+                auto pTileTransform = mReadyArea.DemandEntity()->Get<CTransform>();
+                double z = pTileTransform->mPosition.z;
+                pTileTransform->mPosition = mpTileMap->Map2World(unit["origx"], unit["origy"], z);
+            }
         }
 
         auto charData = e->GetComponent("CharacterDataComponent");

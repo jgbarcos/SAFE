@@ -8,6 +8,9 @@ namespace safe {
 
 class SSpriteSheetAnimator : public System {
 public:
+    SSpriteSheetAnimator ()  {
+        mName = "SpriteSheetAnimatorSystem";
+    }
     void Update(float delta, std::vector<Entity*>& entities) override;
 };
 
