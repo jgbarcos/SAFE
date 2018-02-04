@@ -108,8 +108,8 @@ void Game::Start() {
     camera.mTransform.mScale = Vector3(luaConf.get<sol::table>("camera_zoom"));
     camera.mTransform.mPosition = Vector3(luaConf.get<sol::table>("camera_pos"));
 
-    int cols = 11;
-    int rows = 1;
+    int cols = 8;
+    int rows = 3;
     int tile_size = 24;
     int posx = -cols * tile_size / 2;
     int posy = -rows * tile_size / 2;
@@ -126,9 +126,14 @@ void Game::Start() {
     luaSafe.set_function("create_entity", &EntityEngine::CreateEntityFromLua, &engine);
     luaSafe.set_function("create_template", &EntityEngine::RegisterTemplate, &engine);
 
-    luaSafe.new_usertype<Entity>("Entity", "get_name", &Entity::GetName);
+    luaSafe.new_usertype<Entity>("Entity", "get_name", &Entity::GetName,
+                                           "get_component", &Entity::GetComponent);
+    luaSafe.new_usertype<System>("System",  "name", &System::mName,
+                                            "active", &System::mActive);
+    
     luaSafe.set_function("get_entity", &EntityEngine::GetEntity, &engine);
     luaSafe.set_function("get_component", &Entity::GetComponent);
+    luaSafe.set_function("get_system", &EntityEngine::GetSystem, &engine);
     luaSafe.set_function("register_system", &EntityEngine::RegisterSystemLua, &engine);
     luaSafe.set_function("register_component", &EntityEngine::RegisterComponent, &engine);
     luaSafe.set_function("add_action_list", &ActionListManager::LuaAdd, &engine.mActionListManager);
@@ -239,7 +244,12 @@ void Game::Start() {
                 std::cout << ">";
 
                 while (getline(std::cin, luaConsole) && !luaConsole.empty()) {
-                    mLua.script(luaConsole);
+                    try {
+                        mLua.script(luaConsole);
+                    }
+                    catch (sol::error& e) {
+                        std::cout << e.what() << std::endl;
+                    }
                     std::cout << ">";
                 }
                 std::cout << "[RESUMING GAME]" << std::endl;
