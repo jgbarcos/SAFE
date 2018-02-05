@@ -1,3 +1,10 @@
+-- Safe functions
+safe.set_active_systems = function ( systems, value )
+  for _,s in pairs(systems) do
+    safe.get_system(s).active = value
+  end
+end
+
 -- Game data
 gamedata = { 
   abilities = {

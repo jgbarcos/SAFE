@@ -39,7 +39,6 @@ templates[#templates+1] = {
         scale = {x=1, y=1, z=1} 
     }
 }
- animations = {} 
 
 templates[#templates+1] = {
     TemplateName = "MovementArea",

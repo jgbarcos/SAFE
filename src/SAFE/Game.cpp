@@ -201,11 +201,15 @@ void Game::Start() {
     catch (sol::error& e) {
         std::cout << e.what() << std::endl;
     }
-    try {
-        mLua.script_file("./lua/entities.lua");
-    }
-    catch (sol::error& e) {
-        std::cout << e.what() << std::endl;
+    
+    std::string scene_name = luaConf.get<std::string>("initial_scene");
+    if(!scene_name.empty()){
+        try {
+            mLua.script_file("./lua/"+scene_name+".lua");
+        }
+        catch (sol::error& e) {
+            std::cout << e.what() << std::endl;
+        }
     }
 
     // Debug anything right at the start of the execution

@@ -4,6 +4,27 @@ local units = require "units"
 
 local entities = {}
 --
+-- Set systems
+--
+active_systems = {
+  -- Safe systems
+  "CameraMovementSystem",
+  "RenderSystem",
+  "SpriteSheetAnimatorSystem",
+  
+  -- Cpp systems
+  "CharacterGUISystem",
+  "DragMovementSystem",
+  "GridMovementSystem",
+  "TileMapUpdateSystem",
+  "TurnOrderSystem",
+  
+  -- Lua systems
+  "DamagePhaseSystem",
+  "StatsModifierSystem"
+}
+
+--
 -- Create Entities
 --
 local pre = "assets/"
@@ -96,127 +117,10 @@ for i=1,num_units,1 do
     entities[#entities+1] = ent
 end
 
-
-
-
---[[
-local enemy = {
-    TransformComponent = {
-        position = { x=300, y=300 },
-        scale = { x=2, y=2, z=1 }
-    },
-    
-    SpriteComponent = {
-        filename = "./assets/EnemySheet.png",
-        center = { x=0.5, y=1.0 }
-    },
-
-    SheetAnimationComponent = {
-        animations = animations_data["dir_4_frames_2"]
-    },
-
-    PlayerControlsComponent = {
-        up = "UP",
-        down = "DOWN",
-        left = "LEFT",
-        right = "RIGHT"
-    },
-
-    ColliderComponent = {
-        shape = 'circle',
-        size = {x=6, y=6},
-        center = { x=0, y=-20 }
-    },
-
-    DraggableComponent = { is_draggable = true }
-}
-
-local player = {
-    TransformComponent = {
-        position = { x=400, y=200 },
-        scale = { x=2, y=2, z=1 }
-    },
-
-    SpriteComponent = {
-        filename = "./assets/PlayerSheet.png",
-        center = { x=0.5, y=1.0 }
-    },
-
-    SheetAnimationComponent = {
-        animations = animations_data["dir_4_frames_3"]
-    },
-
-    PlayerControlsComponent = {
-        up = "W",
-        down = "S",
-        left = "A",
-        right = "D"
-    },
-
-    ColliderComponent = {
-        shape = 'circle',
-        size = {x=6, y=6},
-        center = { x=0, y=-20 }
-    }
-}
-
-entities[#entities+1] = player
-entities[#entities+1] = enemy
-
---]]--
-
---[[
-local function generate_tile(xpos, ypos, sprite_filename, has_collider)
-    local tile = {
-        TransformComponent = { 
-            position = { x=xpos, y=ypos },
-        },
-        SpriteComponent = {
-            filename = sprite_filename,
-            center = { x=0.5, y=1.0 },
-            is_vertical = has_collider 
-        },
-        DraggableComponent = {}
-    }
-    if has_collider then
-        tile['ColliderComponent'] = { 
-            shape = 'rectangle', 
-            type = 'static', 
-            size = {x=12,y=6}, 
-            center = {x=0,y=-12}
-        }
-    end
-
-    return tile
-end
-
-local raw_map = {
-    {1,1,1,1,1,1,1},
-    {1,0,0,1,0,0,1},
-    {1,0,0,1,0,0,1},
-    {1,0,1,1,0,0,1},
-    {1,0,0,0,0,0,1},
-    {1,0,0,0,0,0,1},
-    {1,1,1,0,1,1,1},
-}
-
-for j, row in pairs(raw_map) do
-    for i, col in pairs(row) do
-        sprite = 'assets/floor_tile.png'
-        has_collider = false
-        if col == 1 then
-            sprite = 'assets/wall_tile.png'
-            has_collider = true
-        end
-
-        entities[#entities+1] = generate_tile(i*24-1+6, j*24-1+6, sprite, has_collider)
-    end
-end
-]]--
-
 -- Create entities
-
 for i, e in ipairs(entities) do
     safe.create_entity(e)
 end
-    
+
+-- Set Systems
+safe.set_active_systems( active_systems, true)
