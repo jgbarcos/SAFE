@@ -19,11 +19,11 @@ public:
     }
 
     void Update(float delta, std::vector<Entity*>& entities) override {
-        if (Input::IsMousePressed(SDL_BUTTON_MIDDLE)) {
+        if (Input::IsMousePressed(SDL_BUTTON_RIGHT)) {
             origMouse = mpCamera->Screen2Camera(Input::GetMousePos());
             origPos = mpCamera->mTransform.mPosition;
         }
-        if (Input::IsMouseDown(SDL_BUTTON_MIDDLE)) {
+        if (Input::IsMouseDown(SDL_BUTTON_RIGHT)) {
             Vector3 currentMouse = mpCamera->Screen2Camera(Input::GetMousePos());
             mpCamera->mTransform.mPosition = origPos + (origMouse - currentMouse);
         }

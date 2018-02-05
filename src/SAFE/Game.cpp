@@ -237,7 +237,11 @@ void Game::Start() {
                     std::cout << i.second->GetName() << std::endl;
                 }
             }
-                // Simple command line console
+            // Window resize
+            else if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED){
+                SDL_GetWindowSize(mpWindow, &camera.mWidth, &camera.mHeight);
+            }
+            // Simple command line console
             else if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_TAB) {
                 std::string luaConsole;
                 std::cout << "[CONSOLE MODE]" << std::endl;

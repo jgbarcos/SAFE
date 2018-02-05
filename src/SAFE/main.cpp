@@ -9,16 +9,10 @@
 #include <fenv.h> // It allows catch NaN
 
 //Screen dimensions
-const int SCREEN_WIDTH = 1000;
-const int SCREEN_HEIGHT = 768;
+const int SCREEN_WIDTH = 1920;
+const int SCREEN_HEIGHT = 1080;
 
-// The window target
-SDL_Window* gpWindow = NULL;
-
-// The window renderer
-SDL_Renderer* gpRenderer = NULL;
-
-bool init() {
+bool init(SDL_Window*& pWindow, SDL_Renderer*& pRenderer) {
     //Initialization flag
     bool success = true;
 
@@ -29,22 +23,22 @@ bool init() {
     }
 
     //Create window
-    gpWindow = SDL_CreateWindow("SAF Engine", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 
-                                SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
-    if (gpWindow == NULL) {
+    pWindow = SDL_CreateWindow("SAF Engine", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 
+                                SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN|SDL_WINDOW_RESIZABLE);
+    if (pWindow == NULL) {
         printf("Window could not be created! SDL Error: %s\n", SDL_GetError());
         return false;
     }
 
     //Create renderer for window
-    gpRenderer = SDL_CreateRenderer(gpWindow, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-    if (gpRenderer == NULL) {
+    pRenderer = SDL_CreateRenderer(pWindow, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    if (pRenderer == NULL) {
         printf("Renderer could not be created! SDL Error: %s\n", SDL_GetError());
         return false;
     }
 
     //Initialize renderer color
-    SDL_SetRenderDrawColor(gpRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
+    SDL_SetRenderDrawColor(pRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
 
     //Initialize PNG loading
     int imgFlags = IMG_INIT_PNG;
@@ -62,12 +56,12 @@ bool init() {
     return success;
 }
 
-void close() {
+void close(SDL_Window* pWindow, SDL_Renderer*& pRenderer) {
     //Destroy window
-    SDL_DestroyRenderer(gpRenderer);
-    SDL_DestroyWindow(gpWindow);
-    gpWindow = NULL;
-    gpRenderer = NULL;
+    SDL_DestroyRenderer(pRenderer);
+    SDL_DestroyWindow(pWindow);
+    pWindow = NULL;
+    pRenderer = NULL;
 
     //Quit SDL subsystems
     IMG_Quit();
@@ -78,18 +72,22 @@ int main() {
     // Set up NaN signal catching mechanism
     feenableexcept(FE_INVALID | FE_OVERFLOW | FE_DIVBYZERO);
     
+    SDL_Window* pWindow = NULL;
+    SDL_Renderer* pRenderer = NULL;
+    
     //Start up SDL and create window
-    bool success = init();
+    bool success = init(pWindow, pRenderer);
 
     if (success) {
-        safe::Game game = safe::Game(SCREEN_WIDTH, SCREEN_HEIGHT, gpWindow, gpRenderer);
+        if(pWindow == NULL) std::cout << "window is null" << std::endl;
+        safe::Game game = safe::Game(SCREEN_WIDTH, SCREEN_HEIGHT, pWindow, pRenderer);
         game.Start();
     }
     else {
         printf("Failed to initialize!\n");
     }
     //Free resources and close SDL
-    close();
+    close(pWindow, pRenderer);
 
     if (!success) {
         std::cout << "press Enter key to exit...";
