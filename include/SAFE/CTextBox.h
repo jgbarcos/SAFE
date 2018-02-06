@@ -20,7 +20,17 @@ public:
     {
         mComponentName = "TextBoxComponent";
     }
+        
+    std::string PrepareLua(sol::state_view& lua) override {
+        typedef CTextBox Comp;
+        lua.new_usertype<Comp>(
+            mComponentName,
+            "text", &Comp::mText
+        );
 
+        return "get_text_box";
+    }
+        
     void FromLua(sol::table luaT) override {
         mText = luaT.get<std::string>("text");
         mAutoResize = luaT.get_or("auto_resize", true);

@@ -125,6 +125,7 @@ void Game::Start() {
     sol::table luaSafe = mLua.create_named_table("safe"); // set safe namespace in lua
     luaSafe.set_function("create_entity", &EntityEngine::CreateEntityFromLua, &engine);
     luaSafe.set_function("create_template", &EntityEngine::RegisterTemplate, &engine);
+    luaSafe.set_function("create_entity_from_template", &EntityEngine::CreateEntityFromTemplate, &engine);
 
     luaSafe.new_usertype<Entity>("Entity", "get_name", &Entity::GetName,
                                            "get_component", &Entity::GetComponent);
