@@ -46,7 +46,7 @@ public:
     void Init();
 
     /**
-     * Updates all the systems. Update order is based on added order.
+     * Updates all the systems. Update order is based on insertion order.
      * @param delta
      */
     void Update(float delta);

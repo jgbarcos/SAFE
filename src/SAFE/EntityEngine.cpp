@@ -13,6 +13,9 @@ void EntityEngine::Init() {
 
     for (auto&& s : mSystems) {
         s->Init(mVecOfEntities);
+        
+        //TODO: OnDisable does not get called if mActive is false because default value is already false
+        if(!s->mActive) s->OnDisable(); 
     }
 }
 
@@ -23,7 +26,9 @@ void EntityEngine::Update(float delta) {
     GatherEntities();
 
     for (auto&& s : mSystems) {
+        s->TouchState();
         if(s->mActive) s->Update(delta, mVecOfEntities);
+        s->TouchState();
     }
 }
 

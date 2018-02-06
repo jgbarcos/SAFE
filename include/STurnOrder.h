@@ -18,8 +18,9 @@ public:
     }
 
     void Init(std::vector<safe::Entity*>& entities) override;
-
     void Update(float delta, std::vector<safe::Entity*>& entities) override;
+    void OnEnable() override;
+    void OnDisable() override;
 
     void SetTurn(std::vector<safe::Entity*>& entities);
 

@@ -31,6 +31,16 @@ public:
     virtual void Update(float delta, std::vector<Entity*>& entities) = 0;
 
     /**
+     * Gets called when the system active state gets enabled
+     */
+    virtual void OnEnable() { /* do nothing */ }
+    
+    /** 
+     * Gets called when the system active state gets disabled
+     */
+    virtual void OnDisable(){ /* do nothing */ }
+    
+    /**
      * Called by the EntityEngine when registering a system
      * @param pEngine pointer to the EntityEngine 
      */
@@ -38,11 +48,29 @@ public:
         mpEntityEngine = pEngine;
     }
     
-    bool mActive = false;
+    /**
+     * Allows the system to updates its current state at the right time
+     */
+    // TODO: Destroy the system would be also checked and updated here
+    void TouchState(){
+        if(mActiveState != mActive){
+            mActiveState = mActive;
+            if(mActive){ 
+                OnEnable(); 
+            }
+            else{
+                OnDisable();
+            }
+        }
+    }
+    
     std::string mName;
+    bool mActive = false;
 protected:
     EntityEngine* mpEntityEngine = nullptr;
 
+private:
+    bool mActiveState = false;
 };
 
 } // namespace safe

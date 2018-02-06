@@ -161,6 +161,13 @@ void STurnOrder::Update(float delta, std::vector<Entity*>& entities) {
     mpEndTurnButton->Get<CTransform>()->mPosition = mpCamera->Screen2World(pos);
 }
 
+void STurnOrder::OnEnable() {
+    mpEndTurnButton->mIsActive = true;
+}
+void STurnOrder::OnDisable() {
+    mpEndTurnButton->mIsActive = false;
+}
+
 void STurnOrder::SetTurn(std::vector<Entity*>& entities) {
     for (auto&& e : entities) {
         auto unit = e->GetComponent("GridUnitComponent");

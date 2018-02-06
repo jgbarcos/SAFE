@@ -21,6 +21,14 @@ void SCharacterGUI::Init(std::vector<Entity*>& entities) {
     mEFAbilities = EntityFactory(mpEntityEngine, "AbilityIcon");
 }
 
+void SCharacterGUI::OnEnable() {
+    mpCursor->mIsActive = true;
+}
+
+void SCharacterGUI::OnDisable(){
+    mpCursor->mIsActive = false;
+}
+
 void SCharacterGUI::Update(float delta, std::vector<Entity*>& entities) {
     mEFAbilities.ReleaseAllEntities();
 

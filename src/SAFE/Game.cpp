@@ -189,8 +189,13 @@ void Game::Start() {
     
     
     // Initialize game
-    mLua.script_file("./lua/game/init.lua");
-    mLua.script_file("./lua/game/ecs/init.lua");
+    try {
+        mLua.script_file("./lua/game/init.lua");
+        mLua.script_file("./lua/game/ecs/init.lua");
+    }
+    catch (sol::error& e) {
+        std::cout << e.what() << std::endl;
+    }
 
     /*
      * Lua entity scripts

@@ -11,34 +11,6 @@ using namespace safe;
 
 void SGridMovement::Init(std::vector<Entity*>& entities) {
     // Set tiles
-    std::string name = "Tile";
-    if (mpEntityEngine->ExistsTemplate(name)) {
-
-        // Create tiles
-        for (int i = 0; i < mpTileMap->GetCols(); i++) {
-            for (int j = 0; j < mpTileMap->GetRows(); j++) {
-                auto e = mpEntityEngine->CreateEntityFromTemplate(name);
-
-                // Set transform
-                auto pTransform = e->Get<CTransform>();
-                if (!pTransform) { // Create transform if not provided
-                    pTransform = new CTransform();
-                    e->Add<CTransform>(std::unique_ptr<Component>(pTransform));
-                }
-                pTransform->mPosition = mpTileMap->Map2World(i, j);
-
-                // Set grid tile
-                auto pTile = e->Get<CGridTile>();
-                if (!pTile) {
-                    pTile = new CGridTile();
-                    e->Add<CGridTile>(std::unique_ptr<CGridTile>(pTile));
-                }
-                pTile->mX = i;
-                pTile->mY = j;
-            }
-        }
-
-    }
     for (auto&& e : entities) {
         auto pTile = e->Get<CGridTile>();
         if (!pTile) continue;
@@ -61,6 +33,7 @@ void SGridMovement::Init(std::vector<Entity*>& entities) {
     mpEntityEngine->mEventDispatcher.Subscribe(EDragUnit().type(), onDragUnit);
 
     // Tiles EntityFactory
+    mTiles = EntityFactory(mpEntityEngine, "Tile");
     mAttackArea = EntityFactory(mpEntityEngine, "AttackArea");
     mMovementArea = EntityFactory(mpEntityEngine, "MovementArea");
     mReadyArea = EntityFactory(mpEntityEngine, "ReadyArea");
@@ -70,95 +43,8 @@ void SGridMovement::Init(std::vector<Entity*>& entities) {
 void SGridMovement::Update(float delta, std::vector<Entity*>& entities) {
     mAttackArea.ReleaseAllEntities();
     mReadyArea.ReleaseAllEntities();
-
-    while (!mReceivedEvents.empty()) {
-        EDragUnit event = mReceivedEvents.front();
-        mReceivedEvents.pop();
-
-        auto pEntity = mpEntityEngine->GetEntity(event.mUnit);
-
-        auto unit = pEntity->GetComponent("GridUnitComponent");
-        if (!unit.valid()) continue;
-
-        auto charData = pEntity->GetComponent("CharacterDataComponent");
-        if (!charData.valid()) continue;
-
-        auto pTransform = pEntity->Get<CTransform>();
-        if (!pTransform) continue;
-
-
-        if (event.mIsPicked) {
-            int movement = charData["current"]["movement"];
-            
-            // Add enemies as blocked tiles
-            std::vector<TileNode> blockedTiles;
-            for(auto&& mapit : mpTileMap->mEntitiesPosition){
-                for(auto&& id : mapit.second){
-                    auto pOtherEntity = mpEntityEngine->GetEntity(id);
-                    auto otherUnit = pOtherEntity->GetComponent("GridUnitComponent");
-                    
-                    if(otherUnit.get<int>("team") != unit.get<int>("team")){
-                        blockedTiles.push_back(TileNode(otherUnit["x"], otherUnit["y"], -1));
-                    }
-                }
-            }
-
-            // perform dijkstra, including original position
-            auto nodes = mpTileMap->Dijstra(TileNode(unit["origx"], unit["origy"], movement), blockedTiles);
-            nodes.push_back(TileNode(unit["origx"], unit["origy"], -1));
-                        
-            if(unit.get<int>("origx") != unit.get<int>("x") 
-            || unit.get<int>("origy") != unit.get<int>("y") ){
-                nodes.push_back(TileNode(unit["x"], unit["y"], -1));
-            }
-            
-            for (auto n : nodes) {
-                auto pArea = mMovementArea.DemandEntity();
-
-                auto pTileTransform = pArea->Get<CTransform>();
-                double z = pTileTransform->mPosition.z;
-                pTileTransform->mPosition = mpTileMap->Map2World(n.mX, n.mY);
-                pTileTransform->mPosition.z = z;
-            }
-        }
-        if (event.mIsDropped) {
-            Vector2 tilePos = mpTileMap->World2Map(event.mDroppedPosition);
-            int x = tilePos.x;
-            int y = tilePos.y;
-            if (mpTileMap->CheckBounds(pTransform->mPosition)) {
-                // Add enemies as blocked tiles
-                std::vector<TileNode> blockedTiles;
-                for(auto&& mapit : mpTileMap->mEntitiesPosition){
-                    for(auto&& id : mapit.second){
-                        auto pOtherEntity = mpEntityEngine->GetEntity(id);
-                        auto otherUnit = pOtherEntity->GetComponent("GridUnitComponent");
-
-                        if(otherUnit.get<int>("team") != unit.get<int>("team")){
-                            blockedTiles.push_back(TileNode(otherUnit["x"], otherUnit["y"], -1));
-                        }
-                    }
-                }
-                // perform dijkstra, including original position
-                auto nodes = mpTileMap->Dijstra(TileNode(unit["origx"], unit["origy"], charData["current"]["movement"]), blockedTiles);
-                nodes.push_back(TileNode(unit["origx"], unit["origy"], -1));
-                
-                bool canReach = false;
-                for (auto& n : nodes) 
-                {
-                    if (n.mX == x && n.mY == y) {
-                        canReach = true;
-                        break;
-                    }
-                }
-                if (canReach) {
-                    unit["x"] = tilePos.x;
-                    unit["y"] = tilePos.y;
-                }
-            }
-
-            mMovementArea.ReleaseAllEntities();
-        }
-    }
+    
+    DragEvents();
 
     for (auto&& e : entities) {
         auto unit = e->GetComponent("GridUnitComponent");
@@ -232,3 +118,129 @@ void SGridMovement::Update(float delta, std::vector<Entity*>& entities) {
     }
 }
 
+void SGridMovement::OnEnable(){
+    SetTiles();
+}
+
+void SGridMovement::OnDisable() {
+    // Deactivate all entities
+    mTiles.ReleaseAllEntities();
+}
+
+
+void SGridMovement::SetTiles(){
+    mTiles.ReleaseAllEntities();
+    
+    std::string name = "Tile";
+    if (mpEntityEngine->ExistsTemplate(name)) {
+        // Create tiles
+        for (int i = 0; i < mpTileMap->GetCols(); i++) {
+            for (int j = 0; j < mpTileMap->GetRows(); j++) {
+                
+                auto e = mTiles.DemandEntity();
+
+                // Set transform
+                auto pTransform = e->Get<CTransform>();
+                if (!pTransform) { // Create transform if not provided
+                    pTransform = new CTransform();
+                    e->Add<CTransform>(std::unique_ptr<Component>(pTransform));
+                }
+                pTransform->mPosition = mpTileMap->Map2World(i, j);
+
+                // Set grid tile
+                auto pTile = e->Get<CGridTile>();
+                if (!pTile) {
+                    pTile = new CGridTile();
+                    e->Add<CGridTile>(std::unique_ptr<CGridTile>(pTile));
+                }
+                pTile->mX = i;
+                pTile->mY = j;
+            }
+        }
+    }
+}
+
+void SGridMovement::DragEvents(){
+    while (!mReceivedEvents.empty()) {
+        EDragUnit event = mReceivedEvents.front();
+        mReceivedEvents.pop();
+
+        auto pEntity = mpEntityEngine->GetEntity(event.mUnit);
+
+        auto unit = pEntity->GetComponent("GridUnitComponent");
+        if (!unit.valid()) continue;
+
+        auto charData = pEntity->GetComponent("CharacterDataComponent");
+        if (!charData.valid()) continue;
+
+        auto pTransform = pEntity->Get<CTransform>();
+        if (!pTransform) continue;
+
+
+        if (event.mIsPicked) {
+            int movement = charData["current"]["movement"];
+            
+            // perform dijkstra, including original position
+            auto nodes = PerformDijkstra(unit, movement);
+            nodes.push_back(TileNode(unit["origx"], unit["origy"], -1));
+                        
+            if(unit.get<int>("origx") != unit.get<int>("x") 
+            || unit.get<int>("origy") != unit.get<int>("y") ){
+                nodes.push_back(TileNode(unit["x"], unit["y"], -1));
+            }
+            
+            for (auto n : nodes) {
+                auto pArea = mMovementArea.DemandEntity();
+
+                auto pTileTransform = pArea->Get<CTransform>();
+                double z = pTileTransform->mPosition.z;
+                pTileTransform->mPosition = mpTileMap->Map2World(n.mX, n.mY);
+                pTileTransform->mPosition.z = z;
+            }
+        }
+        if (event.mIsDropped) {
+            Vector2 tilePos = mpTileMap->World2Map(event.mDroppedPosition);
+            int x = tilePos.x;
+            int y = tilePos.y;
+            if (mpTileMap->CheckBounds(pTransform->mPosition)) {
+
+                int movement = charData["current"]["movement"];
+                auto nodes = PerformDijkstra(unit, movement);
+                
+                nodes.push_back(TileNode(unit["origx"], unit["origy"], -1));
+                
+                bool canReach = false;
+                for (auto& n : nodes) 
+                {
+                    if (n.mX == x && n.mY == y) {
+                        canReach = true;
+                        break;
+                    }
+                }
+                if (canReach) {
+                    unit["x"] = tilePos.x;
+                    unit["y"] = tilePos.y;
+                }
+            }
+
+            mMovementArea.ReleaseAllEntities();
+        }
+    }
+}
+
+std::vector<TileNode> SGridMovement::PerformDijkstra(sol::table& unit, int movement){
+    // Add enemies as blocked tiles
+    std::vector<TileNode> blockedTiles;
+    for(auto&& mapit : mpTileMap->mEntitiesPosition){
+        for(auto&& id : mapit.second){
+            auto pOtherEntity = mpEntityEngine->GetEntity(id);
+            auto otherUnit = pOtherEntity->GetComponent("GridUnitComponent");
+
+            if(otherUnit.get<int>("team") != unit.get<int>("team")){
+                blockedTiles.push_back(TileNode(otherUnit["x"], otherUnit["y"], -1));
+            }
+        }
+    }
+    // perform dijkstra, including original position
+    return mpTileMap->Dijstra(TileNode(unit["origx"], unit["origy"], movement), blockedTiles);
+}
