@@ -23,6 +23,7 @@
 
 #include "SAFE/Entity.h"
 #include "SAFE/EntityEngine.h"
+#include "SAFE/LuaSafeFunctions.h"
 
 #include "SAFE/SCameraMovement.h"
 #include "SAFE/SPhysics.h"
@@ -121,27 +122,11 @@ void Game::Start() {
     EntityEngine engine(mLua.lua_state());
     engine.mEventDispatcher.mDebugLog = luaConf.get_or("event_dispatcher_logs", false);
 
-    // Lua bindings and namespace
+    // Lua bindings, usertypes and namespace
     sol::table luaSafe = mLua.create_named_table("safe"); // set safe namespace in lua
-    luaSafe.set_function("create_entity", &EntityEngine::CreateEntityFromLua, &engine);
-    luaSafe.set_function("create_template", &EntityEngine::RegisterTemplate, &engine);
-    luaSafe.set_function("create_entity_from_template", &EntityEngine::CreateEntityFromTemplate, &engine);
-
-    luaSafe.new_usertype<Entity>("Entity", "get_name", &Entity::GetName,
-                                           "get_component", &Entity::GetComponent);
-    luaSafe.new_usertype<System>("System",  "name", &System::mName,
-                                            "active", &System::mActive);
+    LuaSafeFunctions::SetEntityEngine(luaSafe, engine);
+    LuaSafeFunctions::SetUsertypes(luaSafe);
     
-    luaSafe.set_function("get_entity", &EntityEngine::GetEntity, &engine);
-    luaSafe.set_function("get_component", &Entity::GetComponent);
-    luaSafe.set_function("get_system", &EntityEngine::GetSystem, &engine);
-    luaSafe.set_function("register_system", &EntityEngine::RegisterSystemLua, &engine);
-    luaSafe.set_function("register_component", &EntityEngine::RegisterComponent, &engine);
-    luaSafe.set_function("add_action_list", &ActionListManager::LuaAdd, &engine.mActionListManager);
-    
-    luaSafe.set_function("post_event", &EventDispatcher::PostLua, &engine.mEventDispatcher);
-    luaSafe.set_function("subscribe", &EventDispatcher::SubscribeLua, &engine.mEventDispatcher);
-
     // Define Systems
     auto pRender = new SRender(&textureManager, &camera);
     pRender->dRenderPhysics = luaConf.get_or("render_physics", false);
@@ -173,21 +158,6 @@ void Game::Start() {
 
     engine.AddComponentCreator<CDraggable>();
     engine.AddComponentCreator<CGridTile>();
-    
-    // Usertypes
-    luaSafe.new_usertype<Vector2>(
-        "Vector2",
-        "x", &Vector2::x,
-        "y", &Vector2::y
-    );
-    
-    luaSafe.new_usertype<Vector3>(
-        "Vector3",
-        "x", &Vector3::x,
-        "y", &Vector3::y,
-        "z", &Vector3::z
-    );
-    
     
     // Initialize game
     try {
