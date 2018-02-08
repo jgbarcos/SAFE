@@ -19,6 +19,21 @@ public:
     {
         mComponentName = "SpriteComponent";
     }
+        
+    std::string PrepareLua(sol::state_view& lua) override {
+        typedef CSprite Comp;
+        lua.new_usertype<Comp>(
+            mComponentName,
+            "filename",     &Comp::mFilename,
+            "center",       &Comp::mCenter,
+            "clip",         &Comp::mClip,
+            "get_width",    &Comp::GetTextureWidth,
+            "get_height",   &Comp::GetTextureHeight,
+            "is_loaded",    &Comp::IsLoaded
+        );
+
+        return "get_sprite";
+    }
 
     void FromLua(sol::table luaT) override {
         mFilename = luaT.get<std::string>("filename");
@@ -45,6 +60,10 @@ public:
         pclip.height *= scale.y;
         return Rect(-pclip.width * mCenter.x, -pclip.height * mCenter.y, pclip.width, pclip.height);
     }
+    
+    int GetTextureWidth() { return mpTexture->GetWidth();  }
+    int GetTextureHeight(){ return mpTexture->GetHeight(); }
+    bool IsLoaded()       { return mpTexture.get() != nullptr && mpTexture->IsLoaded();  }
 
     // Required
     std::string mFilename;

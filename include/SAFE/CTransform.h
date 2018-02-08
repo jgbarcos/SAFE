@@ -21,8 +21,8 @@ public:
         typedef CTransform Comp;
         lua.new_usertype<Comp>(
             mComponentName,
-            "pos", &Comp::mPosition,
-            "vel", &Comp::mVelocity,
+            "position", &Comp::mPosition,
+            "velocity", &Comp::mVelocity,
             "scale", &Comp::mScale
         );
 

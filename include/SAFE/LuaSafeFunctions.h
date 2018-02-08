@@ -21,6 +21,14 @@ public:
             "y", &Vector3::y,
             "z", &Vector3::z
         );
+        
+        lua.new_usertype<Rect>(
+            "Rect",
+            "x", &Rect::x,
+            "y", &Rect::y,
+            "width", &Rect::width,
+            "height", &Rect::height
+        );
     }
     
     static void SetEntityEngine(sol::table& lua, EntityEngine& engine){

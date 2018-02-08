@@ -57,21 +57,23 @@ void SDragMovement::Update(float delta, std::vector<Entity*>& entities) {
     // Entity being dragged with mouse
     if (mpEntityDragged != nullptr) {
         auto pTransform = mpEntityDragged->Get<CTransform>();
+        auto pDraggable = mpEntityDragged->Get<CDraggable>();
         
         auto pos = mpCamera->Screen2World(Input::GetMousePos())  - mMouseDisplacement;
        
         // TODO: Change facing direction with anything more user-friendly
-        if( pTransform->mPosition.x - pos.x < -2 ){
-            pTransform->mScale.x = abs(pTransform->mScale.x);
-        }
-        else if( pTransform->mPosition.x - pos.x > 2 ){
-            pTransform->mScale.x = -abs(pTransform->mScale.x);
+        if(pDraggable->mTurnHorizontal){
+            if( pTransform->mPosition.x - pos.x < -2 ){
+                pTransform->mScale.x = abs(pTransform->mScale.x);
+            }
+            else if( pTransform->mPosition.x - pos.x > 2 ){
+                pTransform->mScale.x = -abs(pTransform->mScale.x);
+            }
         }
         
         pos.z = pTransform->mPosition.z; // conserve z
         pTransform->mPosition = pos;
 
-        auto pDraggable = mpEntityDragged->Get<CDraggable>();
         pDraggable->mBeingDragged = true;
     }
 }
