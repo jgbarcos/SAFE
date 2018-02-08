@@ -69,7 +69,9 @@ for i=1,num_units,1 do
             filename = pre..name..post,
             center = sp.get(sp.center, pre..name..post)
         },
-        DraggableComponent = {},
+        DraggableComponent = {
+            turn_horizontal = true
+        },
         GridUnitComponent = { x=i, y=0, team=0 },
         CharacterDataComponent = unit.char_data,
         AbilitiesComponent = { ability_names = unit.abilities }
@@ -101,7 +103,9 @@ for i=1,num_units,1 do
             filename = pre..name..post,
             center = sp.get(sp.center, pre..name..post)
         },
-        DraggableComponent = {},
+        DraggableComponent = {
+            turn_horizontal = true
+        },
         GridUnitComponent = { x=i+num_units+5, y=0, team=1 },
         CharacterDataComponent = unit.char_data,
         AbilitiesComponent = { ability_names = unit.abilities }
