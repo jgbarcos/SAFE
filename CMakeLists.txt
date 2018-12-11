@@ -22,7 +22,7 @@ endif()
 
 # Set up compiler
 if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU" OR ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-unused-parameter -pedantic -O0")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-unused-parameter -Wno-noexcept-type -pedantic -O0")
 	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_DEBUG} -g")
 	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_RELEASE} -O2")
                              
@@ -46,14 +46,12 @@ find_package(SDL2 REQUIRED)
 find_package(SDL2_image REQUIRED)
 find_package(SDL2_ttf REQUIRED)
 find_package(SDL2_gfx REQUIRED)
-find_package(Box2D REQUIRED)
 find_package(Lua REQUIRED)
 
 include_directories(${SDL2_INCLUDE_DIR}
                     ${SDL2_IMAGE_INCLUDE_DIR}
                     ${SDL2_TTF_INCLUDE_DIR}
                     ${SDL2GFX_INCLUDE_DIR}
-                    ${BOX2D_INCLUDE_DIR}
                     ${LUA_INCLUDE_DIR}
                     )
 # Documentation
@@ -96,11 +94,26 @@ ENDIF()
 file(GLOB PROJECT_SRC
     "src/*.cpp"
     "src/SAFE/*.cpp"
+    "Box2D/Collision/*.cpp"
+    "Box2D/Collision/Shapes/*.cpp"
+    "Box2D/Common/*.cpp"
+    "Box2D/Dynamics/*.cpp"
+    "Box2D/Dynamics/Contacts/*.cpp"
+    "Box2D/Dynamics/Joints/*.cpp"
+    "Box2D/Rope/*.cpp"
 )
 
 file(GLOB PROJECT_HEADERS
     "include/*.h"
     "include/SAFE/*.h"
+    "Box2D/*.h"
+    "Box2D/Collision/*.h"
+    "Box2D/Collision/Shapes/*.h"
+    "Box2D/Common/*.h"
+    "Box2D/Dynamics/*.h"
+    "Box2D/Dynamics/Contacts/*.h"
+    "Box2D/Dynamics/Joints/*.h"
+    "Box2D/Rope/*.h"
 )
 
 file(GLOB PROJECT_TESTS
@@ -109,13 +122,12 @@ file(GLOB PROJECT_TESTS
 )
 
 # Build Program
-include_directories(include)
+include_directories(./ include)
 add_executable(${PROJECT_NAME} ${PROJECT_SRC} ${PROJECT_HEADERS})
 target_link_libraries(${PROJECT_NAME} ${SDL2_LIBRARY}
                              ${SDL2_IMAGE_LIBRARIES}
                              ${SDL2_TTF_LIBRARIES}
                              ${SDL2GFX_LIBRARY}
-                             ${BOX2D_LIBRARY}
                              ${LUA_LIBRARIES})
 
 message ( "Used Flags: " ${CMAKE_CXX_FLAGS} )
@@ -164,7 +176,6 @@ target_link_libraries(test_all gtest
                         ${SDL2_IMAGE_LIBRARIES}
                         ${SDL2_TTF_LIBRARIES}
                         ${SDL2GFX_LIBRARY}
-                        ${BOX2D_LIBRARY}
                         ${LUA_LIBRARIES})
 
 add_test(NAME test_all COMMAND test_all)

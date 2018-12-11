@@ -4,6 +4,7 @@
 
 #include <ostream>
 #include <stdexcept>
+#include <math.h>
 
 #include <sol.hpp>
 

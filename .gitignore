@@ -4,9 +4,10 @@ CMakeCache.txt
 CMakeFiles
 Makefile
 
-#Netbeans
+#IDEs
 nbproject/
 compile_commands.json
+.vscode/
 
 #GoogleTest
 *.pc
