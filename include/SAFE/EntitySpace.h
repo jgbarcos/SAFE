@@ -17,7 +17,7 @@ public:
     typedef std::string PoolID;
     
     EntitySpace(EntityEngine* pEngine, SpaceID id) 
-    : mpEntityEngine(pEngine), mID(id) {}
+    : mpEntityEngine(pEngine), mID(id), mActive(true) {}
     
     Entity* CreateEntity(EntityID id);
     Entity* CreateEntityFromLua(sol::table luaT);
