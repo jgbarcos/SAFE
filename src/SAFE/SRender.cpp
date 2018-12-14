@@ -19,11 +19,11 @@ struct DepthOrder {
     }
 };
 
-void SRender::Update(float delta, std::vector<Entity*>& entities) {
+void SRender::Update(float delta, EntitySpace& space) {
     if (mpTextureManager && mpCamera) {
         std::priority_queue<Depth, std::vector<Depth>, DepthOrder > renderOrder;
 
-        for (auto&& e : entities) {
+        for (auto&& e : space.GetEntities()) {
             // Preconditions
             auto pSprite = e->Get<CSprite>();
             if (!pSprite) continue;
@@ -61,7 +61,7 @@ void SRender::Update(float delta, std::vector<Entity*>& entities) {
                                        pSprite->mCenter, pSprite->GetPixelClip());
         }
 
-        for (auto&& e : entities) {
+        for (auto&& e : space.GetEntities()) {
             // Preconditions
             auto pTextBox = e->Get<CTextBox>();
             if (!pTextBox) continue;
@@ -98,7 +98,7 @@ void SRender::Update(float delta, std::vector<Entity*>& entities) {
 
         // Render sprite borders
         if (dRenderSpriteRect) {
-            for (auto&& e : entities) {
+            for (auto&& e : space.GetEntities()) {
                 auto pSprite = e->Get<CSprite>();
                 auto pTextBox = e->Get<CTextBox>();
 
@@ -140,7 +140,7 @@ void SRender::Update(float delta, std::vector<Entity*>& entities) {
 
         // Render Debugging images
         if (dRenderPhysics) {
-            for (auto&& e : entities) {
+            for (auto&& e : space.GetEntities()) {
                 // Preconditions
                 auto pCollider = e->Get<CCollider>();
                 if (!pCollider) continue;

@@ -16,7 +16,7 @@ public:
         mName = "DragMovementSystem";
     }
 
-    void Update(float delta, std::vector<Entity*>& entities) override;
+    void Update(float delta, EntitySpace& space) override;
 
 private:
     Camera* mpCamera = nullptr;

@@ -4,6 +4,11 @@ local units = require "units"
 
 local entities = {}
 --
+-- Set space
+--
+local space = safe.create_space("combat")
+
+--
 -- Set systems
 --
 active_systems = {
@@ -123,7 +128,7 @@ end
 
 -- Create entities
 for i, e in ipairs(entities) do
-    safe.create_entity(e)
+    space:create_entity(e)
 end
 
 -- Set Systems

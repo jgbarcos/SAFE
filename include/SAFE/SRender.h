@@ -22,7 +22,7 @@ public:
         mName = "RenderSystem";
     }
 
-    void Update(float delta, std::vector<Entity*>& entities) override;
+    void Update(float delta, EntitySpace& space) override;
 
     float GetDepth(CTransform* pTransform, CSprite* pSprite);
 

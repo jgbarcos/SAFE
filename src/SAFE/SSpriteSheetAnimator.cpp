@@ -6,8 +6,8 @@
 
 namespace safe {
 
-void SSpriteSheetAnimator::Update(float delta, std::vector<Entity*>& entities) {
-    for (auto&& e : entities) {
+void SSpriteSheetAnimator::Update(float delta, EntitySpace& space) {
+    for (auto&& e : space.GetEntities()) {
         // Preconditions
         auto pSheet = e->Get<CSheetAnimation>();
         if (!pSheet) continue;

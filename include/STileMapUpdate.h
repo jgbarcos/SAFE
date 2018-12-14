@@ -19,10 +19,10 @@ public:
         mName = "TileMapUpdateSystem";
     }
 
-    void Update(float delta, std::vector<Entity*>& entities) override {
+    void Update(float delta, EntitySpace& space) override {
         mpTileMap->mEntitiesPosition.clear();
 
-        for (auto&& e : entities) {
+        for (auto&& e : space.GetEntities()) {
             auto unit = e->GetComponent("GridUnitComponent");
             if (!unit.valid()) continue;
 

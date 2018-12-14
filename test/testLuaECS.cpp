@@ -3,13 +3,18 @@
 #include "sol.hpp"
 
 #include "SAFE/System.h"
+#include "SAFE/EntitySpace.h"
 #include "SAFE/Entity.h"
 #include "SAFE/EntityEngine.h"
+
+#include "SAFE/LuaSafeFunctions.h"
 
 class PseudoGame {
 public:
     
     PseudoGame() : mLua(), mEntityEngine(mLua.lua_state()) {
+        mpSpace = mEntityEngine.CreateSpace("test");
+        
         mLua.open_libraries(sol::lib::base,
                             sol::lib::package,
                             sol::lib::math,
@@ -22,22 +27,17 @@ public:
         mLua["package"]["path"] = package_path + (!package_path.empty() ? ";" : "") + "./lua/?.lua";
 
         mLua.script_file("lua/configuration.lua");
+
         
         // Lua bindings and namespace
         sol::table luaSafe = mLua.create_named_table("safe"); // set safe namespace in lua
-        luaSafe.set_function("create_entity", &safe::EntityEngine::CreateEntityFromLua, &mEntityEngine);
-        luaSafe.set_function("create_template", &safe::EntityEngine::RegisterTemplate, &mEntityEngine);
-
-        luaSafe.new_usertype<safe::Entity>("Entity");
-        luaSafe.set_function("get_entity", &safe::EntityEngine::GetEntity, &mEntityEngine);
-        luaSafe.set_function("get_component", &safe::Entity::GetComponent);
-        luaSafe.set_function("register_system", &safe::EntityEngine::RegisterSystemLua, &mEntityEngine);
-        luaSafe.set_function("register_component", &safe::EntityEngine::RegisterComponent, &mEntityEngine);
-        luaSafe.set_function("add_action_list", &safe::ActionListManager::LuaAdd, &mEntityEngine.mActionListManager);
+        safe::LuaSafeFunctions::SetEntityEngine(luaSafe, mEntityEngine);
+        safe::LuaSafeFunctions::SetUsertypes(luaSafe);
     }
     
     sol::state mLua;
     safe::EntityEngine mEntityEngine;
+    safe::EntitySpace* mpSpace;
     
     void RegisterCounterECS(){
         mLua.script( R"(
@@ -77,20 +77,20 @@ public:
 TEST(LuaECS, EntityCreation) {
     auto pseudo = PseudoGame();
     
-    size_t before = pseudo.mEntityEngine.mEntities.size();
+    size_t before = pseudo.mpSpace->mEntities.size();
     
     pseudo.mLua.script( R"(
         safe.create_entity( { EntityName = "TestEntity" } )
     )");
     
-    size_t after = pseudo.mEntityEngine.mEntities.size();
+    size_t after = pseudo.mpSpace->mEntities.size();
     
     EXPECT_LT(before, after);
     
-    bool exists = pseudo.mEntityEngine.ExistsEntity("TestEntity");
+    bool exists = pseudo.mpSpace->ExistsEntity("TestEntity");
     EXPECT_EQ(exists, true);
     
-    exists = pseudo.mEntityEngine.ExistsEntity("MissingEntity");
+    exists = pseudo.mpSpace->ExistsEntity("MissingEntity");
     EXPECT_EQ(exists, false);
 }
 
@@ -121,10 +121,10 @@ TEST(LuaECS, ECSInteraction) {
     )");
 
     // Check that the entity an its component exists
-    bool exists = pseudo.mEntityEngine.ExistsEntity("CounterEntity");
+    bool exists = pseudo.mpSpace->ExistsEntity("CounterEntity");
     EXPECT_EQ(exists, true);
     
-    auto pEnt = pseudo.mEntityEngine.GetEntity("CounterEntity");
+    auto pEnt = pseudo.mpSpace->GetEntity("CounterEntity");
     sol::table component = pEnt->GetComponent("CounterComponent");
     
     EXPECT_EQ(component.valid(), true);

@@ -15,8 +15,8 @@ public:
         mName = "CharacterGUISystem";
     }
 
-    void Init(std::vector<safe::Entity*>& entities) override;
-    void Update(float delta, std::vector<safe::Entity*>& entities) override;
+    void Init(safe::EntitySpace& space) override;
+    void Update(float delta, safe::EntitySpace& space) override;
     void OnEnable() override;
     void OnDisable() override;
 
@@ -29,7 +29,7 @@ private:
     safe::Entity* mpCursor;
     safe::Entity* mpDisplayEntity;
     
-    safe::EntityFactory mEFAbilities;
+    safe::EntitySpace::PoolID mAbilitiesPool;
 };
 
 

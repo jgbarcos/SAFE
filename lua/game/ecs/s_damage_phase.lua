@@ -1,7 +1,7 @@
 local System = require "safe.system"
 
 local DamagePhaseSystem = class("DamagePhaseSystem", System)
-function DamagePhaseSystem:init(entities)
+function DamagePhaseSystem:init(space)
   
   self.set_active(false)
   
@@ -13,14 +13,14 @@ function DamagePhaseSystem:init(entities)
   safe.subscribe("new_turn", callback)
 end
 
-function DamagePhaseSystem:update(_, entities)   
+function DamagePhaseSystem:update(_, space)   
   self.set_active(false)
   
   local current_turn = self.current_team
     
   local action_list = {}
 
-  for _,ent in pairs(entities) do  
+  for _,ent in pairs(space:get_entities()) do  
     local transform = safe.get_transform(ent)
     local char_data = safe.get_component(ent, "CharacterDataComponent")
     local unit = safe.get_component(ent, "GridUnitComponent")

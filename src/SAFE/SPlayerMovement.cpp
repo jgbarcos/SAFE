@@ -7,8 +7,8 @@
 
 namespace safe {
 
-void SPlayerMovement::Update(float delta, std::vector<Entity*>& entities) {
-    for (auto&& e : entities) {
+void SPlayerMovement::Update(float delta, EntitySpace& space) {
+    for (auto&& e : space.GetEntities()) {
         // Preconditions
         auto pControls = e->Get<CPlayerControls>();
         if (!pControls) continue;

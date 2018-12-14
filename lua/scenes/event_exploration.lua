@@ -4,6 +4,11 @@ local entities = {}
 local templates = {}
 
 --
+-- Set space
+--
+local space = safe.create_space("exploration")
+
+--
 -- Set Systems
 --
 active_systems = {
@@ -98,7 +103,7 @@ templates[#templates+1] = {
 
 -- Create entities and templates
 for i, e in ipairs(entities) do
-    safe.create_entity(e)
+    space:create_entity(e)
 end
 for i, t in ipairs(templates) do
     safe.create_template(t)

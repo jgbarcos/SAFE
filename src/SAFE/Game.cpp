@@ -24,6 +24,7 @@
 #include "SAFE/Entity.h"
 #include "SAFE/EntityEngine.h"
 #include "SAFE/LuaSafeFunctions.h"
+#include "SAFE/EntitySpace.h"
 
 #include "SAFE/SCameraMovement.h"
 #include "SAFE/SPhysics.h"
@@ -213,8 +214,14 @@ void Game::Start() {
                 quit = true;
             }
             else if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_F1) {
-                for (auto&& i : engine.mEntities) {
-                    std::cout << i.second->GetName() << std::endl;
+                //for (auto&& i : engine.mEntities) {
+                //    std::cout << i.second->GetName() << std::endl;
+                //}
+                for (auto&& s : engine.mSpaces) {
+                    std::cout << s.second->mID << ": " << s.second->mEntities.size() << "entities" << std::endl;
+                    for (auto&& e : s.second->mEntities){
+                        std::cout << "  " << e.first << std::endl;
+                    }
                 }
             }
             // Window resize
@@ -267,7 +274,8 @@ void Game::Start() {
 
     TTF_CloseFont(font);
 
-    engine.mEntities.clear();
+    //TODO: Clean entity engine when closing
+    //engine.mEntities.clear();
     textureManager.ReleaseAll();
 }
 

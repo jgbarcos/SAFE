@@ -2,9 +2,9 @@
 
 namespace safe {
 
-void SPhysics::Update(float delta, std::vector<Entity*>& entities) {
+void SPhysics::Update(float delta, EntitySpace& space) {
     // Pre-Physics
-    for (auto&& e : entities) {
+    for (auto&& e : space.GetEntities()) {
         // Preconditions
         auto pCollider = e->Get<CCollider>();
         if (!pCollider) continue;
@@ -30,7 +30,7 @@ void SPhysics::Update(float delta, std::vector<Entity*>& entities) {
     mWorld.Step(delta, 6, 2);
 
     // Post-Physics
-    for (auto&& e : entities) {
+    for (auto&& e : space.GetEntities()) {
         // Preconditions
         auto pTransform = e->Get<CTransform>();
         if (!pTransform) continue;

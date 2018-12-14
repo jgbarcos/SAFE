@@ -11,6 +11,7 @@
 
 #include "SAFE/Entity.h"
 #include "SAFE/Component.h"
+#include "SAFE/EntitySpace.h"
 #include "SAFE/EventDispatcher.h"
 #include "SAFE/ActionListManager.h"
 
@@ -26,11 +27,12 @@ class System; // forward declaration
 
 class EntityEngine {
 private:
-    typedef std::pair< Component*, std::type_index> ReqData;
+    typedef std::pair< Component*, std::type_index > ReqData;
 
 public:
     typedef std::string EntityID;
     typedef std::string SystemID;
+    typedef std::string SpaceID;
 
     /**
      * Constructor
@@ -38,7 +40,7 @@ public:
      * @param pState
      */
     EntityEngine(lua_State* pState);
-
+    
     /**
      * Allows the initialization, if required, of the registered systems.
      * Called just before the first update.
@@ -68,12 +70,17 @@ public:
      */
     System* GetSystem(SystemID id);
     
+    
+    EntitySpace* CreateSpace(EntitySpace::SpaceID id);
+    EntitySpace* GetSpace(EntitySpace::SpaceID id);
+    
+    
     /**
      * Creates a empty Entity to be filled with Components.
      * 
      * @return pointer to the created entity or nullptr
      */
-    Entity* CreateEntity(EntityID id);
+    //Entity* CreateEntity(EntityID id);
 
     /**
      * Creates a new Entity from the content of a Lua table.
@@ -82,7 +89,7 @@ public:
      * @param luaT lua table with the entity components
      * @return pointer to the created entity or nullptr
      */
-    Entity* CreateEntityFromLua(sol::table luaT);
+    //Entity* CreateEntityFromLua(sol::table luaT);
 
     /**
      * Get an Entity by its id.
@@ -90,7 +97,7 @@ public:
      * @param id identifier of the entity.
      * @return Entity pointer or nullptr if not found.
      */
-    Entity* GetEntity(EntityID id);
+    //Entity* GetEntity(EntityID id);
 
 
     /**
@@ -99,8 +106,8 @@ public:
      * @param id identifier of the entity.
      * @return true if exists.
      */
-    bool ExistsEntity(EntityID id);
-
+    //bool ExistsEntity(EntityID id);
+    
     /**
      * Registers a template of an entity. It eases the creation of a entity.
      * @param t lua table with the entity components
@@ -115,7 +122,7 @@ public:
      * @param entID identifier of the new entity
      * @return pointer to the created entity or nullptr
      */
-    Entity* CreateEntityFromTemplate(EntityID tmpID, EntityID entID = "");
+    //Entity* CreateEntityFromTemplate(EntityID tmpID, EntityID entID = "");
 
 
     /**
@@ -163,27 +170,30 @@ public:
      * Creates an unique ID for a new entity
      * @return Entity identifier
      */
-    EntityID GetNextID();
+    EntityID GetNextEntityID();
+    
+    void FillWithComponents(Entity* pEntity, sol::table luaT);
 
     std::vector<std::unique_ptr<System>> mSystems;
-    std::unordered_map<EntityID, std::unique_ptr<Entity> > mEntities;
+    std::unordered_map<EntitySpace::SpaceID, std::unique_ptr<EntitySpace> > mSpaces;
+    
+    //std::unordered_map<EntityID, std::unique_ptr<Entity> > mEntities;
     std::unordered_map<EntityID, sol::table > mEntityTemplates;
     std::unordered_map<std::string, std::function<ReqData()> > mCompCreator;
     std::unordered_map<std::string, std::function<sol::table(sol::table)> > mLuaCompCreator;
-
+    
     EventDispatcher mEventDispatcher;
     ActionListManager mActionListManager;
     sol::state_view mLua;
 
 private:
-    void FillWithComponents(Entity* pEntity, sol::table luaT);
-
     /**
      * Gathers all the active entity pointers into mVecOfEntities
      */
     void GatherEntities();
     std::vector<Entity*> mVecOfEntities;
 
+    //EntitySpace* mpDefaultSpace = nullptr;
     int mUniqueNumber = 0;
     bool mIsInitialized = false;
 };

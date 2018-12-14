@@ -32,16 +32,28 @@ public:
     }
     
     static void SetEntityEngine(sol::table& lua, EntityEngine& engine){
-        lua.set_function("create_entity", &EntityEngine::CreateEntityFromLua, &engine);
+        //lua.set_function("create_entity", &EntityEngine::CreateEntityFromLua, &engine);
         lua.set_function("create_template", &EntityEngine::RegisterTemplate, &engine);
-        lua.set_function("create_entity_from_template", &EntityEngine::CreateEntityFromTemplate, &engine);
-    
-        lua.new_usertype<Entity>("Entity", "get_name", &Entity::GetName,
-                                               "get_component", &Entity::GetComponent);
-        lua.new_usertype<System>("System",  "name", &System::mName,
-                                                "active", &System::mActive);
+        //lua.set_function("create_entity_from_template", &EntityEngine::CreateEntityFromTemplate, &engine);
         
-        lua.set_function("get_entity", &EntityEngine::GetEntity, &engine);
+        lua.set_function("create_space", &EntityEngine::CreateSpace, &engine);
+        lua.set_function("get_space", &EntityEngine::GetSpace, &engine);
+        
+        lua.new_usertype<EntitySpace>("EntitySpace", 
+            "create_entity",                &EntitySpace::CreateEntity,
+            "get_entity",                   &EntitySpace::GetEntity,
+            "get_entities",                 &EntitySpace::GetEntities,
+            "create_entity_from_template",  &EntitySpace::CreateEntityFromTemplate,
+            "get_id",                       &EntitySpace::GetID,
+            "active",                       &EntitySpace::mActive
+        );
+        
+        lua.new_usertype<Entity>("Entity", "get_name",      &Entity::GetName,
+                                           "get_component", &Entity::GetComponent);
+        lua.new_usertype<System>("System", "name",          &System::mName,
+                                           "active",        &System::mActive);
+        
+        //lua.set_function("get_entity", &EntityEngine::GetEntity, &engine);
         lua.set_function("get_component", &Entity::GetComponent);
         lua.set_function("get_system", &EntityEngine::GetSystem, &engine);
         lua.set_function("register_system", &EntityEngine::RegisterSystemLua, &engine);

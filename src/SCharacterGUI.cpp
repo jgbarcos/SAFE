@@ -13,12 +13,14 @@
 
 using namespace safe;
 
-void SCharacterGUI::Init(std::vector<Entity*>& entities) {
+void SCharacterGUI::Init(EntitySpace& space) {
     // Get cursor 
-    mpCursor = mpEntityEngine->CreateEntityFromTemplate("Cursor", "Cursor");
+    mpCursor = space.CreateEntityFromTemplate("Cursor", "Cursor");
 
-    mpDisplayEntity = mpEntityEngine->CreateEntityFromTemplate("CharDataDisplay");
-    mEFAbilities = EntityFactory(mpEntityEngine, "AbilityIcon");
+    mpDisplayEntity = space.CreateEntityFromTemplate("CharDataDisplay");
+    
+    mAbilitiesPool = mName + "AbilityIcon";
+    space.CreatePool(mAbilitiesPool, "AbilityIcon");
 }
 
 void SCharacterGUI::OnEnable() {
@@ -29,11 +31,12 @@ void SCharacterGUI::OnDisable(){
     mpCursor->mIsActive = false;
 }
 
-void SCharacterGUI::Update(float delta, std::vector<Entity*>& entities) {
-    mEFAbilities.ReleaseAllEntities();
-
+void SCharacterGUI::Update(float delta, EntitySpace& space) {
+    auto pAbilitiesPool = space.GetPool(mAbilitiesPool);
+    pAbilitiesPool->ReleaseAllEntities();
+    
     // Show character data
-    for (auto&& e : entities) {
+    for (auto&& e : space.GetEntities()) {
         // Preconditions
         auto characterData = e->GetComponent("CharacterDataComponent");
         if (!characterData.valid()) continue;
@@ -75,7 +78,7 @@ void SCharacterGUI::Update(float delta, std::vector<Entity*>& entities) {
                 int i = 0;
                 auto fx = [&](sol::object key, sol::table ability)
                 {
-                    Entity* pAbIcon = mEFAbilities.DemandEntity();
+                    Entity* pAbIcon = pAbilitiesPool->DemandEntity();
                     auto pTextBox = pAbIcon->Get<CTextBox>();
                     auto pTransform = pAbIcon->Get<CTransform>();
 
@@ -127,8 +130,7 @@ void SCharacterGUI::Update(float delta, std::vector<Entity*>& entities) {
         int y = v.y;
         mpDisplayEntity->mIsActive = false;
         for (auto id : mpTileMap->GetEntitiesAt(x, y)) {
-
-            auto pEntity = mpEntityEngine->GetEntity(id);
+            auto pEntity = space.GetEntity(id);
             auto charData = pEntity->GetComponent("CharacterDataComponent");
 
             if (charData.valid()) {

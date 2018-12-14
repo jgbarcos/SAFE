@@ -10,7 +10,7 @@
 
 using namespace safe;
 
-void SDragMovement::Update(float delta, std::vector<Entity*>& entities) {
+void SDragMovement::Update(float delta, EntitySpace& space) {
     // Release mouse, release entity
     if (Input::IsMouseReleased(1)) {
         if (mpEntityDragged) {
@@ -27,7 +27,7 @@ void SDragMovement::Update(float delta, std::vector<Entity*>& entities) {
 
     // Pressing mouse, try to pick entity
     if (Input::IsMousePressed(1)) {
-        for (auto&& e : entities) {
+        for (auto&& e : space.GetEntities()) {
             // Preconditions
             auto pDraggable = e->Get<CDraggable>();
             if (!pDraggable) continue;

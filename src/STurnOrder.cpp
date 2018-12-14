@@ -8,17 +8,17 @@
 
 using namespace safe;
 
-void STurnOrder::Init(std::vector<Entity*>& entities) {
+void STurnOrder::Init(EntitySpace& space) {
     std::string name = "EndTurnButton";
     if (mpEntityEngine->ExistsTemplate(name)) {
-        mpEndTurnButton = mpEntityEngine->CreateEntityFromTemplate(name, "EndTurnButton");
+        mpEndTurnButton = space.CreateEntityFromTemplate(name, "EndTurnButton");
         auto pos = mpCamera->Percentage2Pixel(mEndTurnPosition);
         mpEndTurnButton->Get<CTransform>()->mPosition = mpCamera->Screen2World(pos);
     }
 
     // Get teams from entities
     mCurrentTurn = 0;
-    for (auto&& e : entities) {
+    for (auto&& e : space.GetEntities()) {
         auto unit = e->GetComponent("GridUnitComponent");
         if (unit.valid()) {
             if (std::find(mTeams.begin(), mTeams.end(), unit["team"]) == mTeams.end()) {
@@ -28,9 +28,9 @@ void STurnOrder::Init(std::vector<Entity*>& entities) {
     }
     std::sort(mTeams.begin(), mTeams.end());
 
-    mDamageArea = EntityFactory(mpEntityEngine, "DamageArea");
+    //space.CreatePool(mName + "DamageArea", "DamageArea");
 
-    SetTurn(entities);
+    SetTurn(space.GetEntities());
 
     //TODO: Change location of this binding
     // Tilemap lua access
@@ -40,8 +40,10 @@ void STurnOrder::Init(std::vector<Entity*>& entities) {
 }
 
 
-void STurnOrder::Update(float delta, std::vector<Entity*>& entities) {
-    for (auto&& e : entities) {
+void STurnOrder::Update(float delta, EntitySpace& space) {
+    //auto pDamageAreaPool = space.GetPool(mName+"DamageArea");
+    
+    for (auto&& e : space.GetEntities()) {
         auto charData = e->GetComponent("CharacterDataComponent");
         if (!charData.valid()) continue;
 
@@ -75,7 +77,7 @@ void STurnOrder::Update(float delta, std::vector<Entity*>& entities) {
             mCurrentTurn = (mCurrentTurn + 1) % mTeams.size();
 
             std::cout << "pressed End Turn Button" << std::endl;
-            SetTurn(entities);
+            SetTurn(space.GetEntities());
 
 
             if (mFirstTurn) {
@@ -95,7 +97,7 @@ void STurnOrder::Update(float delta, std::vector<Entity*>& entities) {
     /*
     // Show damage area of enemy team
     if (!mFirstTurn) {
-        mDamageArea.ReleaseAllEntities();
+        pDamageAreaPool->ReleaseAllEntities();
         int cols = mpTileMap->GetCols();
         int rows = mpTileMap->GetRows();
         std::vector < std::vector<bool>> damageArea(cols, std::vector<bool>(rows, false));
@@ -130,7 +132,7 @@ void STurnOrder::Update(float delta, std::vector<Entity*>& entities) {
         for (int x = 0; x < cols; x++) {
             for (int y = 0; y < rows; y++) {
                 if (damageArea[x][y]) {
-                    auto pTileEntity = mDamageArea.DemandEntity();
+                    auto pTileEntity = pDamageAreaPool->DemandEntity();
 
                     auto pTileTransform = pTileEntity->Get<CTransform>();
                     double z = pTileTransform->mPosition.z;

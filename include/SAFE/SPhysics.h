@@ -26,7 +26,7 @@ public:
         mName = "PhysicsSystem";
     }
 
-    void Update(float delta, std::vector<Entity*>& entities) override;
+    void Update(float delta, EntitySpace& space) override;
 
     void AddCollider(CCollider* pCollider, CTransform* pTransform);
 

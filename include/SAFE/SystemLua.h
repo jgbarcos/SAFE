@@ -11,8 +11,8 @@ namespace safe {
 class SystemLua : public System {
 private:
     typedef std::function<void(sol::table)> SelfFunc;
-    typedef std::function<void(sol::table, std::vector<Entity*>& entities)> InitFunc;
-    typedef std::function<void(sol::table, float, std::vector<Entity*>& entities)> UpdateFunc;
+    typedef std::function<void(sol::table, EntitySpace& space)> InitFunc;
+    typedef std::function<void(sol::table, float, EntitySpace& space)> UpdateFunc;
     
 public:
     
@@ -27,12 +27,12 @@ public:
         luaT["get_active"] = [&](){ return mActive; };
     }
 
-    void Init(std::vector<Entity*>& entities) {
-        mInit(mSelf, entities);
+    void Init(EntitySpace& space) {
+        mInit(mSelf, space);
     }
 
-    void Update(float delta, std::vector<Entity*>& entities){
-        mUpdate(mSelf, delta, entities);
+    void Update(float delta, EntitySpace& space){
+        mUpdate(mSelf, delta, space);
     }
     
     void OnEnable() { mOnEnable(mSelf);  }

@@ -4,7 +4,6 @@
 #include "SAFE/CTransform.h"
 #include "SAFE/Camera.h"
 #include "SAFE/Entity.h"
-#include "SAFE/EntityFactory.h"
 #include "SAFE/System.h"
 
 #include "TileMap.h"
@@ -17,8 +16,8 @@ public:
         mName = "TurnOrderSystem";
     }
 
-    void Init(std::vector<safe::Entity*>& entities) override;
-    void Update(float delta, std::vector<safe::Entity*>& entities) override;
+    void Init(safe::EntitySpace& space) override;
+    void Update(float delta, safe::EntitySpace& space) override;
     void OnEnable() override;
     void OnDisable() override;
 
@@ -32,8 +31,6 @@ private:
 
     safe::Vector2 mEndTurnPosition;
     safe::Entity* mpEndTurnButton = nullptr;
-
-    safe::EntityFactory mDamageArea;
 
     bool mFirstTurn = true;
     int mCurrentTurn = 0;

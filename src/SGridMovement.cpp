@@ -9,9 +9,9 @@
 
 using namespace safe;
 
-void SGridMovement::Init(std::vector<Entity*>& entities) {
+void SGridMovement::Init(EntitySpace& space) {
     // Set tiles
-    for (auto&& e : entities) {
+    for (auto&& e : space.GetEntities()) {
         auto pTile = e->Get<CGridTile>();
         if (!pTile) continue;
 
@@ -32,21 +32,21 @@ void SGridMovement::Init(std::vector<Entity*>& entities) {
     };
     mpEntityEngine->mEventDispatcher.Subscribe(EDragUnit().type(), onDragUnit);
 
-    // Tiles EntityFactory
-    mTiles = EntityFactory(mpEntityEngine, "Tile");
-    mAttackArea = EntityFactory(mpEntityEngine, "AttackArea");
-    mMovementArea = EntityFactory(mpEntityEngine, "MovementArea");
-    mReadyArea = EntityFactory(mpEntityEngine, "ReadyArea");
+
 }
 
 
-void SGridMovement::Update(float delta, std::vector<Entity*>& entities) {
-    mAttackArea.ReleaseAllEntities();
-    mReadyArea.ReleaseAllEntities();
+void SGridMovement::Update(float delta, EntitySpace& space) {
+    // Setup entities pools
+    auto pAttAreaPool = space.SetupSystemPool(mName, "AttackArea");
+    auto pRdyAreaPool = space.SetupSystemPool(mName, "ReadyArea");
     
-    DragEvents();
+    pAttAreaPool->ReleaseAllEntities();
+    pRdyAreaPool->ReleaseAllEntities();
+    
+    DragEvents(space);
 
-    for (auto&& e : entities) {
+    for (auto&& e : space.GetEntities()) {
         auto unit = e->GetComponent("GridUnitComponent");
         if (!unit.valid()) continue;
 
@@ -79,7 +79,7 @@ void SGridMovement::Update(float delta, std::vector<Entity*>& entities) {
             
             // Render available units tile
             if (unit.get<bool>("can_move")) {
-                auto pTileTransform = mReadyArea.DemandEntity()->Get<CTransform>();
+                auto pTileTransform = pRdyAreaPool->DemandEntity()->Get<CTransform>();
                 double z = pTileTransform->mPosition.z;
                 pTileTransform->mPosition = mpTileMap->Map2World(unit["origx"], unit["origy"], z);
             }
@@ -87,7 +87,7 @@ void SGridMovement::Update(float delta, std::vector<Entity*>& entities) {
 
         auto charData = e->GetComponent("CharacterDataComponent");
         if (charData.valid()) {
-            auto pCursor = mpEntityEngine->GetEntity("Cursor");
+            auto pCursor = space.GetEntity("Cursor");
             if( pCursor->Get<CSprite>()->mRender ){
                 Vector3 pos = pCursor->Get<CTransform>()->mPosition;
 
@@ -104,7 +104,7 @@ void SGridMovement::Update(float delta, std::vector<Entity*>& entities) {
                     auto fx = [&](sol::object key, sol::object value)
                     {
                         Vector2 vec = Vector2(value.as<sol::table>());
-                        auto pTileEntity = mAttackArea.DemandEntity();
+                        auto pTileEntity = pAttAreaPool->DemandEntity();
 
                         auto pTileTransform = pTileEntity->Get<CTransform>();
                         double z = pTileTransform->mPosition.z;
@@ -118,18 +118,9 @@ void SGridMovement::Update(float delta, std::vector<Entity*>& entities) {
     }
 }
 
-void SGridMovement::OnEnable(){
-    SetTiles();
-}
-
-void SGridMovement::OnDisable() {
-    // Deactivate all entities
-    mTiles.ReleaseAllEntities();
-}
-
-
-void SGridMovement::SetTiles(){
-    mTiles.ReleaseAllEntities();
+void SGridMovement::SetTiles(EntitySpace& space){
+    auto pTilePool = space.SetupSystemPool(mName, "Tile");
+    pTilePool->ReleaseAllEntities();
     
     std::string name = "Tile";
     if (mpEntityEngine->ExistsTemplate(name)) {
@@ -137,7 +128,7 @@ void SGridMovement::SetTiles(){
         for (int i = 0; i < mpTileMap->GetCols(); i++) {
             for (int j = 0; j < mpTileMap->GetRows(); j++) {
                 
-                auto e = mTiles.DemandEntity();
+                auto e = pTilePool->DemandEntity();
 
                 // Set transform
                 auto pTransform = e->Get<CTransform>();
@@ -160,12 +151,14 @@ void SGridMovement::SetTiles(){
     }
 }
 
-void SGridMovement::DragEvents(){
+void SGridMovement::DragEvents(EntitySpace& space){
+    auto pMovAreaPool = space.SetupSystemPool(mName, "MovementArea");
+
     while (!mReceivedEvents.empty()) {
         EDragUnit event = mReceivedEvents.front();
         mReceivedEvents.pop();
 
-        auto pEntity = mpEntityEngine->GetEntity(event.mUnit);
+        auto pEntity =space.GetEntity(event.mUnit);
 
         auto unit = pEntity->GetComponent("GridUnitComponent");
         if (!unit.valid()) continue;
@@ -181,7 +174,7 @@ void SGridMovement::DragEvents(){
             int movement = charData["current"]["movement"];
             
             // perform dijkstra, including original position
-            auto nodes = PerformDijkstra(unit, movement);
+            auto nodes = PerformDijkstra(unit, movement, space);
             nodes.push_back(TileNode(unit["origx"], unit["origy"], -1));
                         
             if(unit.get<int>("origx") != unit.get<int>("x") 
@@ -190,7 +183,7 @@ void SGridMovement::DragEvents(){
             }
             
             for (auto n : nodes) {
-                auto pArea = mMovementArea.DemandEntity();
+                auto pArea = pMovAreaPool->DemandEntity();
 
                 auto pTileTransform = pArea->Get<CTransform>();
                 double z = pTileTransform->mPosition.z;
@@ -205,7 +198,7 @@ void SGridMovement::DragEvents(){
             if (mpTileMap->CheckBounds(pTransform->mPosition)) {
 
                 int movement = charData["current"]["movement"];
-                auto nodes = PerformDijkstra(unit, movement);
+                auto nodes = PerformDijkstra(unit, movement, space);
                 
                 nodes.push_back(TileNode(unit["origx"], unit["origy"], -1));
                 
@@ -223,17 +216,17 @@ void SGridMovement::DragEvents(){
                 }
             }
 
-            mMovementArea.ReleaseAllEntities();
+            pMovAreaPool->ReleaseAllEntities();
         }
     }
 }
 
-std::vector<TileNode> SGridMovement::PerformDijkstra(sol::table& unit, int movement){
+std::vector<TileNode> SGridMovement::PerformDijkstra(sol::table& unit, int movement, EntitySpace& space){
     // Add enemies as blocked tiles
     std::vector<TileNode> blockedTiles;
     for(auto&& mapit : mpTileMap->mEntitiesPosition){
         for(auto&& id : mapit.second){
-            auto pOtherEntity = mpEntityEngine->GetEntity(id);
+            auto pOtherEntity = space.GetEntity(id);
             auto otherUnit = pOtherEntity->GetComponent("GridUnitComponent");
 
             if(otherUnit.get<int>("team") != unit.get<int>("team")){

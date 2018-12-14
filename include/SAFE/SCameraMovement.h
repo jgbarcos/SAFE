@@ -18,7 +18,7 @@ public:
         mName = "CameraMovementSystem";
     }
 
-    void Update(float delta, std::vector<Entity*>& entities) override {
+    void Update(float delta, EntitySpace& space) override {
         if (Input::IsMousePressed(SDL_BUTTON_RIGHT)) {
             origMouse = mpCamera->Screen2Camera(Input::GetMousePos());
             origPos = mpCamera->mTransform.mPosition;

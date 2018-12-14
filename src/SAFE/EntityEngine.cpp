@@ -6,13 +6,17 @@
 
 namespace safe {
 
-EntityEngine::EntityEngine(lua_State* pState) : mLua(pState) { }
+EntityEngine::EntityEngine(lua_State* pState) : mLua(pState) {
+    //mpDefaultSpace = CreateSpace("default");
+}
 
 void EntityEngine::Init() {
     GatherEntities();
 
     for (auto&& s : mSystems) {
-        s->Init(mVecOfEntities);
+        for(auto&& sp : mSpaces){
+            s->Init(*sp.second.get());
+        }
         
         //TODO: OnDisable does not get called if mActive is false because default value is already false
         if(!s->mActive) s->OnDisable(); 
@@ -27,14 +31,22 @@ void EntityEngine::Update(float delta) {
 
     for (auto&& s : mSystems) {
         s->TouchState();
-        if(s->mActive) s->Update(delta, mVecOfEntities);
+        if(s->mActive){
+            for(auto&& sp : mSpaces){
+                if(sp.second->mActive){
+                    s->Update(delta, *sp.second.get());
+                }
+            }
+        }
         s->TouchState();
     }
 }
 
 void EntityEngine::RegisterSystem(std::unique_ptr<System> system) {
     if (mIsInitialized) {
-        system->Init(mVecOfEntities);
+        for(auto&& sp : mSpaces){
+            system->Init(*sp.second.get());
+        }
     }
     system->SetEngine(this);
     mSystems.push_back(std::move(system));
@@ -53,40 +65,48 @@ System* EntityEngine::GetSystem(SystemID id){
     return nullptr;
 }
 
+EntitySpace* EntityEngine::CreateSpace(EntitySpace::SpaceID id){
+    mSpaces[id] = std::make_unique<EntitySpace>(this, id);
+    if (mIsInitialized) {
+        for(auto&& s : mSystems){
+            s->Init(*(mSpaces[id].get()));
+        }
+    }
+    return mSpaces[id].get();
+}
+
+EntitySpace* EntityEngine::GetSpace(EntitySpace::SpaceID id){
+    auto it = mSpaces.find(id);
+    if( it != mSpaces.end() ){
+        std::cout << "returned" << std::endl;
+        std::cout << it->second.get()->mID << std::endl;
+        return it->second.get();
+    }
+    std::cout
+        << "[EntityEngine]" << "GetSpace()"
+        << " FAILED (reason: not a valid SpaceID found)"
+        << "(args: id=" << id << ")"
+        << std::endl;
+    return nullptr;
+}
+
+/*
 Entity* EntityEngine::CreateEntity(EntityID id) {
-    mEntities[id] = std::make_unique<Entity>(id);
-    return mEntities[id].get();
+    return mpDefaultSpace->CreateEntity(id);
 }
 
 Entity* EntityEngine::CreateEntityFromLua(sol::table luaT) {
-    // Check if field EntityName is provided in the lua table
-    sol::object res = luaT.get<sol::object>("EntityName");
-    EntityID id;
-    if (res.valid() && res.is<EntityID>()) {
-        id = res.as<EntityID>();
-    }
-    else {
-        id = GetNextID();
-    }
-
-    Entity* pEntity = CreateEntity(id);
-
-    FillWithComponents(pEntity, luaT);
-
-    return pEntity;
+    return mpDefaultSpace->CreateEntityFromLua(luaT);
 }
 
 bool EntityEngine::ExistsEntity(EntityID id) {
-    return mEntities.find(id) != mEntities.end();
+    return mpDefaultSpace->ExistsEntity(id);
 }
 
 Entity* EntityEngine::GetEntity(EntityID id) {
-    auto it = mEntities.find(id);
-    if (it != mEntities.end()) {
-        return it->second.get();
-    }
-    return nullptr;
+    return mpDefaultSpace->GetEntity(id);
 }
+*/
 
 void EntityEngine::RegisterTemplate(sol::table t) {
     sol::object name = t.get<sol::object>("TemplateName");
@@ -101,25 +121,11 @@ void EntityEngine::RegisterTemplate(sol::table t) {
     }
 }
 
+/*
 Entity* EntityEngine::CreateEntityFromTemplate(EntityID tmpID, EntityID entID) {
-    if (entID == "") {
-        entID = GetNextID();
-    }
-    if (ExistsTemplate(tmpID)) {
-        sol::table t = mEntityTemplates[tmpID];
-        auto pEntity = CreateEntity(entID);
-
-        FillWithComponents(pEntity, t);
-        return pEntity;
-    }
-    else {
-        std::cout
-                << "[EntityEngine]" << "ApplyTemplate() with arg " << tmpID
-                << " FAILED (reason: template does not exists)"
-                << std::endl;
-        return nullptr;
-    }
+    return mpDefaultSpace->CreateEntityFromTemplate(tmpID, entID);
 }
+*/
 
 bool EntityEngine::ExistsTemplate(EntityID id) {
     return mEntityTemplates.find(id) != mEntityTemplates.end();
@@ -147,18 +153,15 @@ void EntityEngine::FillWithComponents(Entity* pEntity, sol::table luaT) {
     }
 }
 
-EntityEngine::EntityID EntityEngine::GetNextID() {
+EntityEngine::EntityID EntityEngine::GetNextEntityID() {
     EntityID unique = std::to_string(mUniqueNumber);
     mUniqueNumber += 1;
     return unique;
 }
 
-void EntityEngine::GatherEntities() {
-    mVecOfEntities.clear();
-    for (auto && pair : mEntities) {
-        if (pair.second->mIsActive) {
-            mVecOfEntities.push_back(pair.second.get());
-        }
+void EntityEngine::GatherEntities() {   
+    for(auto&& sp : mSpaces){
+        sp.second->GatherEntities();
     }
 }
 

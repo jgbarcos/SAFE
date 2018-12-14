@@ -14,26 +14,24 @@ public:
         mName = "GridMovementSystem";
     }
 
-    void Init(std::vector<safe::Entity*>& entities) override;
+    void Init(safe::EntitySpace& space) override;
 
-    void Update(float delta, std::vector<safe::Entity*>& entities) override;
-    
-    void OnEnable() override;
-    void OnDisable() override;
+    void Update(float delta, safe::EntitySpace& space) override;
 
 private:
-    void SetTiles();
-    void DragEvents();
-    std::vector<TileNode> PerformDijkstra(sol::table& unit, int movement);
+    void SetTiles(safe::EntitySpace& space);
+    void DragEvents(safe::EntitySpace& space);
+    std::vector<TileNode> PerformDijkstra(sol::table& unit, int movement, safe::EntitySpace& space);
     
     std::queue<EDragUnit> mReceivedEvents;
 
     TileMap* mpTileMap;
 
+    /*
     safe::EntityFactory mTiles;
     safe::EntityFactory mAttackArea;
     safe::EntityFactory mMovementArea;
-    safe::EntityFactory mReadyArea;
+    safe::EntityFactory mReadyArea;*/
 };
 
 

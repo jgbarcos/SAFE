@@ -1,3 +1,4 @@
+/*
 #ifndef ENTITYFACTORY_H
 #define ENTITYFACTORY_H
 

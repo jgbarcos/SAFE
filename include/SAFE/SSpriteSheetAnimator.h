@@ -11,7 +11,7 @@ public:
     SSpriteSheetAnimator ()  {
         mName = "SpriteSheetAnimatorSystem";
     }
-    void Update(float delta, std::vector<Entity*>& entities) override;
+    void Update(float delta, EntitySpace& space) override;
 };
 
 } // namespace safe

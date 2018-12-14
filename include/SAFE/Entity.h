@@ -16,8 +16,9 @@ namespace safe {
  */
 class Entity {
 public:
+    typedef std::string EntityID;
 
-    Entity(std::string name) : mIsActive(true), mEntityName(name) { }
+    Entity(EntityID name) : mIsActive(true), mEntityName(name) { }
 
     /**
      * Gets a component by its class name.

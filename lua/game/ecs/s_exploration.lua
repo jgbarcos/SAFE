@@ -2,13 +2,11 @@ local System = require "safe.system"
 
 local ExplorationSystem = class("ExplorationSystem", System)
 
-function ExplorationSystem:init(entities)
+function ExplorationSystem:init(space)
   game.heat = 0
-end
 
-function ExplorationSystem:on_enable()
   -- Cursor
-  self.exp_cursor = safe.create_entity_from_template("ExplorationCursor", "ExplorationCursor")
+  self.exp_cursor = space:create_entity_from_template("ExplorationCursor", "ExplorationCursor")
   
   -- Position
   local transform = safe.get_transform(self.exp_cursor)
@@ -16,15 +14,16 @@ function ExplorationSystem:on_enable()
   self.last_y = transform.position.y
   
   -- Heat bar
-  self.fill_bar = safe.create_entity_from_template("ExplorationBarFill", "ExplorationBarFill")
-  self.back_bar = safe.create_entity_from_template("ExplorationBarBack", "ExplorationBarBack")
+  self.fill_bar = space:create_entity_from_template("ExplorationBarFill", "ExplorationBarFill")
+  self.back_bar = space:create_entity_from_template("ExplorationBarBack", "ExplorationBarBack")
+  
 end
 
-function ExplorationSystem:update(_, entities)
+function ExplorationSystem:update(_, space)
   local cursor_transform = safe.get_transform(self.exp_cursor)
   local cursor_pos = cursor_transform.position
-    
-  for _,ent in pairs(entities) do  
+
+  for _,ent in pairs(space:get_entities()) do  
     local exp_event = ent:get_component("ExplorationEventComponent")
     local transform = safe.get_transform(ent)
     local textbox = safe.get_text_box(ent)

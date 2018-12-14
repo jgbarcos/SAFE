@@ -6,7 +6,6 @@
 
 #include "SAFE/Entity.h"
 #include "SAFE/EntityEngine.h"
-#include "SAFE/EntityFactory.h"
 
 namespace safe {
 
@@ -20,15 +19,16 @@ public:
 
     /**
      * Initializes the system, if required.
+     * @param space EntitySpace to be initialized
      */
-    virtual void Init(std::vector<Entity*>& entities) { /* do nothing */ }
+    virtual void Init(EntitySpace& space) { /* do nothing */ }
 
     /**
      * Updates the system. Its called by GameEngine update.
      * @param delta time since the last update.
-     * @param entities List of entities to be updated by this system.
+     * @param space EntitySpace with the entities to be updated by this system.
      */
-    virtual void Update(float delta, std::vector<Entity*>& entities) = 0;
+    virtual void Update(float delta, EntitySpace& space) = 0;
 
     /**
      * Gets called when the system active state gets enabled

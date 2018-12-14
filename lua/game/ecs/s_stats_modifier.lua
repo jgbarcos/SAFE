@@ -2,7 +2,7 @@ local System = require "safe.system"
 
 local StatsModifierSystem = class("StatsModifierSystem", System)
 
-function StatsModifierSystem:init(entities)
+function StatsModifierSystem:init(space)
   self.subscribed_events = {}
   self.received_events = {}
   
@@ -12,8 +12,8 @@ function StatsModifierSystem:init(entities)
   end    
 end
 
-function StatsModifierSystem:update(_, entities)   
-  for _,ent in pairs(entities) do  
+function StatsModifierSystem:update(_, space)   
+  for _,ent in pairs(space:get_entities()) do  
     local char_data = safe.get_component(ent, "CharacterDataComponent")          
           
     if char_data and char_data.update_current then
