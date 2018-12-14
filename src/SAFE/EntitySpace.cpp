@@ -4,6 +4,16 @@
 namespace safe {
 
 Entity* EntitySpace::CreateEntity(EntityID id) {
+    if(ExistsEntity(id)){
+        std::cout
+            << "[EntityEngine]" << "CreateEntity() with arg " << id
+            << " FAILED (reason: entity with that id already exists)"
+            << std::endl;
+        return nullptr;
+    }
+    if(id.length() == 0){
+        id = mpEntityEngine->GetNextEntityID();
+    }
     mEntities[id] = std::make_unique<Entity>(id);
     return mEntities[id].get();
 }
@@ -51,7 +61,7 @@ Entity* EntitySpace::CreateEntityFromTemplate(EntityID tmpID, EntityID entID) {
     }
     else {
         std::cout
-            << "[EntityEngine]" << "ApplyTemplate() with arg " << tmpID
+            << "[EntityEngine]" << "CreateEntityFromTemplate() with arg " << tmpID
             << " FAILED (reason: template does not exists)"
             << std::endl;
         return nullptr;

@@ -78,8 +78,6 @@ EntitySpace* EntityEngine::CreateSpace(EntitySpace::SpaceID id){
 EntitySpace* EntityEngine::GetSpace(EntitySpace::SpaceID id){
     auto it = mSpaces.find(id);
     if( it != mSpaces.end() ){
-        std::cout << "returned" << std::endl;
-        std::cout << it->second.get()->mID << std::endl;
         return it->second.get();
     }
     std::cout

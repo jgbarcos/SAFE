@@ -217,10 +217,11 @@ void Game::Start() {
                 //for (auto&& i : engine.mEntities) {
                 //    std::cout << i.second->GetName() << std::endl;
                 //}
+                std::cout << "[GAME] Listing all entities..." << std::endl;
                 for (auto&& s : engine.mSpaces) {
-                    std::cout << s.second->mID << ": " << s.second->mEntities.size() << "entities" << std::endl;
+                    std::cout << "\"" << s.second->mID << "\"" << ": " << s.second->mEntities.size() << "entities" << std::endl;
                     for (auto&& e : s.second->mEntities){
-                        std::cout << "  " << e.first << std::endl;
+                        std::cout << "  \"" << e.first << "\"" << std::endl;
                     }
                 }
             }

@@ -81,6 +81,24 @@ public:
         }
     }
 
+    std::vector<std::string> ListComponents() {
+        std::vector<std::string> components;
+        for (auto& p : mComponents) {
+            components.push_back(p.second->mComponentName);
+        }
+        for (auto& p : mExtraComponents) {
+            components.push_back(p.first);
+        }
+
+        std::cout << "[DEBUG] Entity:ListComponents() " << "[";
+        for (auto n : components) {
+            std::cout << n << ",";
+        }
+        std::cout << "]" << std::endl;
+
+        return components;
+    }
+
     /**
      * Returns the name of the entity
      * @return A string representing the ID of the entity
@@ -90,10 +108,10 @@ public:
     }
 
     bool mIsActive;
+
 private:
     std::unordered_map<std::type_index, std::unique_ptr<Component> > mComponents;
     std::unordered_map<std::string, sol::table > mExtraComponents;
-
     std::string mEntityName;
 
 };

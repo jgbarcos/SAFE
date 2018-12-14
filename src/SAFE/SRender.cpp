@@ -13,14 +13,13 @@ namespace safe {
 typedef std::pair<float, Entity*> Depth;
 
 struct DepthOrder {
-
     bool operator()(Depth const& a, Depth const& b) const {
         return a.first > b.first;
     }
 };
 
 void SRender::Update(float delta, EntitySpace& space) {
-    if (mpTextureManager && mpCamera) {
+    if (mpTextureManager&& mpCamera) {
         std::priority_queue<Depth, std::vector<Depth>, DepthOrder > renderOrder;
 
         for (auto&& e : space.GetEntities()) {
@@ -98,6 +97,15 @@ void SRender::Update(float delta, EntitySpace& space) {
 
         // Render sprite borders
         if (dRenderSpriteRect) {
+            auto renderer = mpCamera->getSDLRenderer();
+
+            Vector2 world_center = mpCamera->World2Screen(Vector3(0));
+            Color black(0, 0, 0, 255);
+            Color bright_green(0, 255, 0, 255);
+            std::cout << "Running..." << std::endl;
+            circleColor(renderer, 0, 0, 6, black.toRGBA());
+            circleColor(renderer, world_center.x, world_center.y, 5, bright_green.toRGBA());
+
             for (auto&& e : space.GetEntities()) {
                 auto pSprite = e->Get<CSprite>();
                 auto pTextBox = e->Get<CTextBox>();
@@ -107,7 +115,6 @@ void SRender::Update(float delta, EntitySpace& space) {
 
                 Vector3 pos = pTransform->mPosition;
 
-                auto renderer = mpCamera->getSDLRenderer();
                 Vector2 screenPos = mpCamera->World2Screen(pos);
 
                 if (pSprite) {
