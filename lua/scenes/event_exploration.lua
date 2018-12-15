@@ -63,7 +63,6 @@ end
 --
 -- Create Templates
 --
---  templates[#templates+1] = {}
 templates[#templates+1] = {
   TemplateName = "ExplorationCursor",
   TransformComponent = {},

@@ -75,7 +75,7 @@ Entity* EntitySpace::CreateEntityFromTemplate(EntityID tmpID, EntityID entID) {
 }
 
 EntityPool* EntitySpace::CreatePool(PoolID id, EntityID templ){
-    mPools[id] = std::make_unique<EntityPool>(this, templ);
+    mPools[id] = std::make_unique<EntityPool>(this, id, templ);
     return mPools[id].get();
 }
 

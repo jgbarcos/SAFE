@@ -106,7 +106,6 @@ void Game::Start() {
     int h = 0;
     SDL_GetWindowSize(mpWindow, &w, &h);
     Camera camera = Camera(mpRenderer, w, h);
-
     camera.mTransform.mScale = Vector3(luaConf.get<sol::table>("camera_zoom"));
     camera.mTransform.mPosition = Vector3(luaConf.get<sol::table>("camera_pos"));
 
@@ -212,14 +211,17 @@ void Game::Start() {
                 quit = true;
             }
             else if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_F1) {
-                //for (auto&& i : engine.mEntities) {
-                //    std::cout << i.second->GetName() << std::endl;
-                //}
                 std::cout << "[GAME] Listing all entities..." << std::endl;
                 for (auto&& s : engine.mSpaces) {
-                    std::cout << "\"" << s.second->mID << "\"" << ": " << s.second->mEntities.size() << "entities" << std::endl;
+                    std::vector<Entity::EntityID> entityNames;
                     for (auto&& e : s.second->mEntities){
-                        std::cout << "  \"" << e.first << "\"" << std::endl;
+                        entityNames.push_back(e.first);
+                    }
+                    std::sort(entityNames.begin(), entityNames.end());
+
+                    std::cout << "Space \"" << s.second->mID << "\" has " << s.second->mEntities.size() << " entities:" << std::endl;
+                    for (auto en : entityNames){
+                        std::cout << "  \"" << en << "\"" << std::endl;
                     }
                 }
             }

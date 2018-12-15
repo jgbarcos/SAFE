@@ -54,76 +54,46 @@ local classes = {
 }
 
 -- Force "Soldier_Assault"
-names = {"Soldier_Assault"}
+--names = {"Soldier_Assault"}
 
-local num_units = 1
+local num_units = 2
+local num_teams = 2
 
-for i=1,num_units,1 do
-    name = proc:random_element(names)
+for t=0,num_teams-1 do
+    for i=0,num_units-1 do
+        name = proc:random_element(names)
 
-    local class = proc:random_element(classes[name])
-    local unit = units:gen_archetype(class)
-    unit.char_data.name = name.."("..class..")"
+        local class = proc:random_element(classes[name])
+        local unit = units:gen_archetype(class)
+        unit.char_data.name = name.."("..class..")"
+        
+        local ent = {
+            EntityName = "Team"..t.."Unit"..i,
+            TransformComponent = {
+                position = { x=-100, y=-50 },
+                scale = {x=1-2*t, y=1, z=1} 
+            },
+            SpriteComponent = {
+                filename = pre..name..post,
+                center = sp.get(sp.center, pre..name..post)
+            },
+            DraggableComponent = {
+                turn_horizontal = true
+            },
+            GridUnitComponent = { x=1+t*4, y=i, team=t },
+            CharacterDataComponent = unit.char_data,
+            AbilitiesComponent = { ability_names = unit.abilities }
+        }
     
-    local ent = {
-        TransformComponent = {
-            position = { x=-100, y=-50 },
-            scale = {x=1, y=1, z=1} 
-        },
-        SpriteComponent = {
-            filename = pre..name..post,
-            center = sp.get(sp.center, pre..name..post)
-        },
-        DraggableComponent = {
-            turn_horizontal = true
-        },
-        GridUnitComponent = { x=i, y=0, team=0 },
-        CharacterDataComponent = unit.char_data,
-        AbilitiesComponent = { ability_names = unit.abilities }
-    }
-
-    if sp.sheet[pre..name..post] then
-        ent["SheetAnimationComponent"] = {
-            animations = sp.sheet[pre..name..post],
-            start_anim = "idle"
-        }
+        if sp.sheet[pre..name..post] then
+            ent["SheetAnimationComponent"] = {
+                animations = sp.sheet[pre..name..post],
+                start_anim = "idle"
+            }
+        end
+    
+        entities[#entities+1] = ent
     end
-
-    entities[#entities+1] = ent
-end
-
-for i=1,num_units,1 do
-    name = proc:random_element(names)
-
-    local class = proc:random_element(classes[name])
-    local unit = units:gen_archetype(class)
-    unit.char_data.name = name.."("..class..")"
-
-    local ent = {
-        TransformComponent = {
-            position = { x=-100, y=-50 },
-            scale = {x=-1, y=1, z=1} 
-        },
-        SpriteComponent = {
-            filename = pre..name..post,
-            center = sp.get(sp.center, pre..name..post)
-        },
-        DraggableComponent = {
-            turn_horizontal = true
-        },
-        GridUnitComponent = { x=i+num_units+5, y=0, team=1 },
-        CharacterDataComponent = unit.char_data,
-        AbilitiesComponent = { ability_names = unit.abilities }
-    }
-
-    if sp.sheet[pre..name..post] then
-        ent["SheetAnimationComponent"] = {
-            animations = sp.sheet[pre..name..post],
-            start_anim = "idle"
-        }
-    end
-
-    entities[#entities+1] = ent
 end
 
 -- Create entities

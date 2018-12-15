@@ -7,7 +7,8 @@ Entity* EntityPool::DemandEntity(int count) {
     if (count < 0) count = mCount;
 
     while (mManagedEntities.size() <= (size_t) count) {
-        mManagedEntities.push_back(mpSpace->CreateEntityFromTemplate(mTemplateName));
+        mManagedEntities.push_back(
+            mpSpace->CreateEntityFromTemplate(mTemplateName, mPoolID+std::to_string(count)));
     }
 
     Entity* pEntity = mManagedEntities.at(count);

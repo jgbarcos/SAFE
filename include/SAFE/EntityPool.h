@@ -14,8 +14,8 @@ class EntityPool {
 public:
     EntityPool() : mCount(0) { }
 
-    EntityPool(EntitySpace* pSpace, Entity::EntityID templ)
-    : mpSpace(pSpace), mTemplateName(templ), mCount(0) { }
+    EntityPool(EntitySpace* pSpace, Entity::EntityID poolID, Entity::EntityID templ)
+    : mpSpace(pSpace), mPoolID(poolID), mTemplateName(templ), mCount(0) { }
 
     void SetEntitySpace(EntitySpace* pSpace) {
         mpSpace = pSpace;
@@ -30,8 +30,9 @@ public:
     
 private:
     EntitySpace* mpSpace = nullptr;
-    std::vector<Entity*> mManagedEntities;
+    Entity::EntityID mPoolID;
     Entity::EntityID mTemplateName;
+    std::vector<Entity*> mManagedEntities;
     int mCount;
 
 };
