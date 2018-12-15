@@ -6,14 +6,16 @@ function PushHorizontal:initialize(params)
 end
 
 function PushHorizontal:perform(context)
+  Effect.perform(self, context)
   local owner =    util.enforce( context.owner,    4, "owner" )
   local targets =  util.enforce( context.targets,  4, "targets" )
   
-  local ent = safe.get_entity(owner)
+  local space = safe.get_space(context.space)
+  local ent = space:get_entity(owner)
   local unit = ent:get_component("GridUnitComponent")
 
   for _,id in pairs (targets.units) do
-    local target = safe.get_entity(id)
+    local target = space:get_entity(id)
     local target_unit = safe.get_component(target, "GridUnitComponent")
     
     local diff = unit.x - target_unit.x
@@ -25,6 +27,7 @@ function PushHorizontal:perform(context)
     
     local actions = {
       gamedata.actions.push_unit { 
+        space = context.space,
         target = target:get_name(), 
         x = move}
     }

@@ -198,8 +198,6 @@ void Game::Start() {
     std::cout << "[GAME] starting..." << std::endl;
 
     // Main loop
-    engine.Init();
-
     bool quit = false;
     while (!quit) {
         /*

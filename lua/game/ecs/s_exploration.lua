@@ -2,25 +2,27 @@ local System = require "safe.system"
 
 local ExplorationSystem = class("ExplorationSystem", System)
 
-function ExplorationSystem:init(space)
+function ExplorationSystem:init()
   game.heat = 0
+end
 
+function ExplorationSystem:on_enable(space)
   -- Cursor
-  self.exp_cursor = space:create_entity_from_template("ExplorationCursor", "ExplorationCursor")
+  space.context.exp_cursor = space:create_entity_from_template("ExplorationCursor", "ExplorationCursor")
   
   -- Position
-  local transform = safe.get_transform(self.exp_cursor)
-  self.last_x = transform.position.x
-  self.last_y = transform.position.y
+  local transform = safe.get_transform(space.context.exp_cursor)
+  space.context.last_x = transform.position.x
+  space.context.last_y = transform.position.y
   
   -- Heat bar
-  self.fill_bar = space:create_entity_from_template("ExplorationBarFill", "ExplorationBarFill")
-  self.back_bar = space:create_entity_from_template("ExplorationBarBack", "ExplorationBarBack")
+  space.context.fill_bar = space:create_entity_from_template("ExplorationBarFill", "ExplorationBarFill")
+  space.context.back_bar = space:create_entity_from_template("ExplorationBarBack", "ExplorationBarBack")
   
 end
 
 function ExplorationSystem:update(_, space)
-  local cursor_transform = safe.get_transform(self.exp_cursor)
+  local cursor_transform = safe.get_transform(space.context.exp_cursor)
   local cursor_pos = cursor_transform.position
 
   for _,ent in pairs(space:get_entities()) do  
@@ -40,13 +42,13 @@ function ExplorationSystem:update(_, space)
         textbox.text = exp_event.text
         
         -- Update distances
-        local x_diff = event_pos.x - self.last_x
-        local y_diff = event_pos.y - self.last_y
+        local x_diff = event_pos.x - space.context.last_x
+        local y_diff = event_pos.y - space.context.last_y
   
         game.heat = game.heat + math.sqrt(x_diff*x_diff + y_diff*y_diff)
         
-        self.last_x = event_pos.x
-        self.last_y = event_pos.y
+        space.context.last_x = event_pos.x
+        space.context.last_y = event_pos.y
   
       end
     end
@@ -54,7 +56,7 @@ function ExplorationSystem:update(_, space)
   end
   
   -- Calculate bar values
-  local bar_sprite = safe.get_sprite(self.fill_bar)
+  local bar_sprite = safe.get_sprite(space.context.fill_bar)
   if(bar_sprite and bar_sprite:is_loaded()) then
     local h = bar_sprite:get_height()
     

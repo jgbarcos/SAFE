@@ -19,9 +19,8 @@ public:
 
     /**
      * Initializes the system, if required.
-     * @param space EntitySpace to be initialized
      */
-    virtual void Init(EntitySpace& space) { /* do nothing */ }
+    virtual void Init() { /* do nothing */ }
 
     /**
      * Updates the system. Its called by GameEngine update.
@@ -31,14 +30,14 @@ public:
     virtual void Update(float delta, EntitySpace& space) = 0;
 
     /**
-     * Gets called when the system active state gets enabled
+     * Gets called when the system is activated on a EntitySpace
      */
-    virtual void OnEnable() { /* do nothing */ }
+    virtual void OnEnable(EntitySpace& space) { /* do nothing */ }
     
     /** 
-     * Gets called when the system active state gets disabled
+     * Gets called when the system is disabled on a EntitySpace
      */
-    virtual void OnDisable(){ /* do nothing */ }
+    virtual void OnDisable(EntitySpace& space){ /* do nothing */ }
     
     /**
      * Called by the EntityEngine when registering a system
@@ -48,29 +47,9 @@ public:
         mpEntityEngine = pEngine;
     }
     
-    /**
-     * Allows the system to updates its current state at the right time
-     */
-    // TODO: Destroy the system would be also checked and updated here
-    void TouchState(){
-        if(mActiveState != mActive){
-            mActiveState = mActive;
-            if(mActive){ 
-                OnEnable(); 
-            }
-            else{
-                OnDisable();
-            }
-        }
-    }
-    
     std::string mName;
-    bool mActive = false;
 protected:
     EntityEngine* mpEntityEngine = nullptr;
-
-private:
-    bool mActiveState = false;
 };
 
 } // namespace safe

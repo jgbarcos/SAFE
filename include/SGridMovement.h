@@ -14,7 +14,7 @@ public:
         mName = "GridMovementSystem";
     }
 
-    void Init(safe::EntitySpace& space) override;
+    void OnEnable(safe::EntitySpace& space) override;
 
     void Update(float delta, safe::EntitySpace& space) override;
 
@@ -26,12 +26,6 @@ private:
     std::queue<EDragUnit> mReceivedEvents;
 
     TileMap* mpTileMap;
-
-    /*
-    safe::EntityFactory mTiles;
-    safe::EntityFactory mAttackArea;
-    safe::EntityFactory mMovementArea;
-    safe::EntityFactory mReadyArea;*/
 };
 
 

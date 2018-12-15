@@ -7,6 +7,7 @@ function EditContext:initialize(params)
 end
 
 function EditContext:perform(context)  
+  Effect.perform(self, context)
   for k,v in pairs(self.edit_context) do
     context[k] = v
   end

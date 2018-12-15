@@ -40,12 +40,6 @@ public:
      * @param pState
      */
     EntityEngine(lua_State* pState);
-    
-    /**
-     * Allows the initialization, if required, of the registered systems.
-     * Called just before the first update.
-     */
-    void Init();
 
     /**
      * Updates all the systems. Update order is based on insertion order.
@@ -74,56 +68,11 @@ public:
     EntitySpace* CreateSpace(EntitySpace::SpaceID id);
     EntitySpace* GetSpace(EntitySpace::SpaceID id);
     
-    
-    /**
-     * Creates a empty Entity to be filled with Components.
-     * 
-     * @return pointer to the created entity or nullptr
-     */
-    //Entity* CreateEntity(EntityID id);
-
-    /**
-     * Creates a new Entity from the content of a Lua table.
-     * 
-     * A component creator is required for each component. 
-     * @param luaT lua table with the entity components
-     * @return pointer to the created entity or nullptr
-     */
-    //Entity* CreateEntityFromLua(sol::table luaT);
-
-    /**
-     * Get an Entity by its id.
-     * 
-     * @param id identifier of the entity.
-     * @return Entity pointer or nullptr if not found.
-     */
-    //Entity* GetEntity(EntityID id);
-
-
-    /**
-     * Checks if an entity exists.
-     * 
-     * @param id identifier of the entity.
-     * @return true if exists.
-     */
-    //bool ExistsEntity(EntityID id);
-    
     /**
      * Registers a template of an entity. It eases the creation of a entity.
      * @param t lua table with the entity components
      */
     void RegisterTemplate(sol::table t);
-
-
-    /**
-     * Creates a new Entity from a registered template.
-     * 
-     * @param tmpID identifier of the registered template
-     * @param entID identifier of the new entity
-     * @return pointer to the created entity or nullptr
-     */
-    //Entity* CreateEntityFromTemplate(EntityID tmpID, EntityID entID = "");
-
 
     /**
      * Checks if a template is registered.
@@ -195,7 +144,6 @@ private:
 
     //EntitySpace* mpDefaultSpace = nullptr;
     int mUniqueNumber = 0;
-    bool mIsInitialized = false;
 };
 
 } // namespace safe

@@ -57,9 +57,10 @@ function Ability:perform(context)
 end
 
 function Ability:add_modifiers(context)
+  local space = safe.get_space(context.space)
   if self.apply_modifiers and context.targets ~= nil then
     for _,id in pairs (context.targets.units) do
-      local target = safe.get_entity(id)
+      local target = space:get_entity(id)
       local target_char_data = safe.get_component(target, "CharacterDataComponent")
 
       for _, mod in pairs(context.modifiers) do

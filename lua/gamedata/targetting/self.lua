@@ -4,7 +4,8 @@ local target = function (context)
   context.targets.tiles = util.default( context.targets.tiles, {} )
   context.targets.units = util.default( context.targets.units, {} )
   
-  local ent = safe.get_entity(owner)
+  local space = safe.get_space(context.space)
+  local ent = space:get_entity(owner)
   local unit = safe.get_component(ent, "GridUnitComponent")
   
   context.targets.tiles[#context.targets.tiles+1] = { x=unit.x, y=unit.y }

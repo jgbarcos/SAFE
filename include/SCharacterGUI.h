@@ -15,21 +15,12 @@ public:
         mName = "CharacterGUISystem";
     }
 
-    void Init(safe::EntitySpace& space) override;
     void Update(float delta, safe::EntitySpace& space) override;
-    void OnEnable() override;
-    void OnDisable() override;
-
-
+    void OnEnable(safe::EntitySpace& space) override;
 
 private:
     TileMap* mpTileMap;
     safe::Camera* mpCamera;
-
-    safe::Entity* mpCursor;
-    safe::Entity* mpDisplayEntity;
-    
-    safe::EntitySpace::PoolID mAbilitiesPool;
 };
 
 

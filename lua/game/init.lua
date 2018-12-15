@@ -1,7 +1,13 @@
 -- Safe functions
-safe.set_active_systems = function ( systems, value )
+safe.enable_systems = function ( space, systems )
   for _,s in pairs(systems) do
-    safe.get_system(s).active = value
+    space:enable_system(s)
+  end
+end
+
+safe.disable_systems = function ( space, systems )
+  for _,s in pairs(systems) do
+    space:disable_system(s)
   end
 end
 
@@ -42,7 +48,7 @@ function gamedata.get.exploration_event( name )
   if gamedata.exploration_events[name] ~= nil then
     return gamedata.exploration_events[name]:new()
   end
-  print ("error: exploration event ".. name .. "does not exist in gamedata")
+  print ("error: exploration event " .. name .. "does not exist in gamedata")
 end
 
 

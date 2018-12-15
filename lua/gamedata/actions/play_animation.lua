@@ -10,7 +10,8 @@ function PlayAnimation:initialize( params )
 end
 
 function PlayAnimation:on_enter()
-    local ptr = safe.get_entity(self.entity)
+    local space = safe.get_space(self.space)
+    local ptr = space:get_entity(self.entity)
     self.sheet = safe.get_sheet_animation(ptr)
 
     if self.sheet ~= nil then

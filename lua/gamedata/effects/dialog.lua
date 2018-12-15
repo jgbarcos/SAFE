@@ -6,6 +6,7 @@ function DialogEffect:initialize(params)
 end
 
 function DialogEffect:perform(context)
+  Effect.perform(self, context)
   print(self.text)
 end
 

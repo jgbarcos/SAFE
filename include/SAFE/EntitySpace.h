@@ -3,8 +3,8 @@
 
 #include <string>
 
-#include "Entity.h"
-#include "EntityPool.h"
+#include "SAFE/Entity.h"
+#include "SAFE/EntityPool.h"
 
 namespace safe {
     
@@ -16,8 +16,7 @@ public:
     typedef std::string EntityID;
     typedef std::string PoolID;
     
-    EntitySpace(EntityEngine* pEngine, SpaceID id) 
-    : mpEntityEngine(pEngine), mID(id), mActive(true) {}
+    EntitySpace(EntityEngine* pEngine, SpaceID id);
     
     Entity* CreateEntity(EntityID id);
     Entity* CreateEntityFromLua(sol::table luaT);
@@ -30,23 +29,29 @@ public:
     
     SpaceID GetID(){ return mID; }
     
-    EntityEngine* mpEntityEngine = nullptr;
-    SpaceID mID;
-    bool mActive;
-    
     std::vector<Entity*>& GetEntities(){
         return mActiveEntities;
     }
     
     void GatherEntities(){
         mActiveEntities.clear();
-         for (auto && pair : mEntities) {
+        for (auto && pair : mEntities) {
             if (pair.second->mIsActive) {
                 mActiveEntities.push_back(pair.second.get());
             }
         }
     }
-    
+
+    void SetSystemStatus(std::string systemName, bool active);
+    bool GetSystemStatus(std::string systemName) ;
+    void UpdateSystemStatus();
+    void EnableSystem(std::string systemName)  { SetSystemStatus(systemName, true);  }
+    void DisableSystem(std::string systemName) { SetSystemStatus(systemName, false); }
+        
+    EntityEngine* mpEntityEngine = nullptr;
+    SpaceID mID;
+    bool mActive;
+    sol::table mContext;
     std::unordered_map<PoolID, std::unique_ptr<EntityPool> > mPools;
     
 public: //TODO: change to private
@@ -54,6 +59,13 @@ public: //TODO: change to private
     
 private:
     std::vector<Entity*> mActiveEntities;
+
+    typedef struct{
+        bool current;
+        bool real;
+    } StatusTrack;
+
+    std::unordered_map<std::string, StatusTrack> mSystemStatus;
 };
     
 } // namespace safe

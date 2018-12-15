@@ -9,7 +9,7 @@
 
 using namespace safe;
 
-void SGridMovement::Init(EntitySpace& space) {
+void SGridMovement::OnEnable(EntitySpace& space) {
     // Set tiles
     for (auto&& e : space.GetEntities()) {
         auto pTile = e->Get<CGridTile>();
@@ -31,8 +31,6 @@ void SGridMovement::Init(EntitySpace& space) {
         return true;
     };
     mpEntityEngine->mEventDispatcher.Subscribe(EDragUnit().type(), onDragUnit);
-
-
 }
 
 

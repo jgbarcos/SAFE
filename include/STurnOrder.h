@@ -16,10 +16,8 @@ public:
         mName = "TurnOrderSystem";
     }
 
-    void Init(safe::EntitySpace& space) override;
     void Update(float delta, safe::EntitySpace& space) override;
-    void OnEnable() override;
-    void OnDisable() override;
+    void OnEnable(safe::EntitySpace& space) override;
 
     void SetTurn(std::vector<safe::Entity*>& entities);
 

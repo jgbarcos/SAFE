@@ -43,16 +43,17 @@ public:
             "get_entities",                 &EntitySpace::GetEntities,
             "create_entity_from_template",  &EntitySpace::CreateEntityFromTemplate,
             "get_id",                       &EntitySpace::GetID,
-            "active",                       &EntitySpace::mActive
+            "enable_system",                &EntitySpace::EnableSystem,
+            "disable_system",               &EntitySpace::DisableSystem,
+            "active",                       &EntitySpace::mActive,
+            "context",                      &EntitySpace::mContext
         );
         
         lua.new_usertype<Entity>("Entity", "get_name",      &Entity::GetName,
                                            "get_component", &Entity::GetComponent,
                                            "list_components", &Entity::ListComponents
         );
-        lua.new_usertype<System>("System", "name",          &System::mName,
-                                           "active",        &System::mActive
-        );
+        lua.new_usertype<System>("System", "name", &System::mName);
         
         lua.set_function("get_component", &Entity::GetComponent);
         lua.set_function("get_system", &EntityEngine::GetSystem, &engine);

@@ -13,27 +13,17 @@
 
 using namespace safe;
 
-void SCharacterGUI::Init(EntitySpace& space) {
-    // Get cursor 
-    mpCursor = space.CreateEntityFromTemplate("Cursor", "Cursor");
-
-    mpDisplayEntity = space.CreateEntityFromTemplate("CharDataDisplay");
-    
-    mAbilitiesPool = mName + "AbilityIcon";
-    space.CreatePool(mAbilitiesPool, "AbilityIcon");
-}
-
-void SCharacterGUI::OnEnable() {
-    mpCursor->mIsActive = true;
-}
-
-void SCharacterGUI::OnDisable(){
-    mpCursor->mIsActive = false;
+void SCharacterGUI::OnEnable(safe::EntitySpace& space) {
+    space.CreateEntityFromTemplate("Cursor", "Cursor");
+    space.CreateEntityFromTemplate("CharDataDisplay", "CharDataDisplay");
+    space.CreatePool("AbilityIcon", "AbilityIcon");
 }
 
 void SCharacterGUI::Update(float delta, EntitySpace& space) {
-    auto pAbilitiesPool = space.GetPool(mAbilitiesPool);
+    auto pAbilitiesPool = space.GetPool("AbilityIcon");
     pAbilitiesPool->ReleaseAllEntities();
+
+
     
     // Show character data
     for (auto&& e : space.GetEntities()) {
@@ -104,6 +94,7 @@ void SCharacterGUI::Update(float delta, EntitySpace& space) {
                 
                 if(ability_used){
                     sol::table context = mpEntityEngine->mLua.create_table_with("owner", e->GetName());
+                    context["space"] = space.mID;
                     ability_table["perform"](ability_table, context);
                     if(ability_table.get<bool>("endturn")){
                         unit["can_move"] = false;
@@ -114,21 +105,23 @@ void SCharacterGUI::Update(float delta, EntitySpace& space) {
     }
 
     // Display cursor over tiles
-    if (mpCursor != nullptr) {
+    auto pCursor = space.GetEntity("Cursor");
+    auto pDisplayEntity = space.GetEntity("CharDataDisplay");
+    if (pCursor != nullptr) {
         Vector3 pos = mpCamera->Screen2World(Input::GetMousePos());
         if (mpTileMap->CheckBounds(pos)) {
-            mpCursor->Get<CTransform>()->mPosition = mpTileMap->SnapToMap(pos);
-            mpCursor->Get<CSprite>()->mRender = true;
+            pCursor->Get<CTransform>()->mPosition = mpTileMap->SnapToMap(pos);
+            pCursor->Get<CSprite>()->mRender = true;
         }
         else {
-            mpCursor->Get<CSprite>()->mRender = false;
+            pCursor->Get<CSprite>()->mRender = false;
         }
 
         // Debug, show highlighted character data
         auto v = mpTileMap->World2Map(pos);
         int x = v.x;
         int y = v.y;
-        mpDisplayEntity->mIsActive = false;
+        pDisplayEntity->mIsActive = false;
         for (auto id : mpTileMap->GetEntitiesAt(x, y)) {
             auto pEntity = space.GetEntity(id);
             auto charData = pEntity->GetComponent("CharacterDataComponent");
@@ -137,8 +130,8 @@ void SCharacterGUI::Update(float delta, EntitySpace& space) {
                 sol::table current = charData["current"];
                 sol::table base = charData["base"];
                 
-                mpDisplayEntity->mIsActive = true;
-                mpDisplayEntity->Get<CTextBox>()->mText =
+                pDisplayEntity->mIsActive = true;
+                pDisplayEntity->Get<CTextBox>()->mText =
                     "- ID: " + id + '\n'
                     + "- Name: " + charData.get<std::string>("name") + '\n'
                     + "- Health: " + current.get<std::string>("health") 
@@ -150,6 +143,6 @@ void SCharacterGUI::Update(float delta, EntitySpace& space) {
     }
 
     auto pos = mpCamera->Percentage2Pixel(Vector2(0.01, 1));
-    mpDisplayEntity->Get<CTransform>()->mPosition = mpCamera->Screen2World(pos);
+    pDisplayEntity->Get<CTransform>()->mPosition = mpCamera->Screen2World(pos);
 }
 

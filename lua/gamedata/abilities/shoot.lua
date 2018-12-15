@@ -13,7 +13,8 @@ function ShootAbility:initialize(params)
 end
 
 function ShootAbility:perform(context) 
-  local ent = safe.get_entity(context.owner)
+  local space = safe.get_space(context.space)
+  local ent = space:get_entity(context.owner)
   local char_data = safe.get_component(ent, "CharacterDataComponent")
   context.damage = char_data.current.attack
   

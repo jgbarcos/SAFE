@@ -6,11 +6,14 @@ function AddAbility:initialize(params)
 end
 
 function AddAbility:perform(context)
+  Effect.perform(self, context)
   local targets =  util.enforce( context.targets,  4, "targets" )
+
+  local space = safe.get_space(context.space)
 
   for _,id in pairs (targets.units) do
     
-    local target = safe.get_entity(id)
+    local target = space:get_entity(id)
     
     local target_char_data = safe.get_component(target, "CharacterDataComponent")
     local target_unit = safe.get_component(target, "GridUnitComponent")

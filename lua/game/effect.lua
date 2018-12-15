@@ -5,7 +5,7 @@ function Effect:initialize(params)
 end
 
 function Effect:perform(context)
-  print("EMPTY EFFECT")
+  util.enforce(context.space, 5, "space")
 end
 
 return Effect

@@ -1,7 +1,13 @@
 #include "SAFE/EntitySpace.h"
 #include "SAFE/EntityEngine.h"
+#include "SAFE/System.h"
 
 namespace safe {
+
+EntitySpace::EntitySpace(EntityEngine* pEngine, SpaceID id)
+: mpEntityEngine(pEngine), mID(id), mActive(true) {
+    mContext = mpEntityEngine->mLua.create_table_with();
+}
 
 Entity* EntitySpace::CreateEntity(EntityID id) {
     if(ExistsEntity(id)){
@@ -89,5 +95,34 @@ EntityPool* EntitySpace::SetupSystemPool(std::string systemName, EntityID templ)
     }
     return CreatePool(id, templ);
 }
+
+void EntitySpace::SetSystemStatus(std::string systemName, bool active) {
+    if(mSystemStatus.find(systemName) == mSystemStatus.end()) {
+        mSystemStatus[systemName] = {active, false};
+    }
+    else{
+        mSystemStatus[systemName].current = active;
+    }
+}
+
+bool EntitySpace::GetSystemStatus(std::string systemName) {
+    auto it = mSystemStatus.find(systemName);
+    return it != mSystemStatus.end() && it->second.real;
+}
+
+void EntitySpace::UpdateSystemStatus(){
+    for(auto& s : mSystemStatus) {
+        if(s.second.real != s.second.current){
+            s.second.real = s.second.current; 
+
+            if(s.second.real) {
+                mpEntityEngine->GetSystem(s.first)->OnEnable(*this);
+            }
+            else {
+                mpEntityEngine->GetSystem(s.first)->OnDisable(*this);
+            }
+        }
+    }
+}    
 
 } // namespace safe

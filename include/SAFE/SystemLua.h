@@ -10,8 +10,8 @@ namespace safe {
  */
 class SystemLua : public System {
 private:
-    typedef std::function<void(sol::table)> SelfFunc;
-    typedef std::function<void(sol::table, EntitySpace& space)> InitFunc;
+    typedef std::function<void(sol::table)> InitFunc;
+    typedef std::function<void(sol::table, EntitySpace& space)> EnableFunc;
     typedef std::function<void(sol::table, float, EntitySpace& space)> UpdateFunc;
     
 public:
@@ -21,29 +21,27 @@ public:
         mName = luaT["name"];
         mInit = luaT.get < InitFunc >("init");
         mUpdate = luaT.get < UpdateFunc >("update");
-        mOnEnable = luaT.get< SelfFunc >("on_enable");
-        mOnDisable = luaT.get< SelfFunc >("on_disable");
-        luaT["set_active"] = [&](bool active){ mActive = active; };
-        luaT["get_active"] = [&](){ return mActive; };
+        mOnEnable = luaT.get< EnableFunc >("on_enable");
+        mOnDisable = luaT.get< EnableFunc >("on_disable");
     }
 
-    void Init(EntitySpace& space) {
-        mInit(mSelf, space);
+    void Init() {
+        mInit(mSelf);
     }
 
     void Update(float delta, EntitySpace& space){
         mUpdate(mSelf, delta, space);
     }
     
-    void OnEnable() { mOnEnable(mSelf);  }
-    void OnDisable(){ mOnDisable(mSelf); }
+    void OnEnable(safe::EntitySpace& space) { mOnEnable(mSelf, space);  }
+    void OnDisable(safe::EntitySpace& space){ mOnDisable(mSelf, space); }
     
 private:
     sol::table mSelf;
     InitFunc mInit;
     UpdateFunc mUpdate;
-    SelfFunc mOnEnable;
-    SelfFunc mOnDisable;
+    EnableFunc mOnEnable;
+    EnableFunc mOnDisable;
 };
 
 } // namespace safe

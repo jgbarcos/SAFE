@@ -14,8 +14,8 @@ local configuration = {
     -- Set random_seed to "-1" to seed randomly
     random_seed = -1,
     
-    initial_scene = "scenes/event_exploration",
-    --initial_scene = "scenes/combat",
+    --initial_scene = "scenes/event_exploration",
+    initial_scene = "scenes/combat",
   
     default_font = "assets/fonts/Roboto_Condensed/Regular.ttf",
     default_font_size = 12,

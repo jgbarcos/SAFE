@@ -1,5 +1,6 @@
+local ability_name = "cripple_shoot"
 local cripple_shoot_ability = {
-  name =        "cripple_shoot",
+  name =        ability_name,
   category =    "active",
   endturn =     true,
   targetting =  "relative_tiles",
@@ -10,11 +11,13 @@ local cripple_shoot_ability = {
     },
     { name = "damage_tile" },
     { name = "push_horizontal",
-      tiles = 2 },
+      tiles = 1 },
+    { name = "dialog", 
+      text = "[LUA DEBUG] Ability " .. ability_name .. " was used!" },
   },
   
   modifiers = {
-    { name = "cripple_shoot",
+    { name = ability_name,
       stacks = false,
       stats = {
         movement = { add = -1 }
@@ -23,4 +26,4 @@ local cripple_shoot_ability = {
   }
 }
 
-gamedata.abilities.templates["cripple_shoot"] = cripple_shoot_ability
+gamedata.abilities.templates[ability_name] = cripple_shoot_ability

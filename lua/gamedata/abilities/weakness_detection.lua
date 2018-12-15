@@ -1,14 +1,17 @@
+local ability_name = "weakness_detection"
 local weakness_detection_ability = {
-  name =        "weakness_detection",
+  name =        ability_name,
   category =    "active",
   endturn =     false,
   targetting =  "self",
   
   effects_template = {
+    { name = "dialog", 
+      text = "[LUA DEBUG] Ability " .. ability_name .. " was used!" },
   },
   
   modifiers = {
-    { name = "weakness_detection",
+    { name = ability_name,
       stacks = false,
       event = "end_turn",
       event_count = 1,
@@ -19,4 +22,4 @@ local weakness_detection_ability = {
   }
 }
 
-gamedata.abilities.templates["weakness_detection"] = weakness_detection_ability
+gamedata.abilities.templates[ability_name] = weakness_detection_ability

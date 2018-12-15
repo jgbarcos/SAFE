@@ -8,12 +8,12 @@
 
 using namespace safe;
 
-void STurnOrder::Init(EntitySpace& space) {
+void STurnOrder::OnEnable(EntitySpace& space) {
     std::string name = "EndTurnButton";
     if (mpEntityEngine->ExistsTemplate(name)) {
-        mpEndTurnButton = space.CreateEntityFromTemplate(name, "EndTurnButton");
+        auto pEndTurnButton = space.CreateEntityFromTemplate(name, "EndTurnButton");
         auto pos = mpCamera->Percentage2Pixel(mEndTurnPosition);
-        mpEndTurnButton->Get<CTransform>()->mPosition = mpCamera->Screen2World(pos);
+        pEndTurnButton->Get<CTransform>()->mPosition = mpCamera->Screen2World(pos);
     }
 
     // Get teams from entities
@@ -28,8 +28,6 @@ void STurnOrder::Init(EntitySpace& space) {
     }
     std::sort(mTeams.begin(), mTeams.end());
 
-    //space.CreatePool(mName + "DamageArea", "DamageArea");
-
     SetTurn(space.GetEntities());
 
     //TODO: Change location of this binding
@@ -41,7 +39,7 @@ void STurnOrder::Init(EntitySpace& space) {
 
 
 void STurnOrder::Update(float delta, EntitySpace& space) {
-    //auto pDamageAreaPool = space.GetPool(mName+"DamageArea");
+    auto pEndTurnButton = space.GetEntity("EndTurnButton");
     
     for (auto&& e : space.GetEntities()) {
         auto charData = e->GetComponent("CharacterDataComponent");
@@ -65,8 +63,8 @@ void STurnOrder::Update(float delta, EntitySpace& space) {
     }
 
     if (Input::IsMousePressed(1)) {
-        auto pTransform = mpEndTurnButton->Get<CTransform>();
-        auto pSprite = mpEndTurnButton->Get<CSprite>();
+        auto pTransform = pEndTurnButton->Get<CTransform>();
+        auto pSprite = pEndTurnButton->Get<CSprite>();
         Vector3 pos = pTransform->mPosition;
 
         Rect area = pSprite->GetLocalRect(Vector2::Reduce(pTransform->mScale)) + Vector2::Reduce(pos);
@@ -85,9 +83,13 @@ void STurnOrder::Update(float delta, EntitySpace& space) {
             }
             // Damage enemies phase
             else {
+                auto payload = mpEntityEngine->mLua.create_table_with(
+                    "space", space.mID,
+                    "team", mTeams.at(mCurrentTurn)
+                );
                 auto event = mpEntityEngine->mLua.create_table_with(
                     "type", "new_turn", 
-                    "payload", mTeams.at(mCurrentTurn)
+                    "payload", payload
                 );
                 mpEntityEngine->mEventDispatcher.PostLua(event);
             }
@@ -160,14 +162,7 @@ void STurnOrder::Update(float delta, EntitySpace& space) {
     }*/
 
     auto pos = mpCamera->Percentage2Pixel(mEndTurnPosition);
-    mpEndTurnButton->Get<CTransform>()->mPosition = mpCamera->Screen2World(pos);
-}
-
-void STurnOrder::OnEnable() {
-    mpEndTurnButton->mIsActive = true;
-}
-void STurnOrder::OnDisable() {
-    mpEndTurnButton->mIsActive = false;
+    pEndTurnButton->Get<CTransform>()->mPosition = mpCamera->Screen2World(pos);
 }
 
 void STurnOrder::SetTurn(std::vector<Entity*>& entities) {

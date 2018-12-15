@@ -6,57 +6,41 @@
 
 namespace safe {
 
-EntityEngine::EntityEngine(lua_State* pState) : mLua(pState) {
-    //mpDefaultSpace = CreateSpace("default");
-}
-
-void EntityEngine::Init() {
-    GatherEntities();
-
-    for (auto&& s : mSystems) {
-        for(auto&& sp : mSpaces){
-            s->Init(*sp.second.get());
-        }
-        
-        //TODO: OnDisable does not get called if mActive is false because default value is already false
-        if(!s->mActive) s->OnDisable(); 
-    }
-}
+EntityEngine::EntityEngine(lua_State* pState) : mLua(pState) { }
 
 void EntityEngine::Update(float delta) {
     mEventDispatcher.PropagateEvents();
     mActionListManager.Update(delta);
 
-    GatherEntities();
+    // Prepare spaces
+    std::vector<EntitySpace*> activeSpaces;
+    for (auto&& sp : mSpaces) {
+        sp.second->GatherEntities();
+        sp.second->UpdateSystemStatus();
+
+        if(sp.second->mActive) {
+            activeSpaces.push_back(sp.second.get());
+        }
+    }
 
     for (auto&& s : mSystems) {
-        s->TouchState();
-        if(s->mActive){
-            for(auto&& sp : mSpaces){
-                if(sp.second->mActive){
-                    s->Update(delta, *sp.second.get());
-                }
+        for(auto&& pSpace : activeSpaces) {
+            if (pSpace->mActive && pSpace->GetSystemStatus(s->mName)) {
+                s->Update(delta, *pSpace);
             }
         }
-        s->TouchState();
     }
 }
 
 void EntityEngine::RegisterSystem(std::unique_ptr<System> system) {
-    if (mIsInitialized) {
-        for(auto&& sp : mSpaces){
-            system->Init(*sp.second.get());
-        }
-    }
     system->SetEngine(this);
+    system->Init();
     mSystems.push_back(std::move(system));
 }
 
 void EntityEngine::RegisterSystemLua(sol::table luaT) {
-    std::unique_ptr<System> system = std::make_unique<SystemLua>(luaT);
-    mSystems.push_back(std::move(system));
+    RegisterSystem(std::make_unique<SystemLua>(luaT));
 }
-
 
 System* EntityEngine::GetSystem(SystemID id){
     for (size_t i=0; i<mSystems.size(); i++){
@@ -67,11 +51,6 @@ System* EntityEngine::GetSystem(SystemID id){
 
 EntitySpace* EntityEngine::CreateSpace(EntitySpace::SpaceID id){
     mSpaces[id] = std::make_unique<EntitySpace>(this, id);
-    if (mIsInitialized) {
-        for(auto&& s : mSystems){
-            s->Init(*(mSpaces[id].get()));
-        }
-    }
     return mSpaces[id].get();
 }
 
@@ -88,24 +67,6 @@ EntitySpace* EntityEngine::GetSpace(EntitySpace::SpaceID id){
     return nullptr;
 }
 
-/*
-Entity* EntityEngine::CreateEntity(EntityID id) {
-    return mpDefaultSpace->CreateEntity(id);
-}
-
-Entity* EntityEngine::CreateEntityFromLua(sol::table luaT) {
-    return mpDefaultSpace->CreateEntityFromLua(luaT);
-}
-
-bool EntityEngine::ExistsEntity(EntityID id) {
-    return mpDefaultSpace->ExistsEntity(id);
-}
-
-Entity* EntityEngine::GetEntity(EntityID id) {
-    return mpDefaultSpace->GetEntity(id);
-}
-*/
-
 void EntityEngine::RegisterTemplate(sol::table t) {
     sol::object name = t.get<sol::object>("TemplateName");
     if (name.valid()) {
@@ -118,12 +79,6 @@ void EntityEngine::RegisterTemplate(sol::table t) {
                 << std::endl;
     }
 }
-
-/*
-Entity* EntityEngine::CreateEntityFromTemplate(EntityID tmpID, EntityID entID) {
-    return mpDefaultSpace->CreateEntityFromTemplate(tmpID, entID);
-}
-*/
 
 bool EntityEngine::ExistsTemplate(EntityID id) {
     return mEntityTemplates.find(id) != mEntityTemplates.end();
@@ -155,12 +110,6 @@ EntityEngine::EntityID EntityEngine::GetNextEntityID() {
     EntityID unique = std::to_string(mUniqueNumber);
     mUniqueNumber += 1;
     return unique;
-}
-
-void EntityEngine::GatherEntities() {   
-    for(auto&& sp : mSpaces){
-        sp.second->GatherEntities();
-    }
 }
 
 } // namespace safe

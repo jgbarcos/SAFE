@@ -110,4 +110,4 @@ for i, t in ipairs(templates) do
 end
 
 -- Set Systems
-safe.set_active_systems( active_systems, true)
+safe.enable_systems( space, active_systems)
